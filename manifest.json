@@ -1,6 +1,6 @@
 {
   "name": "Image Downloader",
-  "description": "Extract all images from current web page",
+  "description": "Useful tool that allows users to easily download images from websites with just a few clicks",
   "version": "1.1",
   "manifest_version": 3,
   "icons": {

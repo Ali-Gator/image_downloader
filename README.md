@@ -1,2 +1,2 @@
 # image_downloader
-Chrome extension for download images
+Chrome extension for downloading images
