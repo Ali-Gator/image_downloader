@@ -28,6 +28,9 @@ const addImageNode = (container, url) => {
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
   checkbox.name = url;
+  div.addEventListener('click', () => {
+    checkbox.checked = !checkbox.checked;
+  });
   div.appendChild(checkbox);
   container.appendChild(div);
 };
