@@ -31,6 +31,9 @@ const addImageNode = (container, url) => {
   div.addEventListener('click', () => {
     checkbox.checked = !checkbox.checked;
   });
+  div.addEventListener('click', () => {
+    checkbox.checked = !checkbox.checked;
+  });
   div.appendChild(checkbox);
   container.appendChild(div);
 };
