@@ -1,13 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <title>Image Downloader</title>
 </head>
 <body>
-<h1>Image Downloader</h1>
-<button id="grabBtn">DOWNLOAD NOW</button>
-<script src="popup.js"></script>
+  <div class="header">
+    <h1 id="popupTitle">Image Downloader</h1>
+  </div>
+  <div class="content">
+    <button id="grabBtn">
+      <span class="material-icons">photo_library</span>
+      <span id="downloadBtnText">DOWNLOAD</span>
+    </button>
+    <p class="help-text" id="helpText">Select images to download and click the button</p>
+  </div>
+  <script src="popup.js"></script>
+  <script src="localization.js"></script>
 </body>
 </html>

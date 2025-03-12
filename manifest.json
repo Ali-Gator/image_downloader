@@ -1,9 +1,10 @@
 {
   "name": "__MSG_appName__",
   "description": "__MSG_appDesc__",
-  "version": "1.4",
+  "version": "2.0",
   "manifest_version": 3,
   "default_locale": "en",
+  "author": "Image Downloader Team",
   "icons": {
     "16": "icons/16.png",
     "32": "icons/32.png",

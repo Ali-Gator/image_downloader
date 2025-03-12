@@ -4,5 +4,125 @@
   },
   "appDesc": {
     "message": "Useful tool that allows users to easily download images from websites with just a few clicks"
+  },
+  "popup_title": {
+    "message": "Image Downloader"
+  },
+  "download_btn": {
+    "message": "Download"
+  },
+  "save_btn": {
+    "message": "Save"
+  },
+  "cancel_btn": {
+    "message": "Cancel"
+  },
+  "close_btn": {
+    "message": "Close"
+  },
+  "apply_btn": {
+    "message": "Apply"
+  },
+  "reset_btn": {
+    "message": "Reset"
+  },
+  "ok_btn": {
+    "message": "OK"
+  },
+  "help_text": {
+    "message": "Select images to download and click the button"
+  },
+  "info_text": {
+    "message": "Information"
+  },
+  "success_text": {
+    "message": "Success"
+  },
+  "error_text": {
+    "message": "Error"
+  },
+  "no_images_text": {
+    "message": "No images to display"
+  },
+  "select_images_text": {
+    "message": "Select images to download"
+  },
+  "download_started_text": {
+    "message": "Download started"
+  },
+  "download_complete_text": {
+    "message": "Download complete"
+  },
+  "download_error_text": {
+    "message": "Error downloading"
+  },
+  "select_all_text": {
+    "message": "Select all"
+  },
+  "deselect_all_text": {
+    "message": "Deselect all"
+  },
+  "invert_selection_text": {
+    "message": "Invert selection"
+  },
+  "size_text": {
+    "message": "Size"
+  },
+  "name_text": {
+    "message": "Name"
+  },
+  "filter_by_size_text": {
+    "message": "Filter by size"
+  },
+  "sort_by_text": {
+    "message": "Sort by"
+  },
+  "grid_view_text": {
+    "message": "Grid"
+  },
+  "list_view_text": {
+    "message": "List"
+  },
+  "filter_text": {
+    "message": "Filter..."
+  },
+  "size_filter_all": {
+    "message": "All sizes"
+  },
+  "size_filter_small": {
+    "message": "Small (< 500px)"
+  },
+  "size_filter_medium": {
+    "message": "Medium (500-1000px)"
+  },
+  "size_filter_large": {
+    "message": "Large (> 1000px)"
+  },
+  "of_text": {
+    "message": "of"
+  },
+  "images_selected_text": {
+    "message": "images selected"
+  },
+  "sort_default": {
+    "message": "Default"
+  },
+  "sort_name_asc": {
+    "message": "By name (A-Z)"
+  },
+  "sort_name_desc": {
+    "message": "By name (Z-A)"
+  },
+  "sort_size_asc": {
+    "message": "By size (↑)"
+  },
+  "sort_size_desc": {
+    "message": "By size (↓)"
+  },
+  "loading_text": {
+    "message": "Loading images..."
+  },
+  "reset_filters_title": {
+    "message": "Reset all filters and sorting"
   }
 }

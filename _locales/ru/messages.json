@@ -4,5 +4,125 @@
   },
   "appDesc": {
     "message": "Полезный инструмент, который позволяет пользователям легко загружать изображения с веб-сайтов всего несколькими щелчками мыши"
+  },
+  "popup_title": {
+    "message": "Загрузка изображений"
+  },
+  "download_btn": {
+    "message": "Скачать"
+  },
+  "save_btn": {
+    "message": "Сохранить"
+  },
+  "cancel_btn": {
+    "message": "Отмена"
+  },
+  "close_btn": {
+    "message": "Закрыть"
+  },
+  "apply_btn": {
+    "message": "Применить"
+  },
+  "reset_btn": {
+    "message": "Сбросить"
+  },
+  "ok_btn": {
+    "message": "ОК"
+  },
+  "help_text": {
+    "message": "Выберите изображения для скачивания и нажмите кнопку"
+  },
+  "info_text": {
+    "message": "Информация"
+  },
+  "success_text": {
+    "message": "Успешно"
+  },
+  "error_text": {
+    "message": "Ошибка"
+  },
+  "no_images_text": {
+    "message": "Нет изображений для отображения"
+  },
+  "select_images_text": {
+    "message": "Выберите изображения для скачивания"
+  },
+  "download_started_text": {
+    "message": "Загрузка началась"
+  },
+  "download_complete_text": {
+    "message": "Загрузка завершена"
+  },
+  "download_error_text": {
+    "message": "Ошибка при загрузке"
+  },
+  "select_all_text": {
+    "message": "Выбрать все"
+  },
+  "deselect_all_text": {
+    "message": "Снять выделение"
+  },
+  "invert_selection_text": {
+    "message": "Инвертировать выбор"
+  },
+  "size_text": {
+    "message": "Размер"
+  },
+  "name_text": {
+    "message": "Имя"
+  },
+  "filter_by_size_text": {
+    "message": "Фильтр по размеру"
+  },
+  "sort_by_text": {
+    "message": "Сортировать по"
+  },
+  "grid_view_text": {
+    "message": "Сетка"
+  },
+  "list_view_text": {
+    "message": "Список"
+  },
+  "filter_text": {
+    "message": "Фильтр..."
+  },
+  "size_filter_all": {
+    "message": "Все размеры"
+  },
+  "size_filter_small": {
+    "message": "Маленькие (< 500px)"
+  },
+  "size_filter_medium": {
+    "message": "Средние (500-1000px)"
+  },
+  "size_filter_large": {
+    "message": "Большие (> 1000px)"
+  },
+  "of_text": {
+    "message": "из"
+  },
+  "images_selected_text": {
+    "message": "изображений выбрано"
+  },
+  "sort_default": {
+    "message": "По умолчанию"
+  },
+  "sort_name_asc": {
+    "message": "По имени (А-Я)"
+  },
+  "sort_name_desc": {
+    "message": "По имени (Я-А)"
+  },
+  "sort_size_asc": {
+    "message": "По размеру (↑)"
+  },
+  "sort_size_desc": {
+    "message": "По размеру (↓)"
+  },
+  "loading_text": {
+    "message": "Загрузка изображений..."
+  },
+  "reset_filters_title": {
+    "message": "Сбросить все фильтры и сортировки"
   }
 }
