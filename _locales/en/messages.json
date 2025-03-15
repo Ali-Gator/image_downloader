@@ -124,5 +124,27 @@
   },
   "reset_filters_title": {
     "message": "Reset all filters and sorting"
+  },
+  "no_images_found": {
+    "message": "No images found",
+    "description": "Message displayed when no images are found on the page"
+  },
+  "loading_dimension": {
+    "message": "Loading..."
+  },
+  "adding_image": {
+    "message": "Adding image ${index} of ${total}..."
+  },
+  "creating_archive": {
+    "message": "Creating archive..."
+  },
+  "generating_archive": {
+    "message": "Generating archive..."
+  },
+  "select_at_least_one": {
+    "message": "Please select at least one image"
+  },
+  "invalid_content": {
+    "message": "Invalid content"
   }
 }

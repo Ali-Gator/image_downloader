@@ -120,7 +120,8 @@ const addImageNode = (container, url) => {
       if (currentCount === 0) {
         const noImagesMsg = document.createElement('div');
         noImagesMsg.className = 'no-images-message';
-        noImagesMsg.textContent = 'Изображения не найдены';
+        noImagesMsg.id = 'noImagesMessage';
+        noImagesMsg.textContent = chrome.i18n.getMessage('no_images_text');
         container.appendChild(noImagesMsg);
       }
     }
@@ -136,7 +137,7 @@ const addImageNode = (container, url) => {
   if (!container.classList.contains('list-view')) {
     tooltip = document.createElement('div');
     tooltip.className = 'image-tooltip';
-    tooltip.textContent = 'Загрузка...';
+    tooltip.textContent = chrome.i18n.getMessage('loading_dimension');
     div.appendChild(tooltip);
   }
   
@@ -155,7 +156,7 @@ const addImageNode = (container, url) => {
     // Добавляем размер (будет заполнен после загрузки изображения)
     imageSize = document.createElement('div');
     imageSize.className = 'image-size';
-    imageSize.textContent = 'Загрузка...';
+    imageSize.textContent = chrome.i18n.getMessage('loading_dimension');
     imageInfo.appendChild(imageSize);
   } else {
     // В режиме сетки просто добавляем имя файла
@@ -299,7 +300,8 @@ const updateImageCount = (count) => {
   if (count === 0 && !existingMsg) {
     const noImagesMsg = document.createElement('div');
     noImagesMsg.className = 'no-images-message';
-    noImagesMsg.textContent = 'Изображения не найдены';
+    noImagesMsg.id = 'noImagesMessage';
+    noImagesMsg.textContent = chrome.i18n.getMessage('no_images_text');
     container.appendChild(noImagesMsg);
   } else if (count > 0 && existingMsg) {
     // Если изображения появились, убираем сообщение
@@ -644,7 +646,7 @@ const getSelectedUrls = () => {
     Array.from(document.querySelectorAll('.container input[type="checkbox"]:checked'))
       .map(item => item.name);
   if (!urls || !urls.length) {
-    throw new Error('Пожалуйста, выберите хотя бы одно изображение');
+    throw new Error(chrome.i18n.getMessage('select_at_least_one'));
   }
   return urls;
 };
@@ -653,7 +655,7 @@ const checkAndGetFileName = (index, blob) => {
   let name = parseInt(index) + 1;
   const [type, extension] = blob.type.split('/');
   if (type !== 'image' || blob.size <= 0) {
-    throw Error('Некорректное содержимое');
+    throw Error(chrome.i18n.getMessage('invalid_content'));
   }
   return name + '.' + extension.split('+').shift();
 };
@@ -662,14 +664,17 @@ const createArchive = async (urls) => {
   // Показываем загрузочный экран
   const loadingOverlay = document.getElementById('loadingOverlay');
   loadingOverlay.style.display = 'flex';
-  loadingOverlay.querySelector('p').textContent = 'Создание архива...';
+  loadingOverlay.querySelector('p').textContent = chrome.i18n.getMessage('creating_archive');
 
   const zip = new JSZip();
 
   for (let index in urls) {
     try {
       const url = urls[index];
-      loadingOverlay.querySelector('p').textContent = `Добавление изображения ${parseInt(index) + 1} из ${urls.length}...`;
+      loadingOverlay.querySelector('p').textContent = chrome.i18n.getMessage('adding_image', {
+        'index': String(parseInt(index) + 1),
+        'total': String(urls.length)
+      });
       const response = await fetch(url);
       const blob = await response.blob();
       zip.file(checkAndGetFileName(index, blob), blob);
@@ -678,7 +683,7 @@ const createArchive = async (urls) => {
     }
   }
 
-  loadingOverlay.querySelector('p').textContent = 'Генерация архива...';
+  loadingOverlay.querySelector('p').textContent = chrome.i18n.getMessage('generating_archive');
 
   const result = await zip.generateAsync({
     type: 'blob',

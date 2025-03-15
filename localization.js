@@ -93,6 +93,9 @@ function localizePageUI() {
   
   // Текст загрузки
   localizeElementById('loadingText', 'loading_text');
+  
+  // Сообщение об отсутствии изображений
+  localizeElementById('noImagesMessage', 'no_images_text');
 }
 
 // Запуск локализации при загрузке DOM

@@ -124,5 +124,27 @@
   },
   "reset_filters_title": {
     "message": "Сбросить все фильтры и сортировки"
+  },
+  "no_images_found": {
+    "message": "Изображения не найдены",
+    "description": "Сообщение, отображаемое когда на странице не найдено изображений"
+  },
+  "loading_dimension": {
+    "message": "Загрузка..."
+  },
+  "adding_image": {
+    "message": "Добавление изображения ${index} из ${total}..."
+  },
+  "creating_archive": {
+    "message": "Создание архива..."
+  },
+  "generating_archive": {
+    "message": "Генерация архива..."
+  },
+  "select_at_least_one": {
+    "message": "Пожалуйста, выберите хотя бы одно изображение"
+  },
+  "invalid_content": {
+    "message": "Некорректное содержимое"
   }
 }
