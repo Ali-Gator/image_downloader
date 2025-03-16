@@ -136,7 +136,7 @@
     "message": "Загрузка..."
   },
   "adding_image": {
-    "message": "Добавление изображения ${index} из ${total}..."
+    "message": "Добавление изображения $1 из $2..."
   },
   "creating_archive": {
     "message": "Создание архива..."

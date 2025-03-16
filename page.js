@@ -671,10 +671,11 @@ const createArchive = async (urls) => {
   for (let index in urls) {
     try {
       const url = urls[index];
-      loadingOverlay.querySelector('p').textContent = chrome.i18n.getMessage('adding_image', {
-        'index': String(parseInt(index) + 1),
-        'total': String(urls.length)
-      });
+      // Обновляем текст загрузки
+      loadingOverlay.querySelector('p').textContent = chrome.i18n.getMessage('adding_image', [
+        (index + 1).toString(),
+        urls.length.toString()
+      ]);
       const response = await fetch(url);
       const blob = await response.blob();
       zip.file(checkAndGetFileName(index, blob), blob);

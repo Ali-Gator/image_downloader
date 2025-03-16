@@ -16,7 +16,25 @@
   },
   "permissions": [
     "scripting",
-    "activeTab"
+    "activeTab",
+    "downloads",
+    "storage",
+    "tabs"
   ],
-  "background": {}
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "commands": {
+    "toggle-feature": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+I",
+        "mac": "Command+Shift+I"
+      },
+      "description": "Toggle image download panel"
+    }
+  }
 }

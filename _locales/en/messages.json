@@ -136,7 +136,7 @@
     "message": "Loading..."
   },
   "adding_image": {
-    "message": "Adding image ${index} of ${total}..."
+    "message": "Adding image $1 of $2..."
   },
   "creating_archive": {
     "message": "Creating archive..."
