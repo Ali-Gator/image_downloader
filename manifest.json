@@ -28,6 +28,9 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "commands": {
     "toggle-feature": {
       "suggested_key": {
