@@ -300,13 +300,6 @@ body {
   pointer-events: none;
 }
 
-/* Альтернативный стиль для чекбокса, если тень не решает проблему */
-/* 
-.list-view .imageDiv input[type="checkbox"]:checked {
-  background-color: rgba(98, 0, 238, 0.8);
-}
-*/
-
 /* Toolbar Styles */
 .toolbar {
   display: flex;
@@ -385,12 +378,12 @@ body {
   transition: all 0.2s ease;
 }
 
-.control-item select:hover, 
+.control-item select:hover,
 .control-item input:hover {
   border-color: var(--primary-light);
 }
 
-.control-item select:focus, 
+.control-item select:focus,
 .control-item input:focus {
   border-color: var(--primary-color);
   outline: none;
@@ -737,15 +730,15 @@ button#downloadBtn .material-icons {
   .left-section {
     width: 55%;
   }
-  
+
   .right-section {
     width: 45%;
   }
-  
+
   .control-item {
     min-width: 130px;
   }
-  
+
   .sort-container {
     min-width: 150px;
   }
@@ -755,11 +748,11 @@ button#downloadBtn .material-icons {
   .left-section, .right-section {
     width: 100%;
   }
-  
+
   .toolbar {
     flex-direction: column;
   }
-  
+
   .right-section {
     margin-top: 12px;
     justify-content: flex-start;
@@ -770,7 +763,7 @@ button#downloadBtn .material-icons {
   :root {
     --header-height: 100px;
   }
-  
+
   .header {
     flex-direction: column;
     align-items: flex-start;
@@ -778,25 +771,25 @@ button#downloadBtn .material-icons {
     height: auto;
     min-height: var(--header-height);
   }
-  
+
   .header-controls {
     width: 100%;
     margin-top: 8px;
     justify-content: space-between;
   }
-  
+
   .toolbar {
     top: var(--header-height);
     flex-direction: column;
     padding: 10px 16px;
     background: linear-gradient(to bottom, white, #f8f5ff);
   }
-  
+
   .left-section {
     width: 100%;
     margin-bottom: 12px;
   }
-  
+
   .right-section {
     width: 100%;
     justify-content: space-between;
@@ -804,13 +797,13 @@ button#downloadBtn .material-icons {
     gap: 12px;
     margin-top: 8px;
   }
-  
+
   .controls-row {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
-  
+
   .control-item {
     width: 100%;
     margin-right: 0;
@@ -818,32 +811,32 @@ button#downloadBtn .material-icons {
     min-width: unset;
     transition: transform 0.2s ease;
   }
-  
+
   .control-item:focus-within {
     transform: scale(1.02);
   }
-  
+
   .sort-container {
     order: 2;
     width: 100%;
     margin-bottom: 10px;
     min-width: unset;
   }
-  
+
   .info-container {
     order: 1;
     margin-right: auto;
   }
-  
+
   .view-options {
     order: 3;
     margin-left: 0;
   }
-  
+
   .container {
     margin-top: calc(var(--header-height) + 120px);
   }
-  
+
   .grid-view .imageDiv {
     width: calc(50% - 16px);
     height: 150px;
@@ -862,39 +855,39 @@ button#downloadBtn .material-icons {
   :root {
     --header-height: 110px;
   }
-  
+
   .toolbar {
     padding: 8px 12px;
   }
-  
+
   .controls-row {
     gap: 6px;
   }
-  
+
   .right-section {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .sort-container,
   .info-container,
   .view-options {
     width: 100%;
     margin: 0 0 8px 0;
   }
-  
+
   #counter-badge {
     width: 100%;
     justify-content: flex-start;
   }
-  
+
   .control-item .material-icons,
   #counter-badge .material-icons {
     font-size: 16px;
     margin-right: 6px;
   }
-  
+
   .container {
     margin-top: calc(var(--header-height) + 160px);
   }
@@ -1080,27 +1073,27 @@ button#downloadBtn .material-icons {
     max-width: 95%;
     max-height: 90%;
   }
-  
+
   .modal-info {
     flex-wrap: wrap;
   }
-  
+
   .modal-download {
     margin-left: 0;
     margin-top: 8px;
     width: 100%;
     justify-content: center;
   }
-  
+
   .modal-nav {
     width: 40px;
     height: 40px;
   }
-  
+
   .modal-nav.prev {
     left: 10px;
   }
-  
+
   .modal-nav.next {
     right: 10px;
   }
@@ -1319,9 +1312,11 @@ button#downloadBtn .material-icons {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
 }
 
-/* Альтернативный стиль для чекбокса, если тень не решает проблему */
-/* 
-.list-view .imageDiv input[type="checkbox"]:checked {
-  background-color: rgba(98, 0, 238, 0.8);
+#ratingWidgetContainer {
+  margin: 10px auto;
+  padding: 15px;
+  text-align: center;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-*/

@@ -149,5 +149,8 @@
   },
   "invalid_content": {
     "message": "Invalid content"
+  },
+  "rateUs": {
+    "message": "Rate us:"
   }
 }

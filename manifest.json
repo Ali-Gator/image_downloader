@@ -1,7 +1,7 @@
 {
   "name": "__MSG_appName__",
   "description": "__MSG_shortDesc__",
-  "version": "3.0.0",
+  "version": "3.1.1",
   "manifest_version": 3,
   "default_locale": "en",
   "author": "Image Downloader Team",
@@ -17,7 +17,6 @@
   "permissions": [
     "scripting",
     "activeTab",
-    "downloads",
     "storage",
     "tabs"
   ],

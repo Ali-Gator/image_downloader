@@ -149,5 +149,8 @@
   },
   "invalid_content": {
     "message": "Некорректное содержимое"
+  },
+  "rateUs": {
+    "message": "Оцените нас"
   }
 }

@@ -19,7 +19,7 @@
         <input type="checkbox" id="selectAll" class="custom-checkbox"/>
         <label for="selectAll" id="selectAllLabel">Выбрать все</label>
       </div>
-      
+
       <button id="downloadBtn">
         <span class="material-icons">download</span>
         <span id="downloadBtnLabel">Скачать</span>
@@ -34,7 +34,7 @@
           <span class="material-icons">filter_list</span>
           <input type="text" id="filterImages" placeholder="Фильтр..." />
         </div>
-        
+
         <div class="control-item">
           <span class="material-icons">straighten</span>
           <select id="sizeFilter">
@@ -44,7 +44,7 @@
             <option value="large" id="sizeFilterLarge">Большие (> 1000px)</option>
           </select>
         </div>
-        
+
         <div class="control-item">
           <button id="clearFilters" class="reset-btn" title="Сбросить все фильтры и сортировки">
             <span class="material-icons">restart_alt</span>
@@ -60,7 +60,7 @@
           <span id="counter-text"><span id="selectedCount">0</span> <span id="ofText">из</span> <span id="imageCount">0</span> <span id="imagesSelectedText">изображений выбрано</span></span>
         </div>
       </div>
-      
+
       <div class="sort-container control-item">
         <span class="material-icons">sort</span>
         <select id="sortImages">
@@ -71,7 +71,7 @@
           <option value="size-desc" id="sortSizeDesc">По размеру (↓)</option>
         </select>
       </div>
-      
+
       <div class="view-options">
         <button id="gridViewBtn" class="view-btn active" title="Сетка">
           <span class="material-icons">grid_view</span>
@@ -92,6 +92,10 @@
     <p id="loadingText">Загрузка изображений...</p>
   </div>
 
+
+  <div id="ratingWidgetContainer"></div>
+
+  <script src="scripts/rating-widget.js"></script>
   <script src="/lib/jszip.min.js"></script>
   <script src="page.js"></script>
   <script src="localization.js"></script>
