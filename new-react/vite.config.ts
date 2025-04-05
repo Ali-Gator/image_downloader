@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import { crx } from '@crxjs/vite-plugin';
 import react from '@vitejs/plugin-react';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
+
+//@ts-ignore
 import manifest from './src/manifest';
 
 // https://vitejs.dev/config/

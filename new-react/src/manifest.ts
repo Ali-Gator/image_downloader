@@ -53,7 +53,6 @@ export default {
     },
   ],
   host_permissions: [
-    'https://localhost:5173/*',
     '<all_urls>',
   ],
 };
