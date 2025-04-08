@@ -1,7 +1,5 @@
 const grabBtn = document.getElementById('grabBtn');
 
-const showAlert = (any) => alert(JSON.stringify(any, undefined, 2));
-
 /**
  * Выполняет функцию grabImages() на веб-странице указанной
  * вкладки и во всех ее фреймах,

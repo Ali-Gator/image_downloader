@@ -27,7 +27,6 @@ export default {
     'scripting',
     'activeTab',
     'storage',
-    'tabs',
   ],
   content_scripts: [
     {

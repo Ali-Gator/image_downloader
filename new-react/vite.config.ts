@@ -22,8 +22,8 @@ export default defineConfig({
     },
   },
   plugins: [
-    react(),
     crx({ manifest }),
+    react(),
     sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: 'blockdev',
