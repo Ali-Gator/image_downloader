@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from 'react';
 
 import { Header, ImageGrid, LoadingOverlay, Toolbar } from './components';
 import { PageContainer } from './styles';
+import { useTranslation } from '../../utils/useTranslation';
 
 export const Page: FC = () => {
   const [images, setImages] = useState<string[]>([]);
@@ -12,6 +13,7 @@ export const Page: FC = () => {
   const [sizeFilter, setSizeFilter] = useState('all');
   const [sortOption, setSortOption] = useState('default');
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
 
   // Listen for messages from popup
   useEffect(() => {
@@ -49,7 +51,7 @@ export const Page: FC = () => {
   return (
     <PageContainer>
       <Header
-        title="Image Downloader"
+        title={t('popup_title')}
         selectedCount={selectedImages.length}
         totalCount={filteredImages.length}
         onSelectAll={handleSelectAll}

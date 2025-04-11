@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { createTheme, Rating, Stack, ThemeProvider, Typography } from '@mui/material';
 
-import { getI18nText } from '../../utils/i18n';
+import { useTranslation } from '../../utils/useTranslation';
 import { storageGet, storageSet } from '../../utils/localStorage';
 
 export const RATING_KEY = 'app_rating_score';
@@ -13,6 +13,7 @@ const GOOD_REVIEW_LINK =
 
 function RatingWidget() {
   const [value, setValue] = useState<number | null>(0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     storageGet(RATING_KEY, (val) => {
@@ -47,7 +48,7 @@ function RatingWidget() {
       paddingTop="3px"
     >
       <Typography variant="body2" sx={{ marginRight: '5px' }}>
-        {getI18nText('rateUs')}
+        {t('rateUs')}
       </Typography>
       <ThemeProvider theme={themeRating}>
         <Rating

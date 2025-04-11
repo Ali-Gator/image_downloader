@@ -8,6 +8,7 @@ import SortIcon from '@mui/icons-material/Sort';
 import StraightenIcon from '@mui/icons-material/Straighten';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { useTranslation } from '../../../../utils/useTranslation';
 
 import {
   ControlItem,
@@ -48,6 +49,8 @@ export const Toolbar: FC<ToolbarProps> = ({
   selectedCount,
   totalCount,
 }) => {
+  const { t } = useTranslation();
+
   const handleClearFilters = () => {
     setFilterText('');
     setSizeFilter('all');
@@ -61,7 +64,7 @@ export const Toolbar: FC<ToolbarProps> = ({
           <ControlItem>
             <FilterListIcon />
             <TextField
-              placeholder="Filter..."
+              placeholder={t('filter_text')}
               variant="outlined"
               size="small"
               value={filterText}
@@ -72,24 +75,29 @@ export const Toolbar: FC<ToolbarProps> = ({
           <ControlItem>
             <StraightenIcon />
             <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-              <InputLabel id="size-filter-label">Size</InputLabel>
+              <InputLabel id="size-filter-label">{t('size_text')}</InputLabel>
               <Select
                 labelId="size-filter-label"
                 value={sizeFilter}
                 onChange={(e) => setSizeFilter(e.target.value)}
-                label="Size"
+                label={t('size_text')}
               >
-                <MenuItem value="all">All sizes</MenuItem>
-                <MenuItem value="small">Small ({'<'} 500px)</MenuItem>
-                <MenuItem value="medium">Medium (500-1000px)</MenuItem>
-                <MenuItem value="large">Large ({'>'} 1000px)</MenuItem>
+                <MenuItem value="all">{t('size_filter_all')}</MenuItem>
+                <MenuItem value="small">{t('size_filter_small')}</MenuItem>
+                <MenuItem value="medium">{t('size_filter_medium')}</MenuItem>
+                <MenuItem value="large">{t('size_filter_large')}</MenuItem>
               </Select>
             </FormControl>
           </ControlItem>
 
           <ControlItem>
-            <Button startIcon={<RestartAltIcon />} variant="outlined" onClick={handleClearFilters}>
-              Reset
+            <Button
+              startIcon={<RestartAltIcon />}
+              variant="outlined"
+              onClick={handleClearFilters}
+              title={t('reset_filters_title')}
+            >
+              {t('reset_btn')}
             </Button>
           </ControlItem>
         </ControlsRow>
@@ -100,7 +108,7 @@ export const Toolbar: FC<ToolbarProps> = ({
           <CounterBadge>
             <PhotoLibraryIcon />
             <CounterText>
-              {selectedCount} of {totalCount} images selected
+              {selectedCount} {t('of_text')} {totalCount} {t('images_selected_text')}
             </CounterText>
           </CounterBadge>
         </InfoContainer>
@@ -108,27 +116,35 @@ export const Toolbar: FC<ToolbarProps> = ({
         <SortContainer>
           <SortIcon />
           <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-            <InputLabel id="sort-images-label">Sort</InputLabel>
+            <InputLabel id="sort-images-label">{t('sort_text')}</InputLabel>
             <Select
               labelId="sort-images-label"
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
-              label="Sort"
+              label={t('sort_text')}
             >
-              <MenuItem value="default">Default</MenuItem>
-              <MenuItem value="name-asc">Name (A-Z)</MenuItem>
-              <MenuItem value="name-desc">Name (Z-A)</MenuItem>
-              <MenuItem value="size-asc">Size (↑)</MenuItem>
-              <MenuItem value="size-desc">Size (↓)</MenuItem>
+              <MenuItem value="default">{t('sort_default')}</MenuItem>
+              <MenuItem value="name-asc">{t('sort_name_asc')}</MenuItem>
+              <MenuItem value="name-desc">{t('sort_name_desc')}</MenuItem>
+              <MenuItem value="size-asc">{t('sort_size_asc')}</MenuItem>
+              <MenuItem value="size-desc">{t('sort_size_desc')}</MenuItem>
             </Select>
           </FormControl>
         </SortContainer>
 
         <ViewOptionsContainer>
-          <ViewButton onClick={() => setIsGridView(true)} active={isGridView}>
+          <ViewButton
+            onClick={() => setIsGridView(true)}
+            active={isGridView}
+            title={t('grid_view_text')}
+          >
             <GridViewIcon />
           </ViewButton>
-          <ViewButton onClick={() => setIsGridView(false)} active={!isGridView}>
+          <ViewButton
+            onClick={() => setIsGridView(false)}
+            active={!isGridView}
+            title={t('list_view_text')}
+          >
             <ViewListIcon />
           </ViewButton>
         </ViewOptionsContainer>

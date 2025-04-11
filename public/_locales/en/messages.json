@@ -77,8 +77,8 @@
   "filter_by_size_text": {
     "message": "Filter by size"
   },
-  "sort_by_text": {
-    "message": "Sort by"
+  "sort_text": {
+    "message": "Sort"
   },
   "grid_view_text": {
     "message": "Grid"

@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { DownloadButton, Header, HelpText } from './components';
 import { ContentContainer, PopupContainer } from './styles';
 import RatingWidget from '../Rating/RatingWidget';
+import { useTranslation } from '../../utils/useTranslation';
 
 export const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const grabImages = () => {
     const images = document.querySelectorAll('img');
@@ -75,10 +77,10 @@ export const Popup: React.FC = () => {
 
   return (
     <PopupContainer>
-      <Header title="Image Downloader" />
+      <Header title={t('popup_title')} />
       <ContentContainer>
-        <DownloadButton onClick={handleGrabImages} isLoading={isLoading} text="DOWNLOAD" />
-        <HelpText text="Select images to download and click the button" />
+        <DownloadButton onClick={handleGrabImages} isLoading={isLoading} text={t('download_btn')} />
+        <HelpText text={t('help_text')} />
         <RatingWidget />
       </ContentContainer>
     </PopupContainer>

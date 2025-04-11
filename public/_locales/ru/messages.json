@@ -77,8 +77,8 @@
   "filter_by_size_text": {
     "message": "Фильтр по размеру"
   },
-  "sort_by_text": {
-    "message": "Сортировать по"
+  "sort_text": {
+    "message": "Сортировать"
   },
   "grid_view_text": {
     "message": "Сетка"
