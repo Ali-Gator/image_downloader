@@ -12,6 +12,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         popup: 'popup.html',
+        page: 'page.html',
       },
       output: {
         chunkFileNames: 'assets/chunk-[hash].js',

@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { Header, DownloadButton, HelpText } from './components';
-import { PopupContainer, ContentContainer } from './styles';
+import { DownloadButton, Header, HelpText } from './components';
+import { ContentContainer, PopupContainer } from './styles';
 import RatingWidget from '../Rating/RatingWidget';
 
-const Popup: React.FC = () => {
+export const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const grabImages = () => {
     const images = document.querySelectorAll('img');
-    return Array.from(images).map(image => image.src);
+    return Array.from(images).map((image) => image.src);
   };
 
   const openImagesPage = async (urls: string[]) => {
     const tab = await chrome.tabs.create({
       url: 'page.html',
-      active: false
+      active: false,
     });
 
     setTimeout(async () => {
@@ -38,7 +38,7 @@ const Popup: React.FC = () => {
       return;
     }
 
-    const imageUrls = frames.map(frame => frame.result).flat();
+    const imageUrls = frames.map((frame) => frame.result).flat();
     openImagesPage(imageUrls);
   };
 
@@ -60,9 +60,9 @@ const Popup: React.FC = () => {
       chrome.scripting.executeScript(
         {
           target: { tabId: tab.id, allFrames: true },
-          func: grabImages
+          func: grabImages,
         },
-        onResult
+        onResult,
       );
     } catch (error) {
       console.error('Error grabbing images:', error);
@@ -76,18 +76,10 @@ const Popup: React.FC = () => {
     <PopupContainer>
       <Header title="Image Downloader" />
       <ContentContainer>
-        <DownloadButton
-          onClick={handleGrabImages}
-          isLoading={isLoading}
-          text="DOWNLOAD"
-        />
-        <HelpText
-          text="Select images to download and click the button"
-        />
-        <RatingWidget/>
+        <DownloadButton onClick={handleGrabImages} isLoading={isLoading} text="DOWNLOAD" />
+        <HelpText text="Select images to download and click the button" />
+        <RatingWidget />
       </ContentContainer>
     </PopupContainer>
   );
 };
-
-export default Popup;

@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material';
 // Определяем все цвета явно, как в CSS-переменных
 const colors = {
   primaryMain: '#6200ee',
-  primaryLight: '#bb86fc', 
+  primaryLight: '#bb86fc',
   primaryDark: '#4a0072',
   secondaryMain: '#03dac6',
   secondaryLight: '#5effea',
@@ -14,7 +14,7 @@ const colors = {
   surface: '#F8F9FA',
   error: '#cf6679',
   shadowColor: 'rgba(98, 0, 238, 0.2)',
-  borderColor: '#e0dae6'
+  borderColor: '#e0dae6',
 };
 
 // Создаем градиенты
@@ -73,9 +73,25 @@ const theme = createTheme({
         },
       },
     },
+    MuiCssBaseline: {
+      styleOverrides: {
+        '*': {
+          boxSizing: 'border-box',
+          margin: 0,
+          padding: 0,
+        },
+        'html, body': {
+          width: '100%',
+          height: '100%',
+        },
+        body: {
+          lineHeight: 1.5,
+        },
+      },
+    },
   },
 });
 
 // Экспортируем дополнительные цвета и градиенты
 export { colors, gradients };
-export default theme; 
+export default theme;

@@ -3,101 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="page.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <title>Image Downloader</title>
 </head>
 <body>
-  <div class="header">
-    <div class="header-title">
-      <span class="material-icons">photo_library</span>
-      <span id="headerTitle">Image Downloader</span>
-    </div>
-
-    <div class="header-controls">
-      <div class="select-controls">
-        <input type="checkbox" id="selectAll" class="custom-checkbox"/>
-        <label for="selectAll" id="selectAllLabel">Выбрать все</label>
-      </div>
-
-      <button id="downloadBtn">
-        <span class="material-icons">download</span>
-        <span id="downloadBtnLabel">Скачать</span>
-      </button>
-    </div>
-  </div>
-
-  <div class="toolbar">
-    <div class="left-section">
-      <div class="controls-row">
-        <div class="control-item">
-          <span class="material-icons">filter_list</span>
-          <input type="text" id="filterImages" placeholder="Фильтр..." />
-        </div>
-
-        <div class="control-item">
-          <span class="material-icons">straighten</span>
-          <select id="sizeFilter">
-            <option value="all" id="sizeFilterAll">Все размеры</option>
-            <option value="small" id="sizeFilterSmall">Маленькие (< 500px)</option>
-            <option value="medium" id="sizeFilterMedium">Средние (500-1000px)</option>
-            <option value="large" id="sizeFilterLarge">Большие (> 1000px)</option>
-          </select>
-        </div>
-
-        <div class="control-item">
-          <button id="clearFilters" class="reset-btn" title="Сбросить все фильтры и сортировки">
-            <span class="material-icons">restart_alt</span>
-            <span id="resetBtnLabel">Сбросить</span>
-          </button>
-        </div>
-      </div>
-    </div>
-    <div class="right-section">
-      <div class="info-container">
-        <div id="counter-badge">
-          <span class="material-icons">photo_library</span>
-          <span id="counter-text"><span id="selectedCount">0</span> <span id="ofText">из</span> <span id="imageCount">0</span> <span id="imagesSelectedText">изображений выбрано</span></span>
-        </div>
-      </div>
-
-      <div class="sort-container control-item">
-        <span class="material-icons">sort</span>
-        <select id="sortImages">
-          <option value="default" id="sortDefault">По умолчанию</option>
-          <option value="name-asc" id="sortNameAsc">По имени (А-Я)</option>
-          <option value="name-desc" id="sortNameDesc">По имени (Я-А)</option>
-          <option value="size-asc" id="sortSizeAsc">По размеру (↑)</option>
-          <option value="size-desc" id="sortSizeDesc">По размеру (↓)</option>
-        </select>
-      </div>
-
-      <div class="view-options">
-        <button id="gridViewBtn" class="view-btn active" title="Сетка">
-          <span class="material-icons">grid_view</span>
-        </button>
-        <button id="listViewBtn" class="view-btn" title="Список">
-          <span class="material-icons">view_list</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="container grid-view">
-    <!-- Здесь будут изображения -->
-  </div>
-
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner"></div>
-    <p id="loadingText">Загрузка изображений...</p>
-  </div>
-
-
-  <div id="ratingWidgetContainer"></div>
-
-  <script src="scripts/rating-widget.js"></script>
-  <script src="/lib/jszip.min.js"></script>
-  <script src="page.js"></script>
+  <div id="root"></div>
+  <script type="module" src="src/containers/page/index.tsx"></script>
   <script src="localization.js"></script>
 </body>
 </html>
