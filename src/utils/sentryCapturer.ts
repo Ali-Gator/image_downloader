@@ -3,10 +3,10 @@ import type { ErrorInfo } from 'react';
 import {
   BrowserClient,
   defaultStackParser,
+  type EventHint,
   getDefaultIntegrations,
   makeFetchTransport,
   Scope,
-  type EventHint,
 } from '@sentry/browser';
 
 import packageData from '../../package.json';
@@ -29,10 +29,6 @@ const client = new BrowserClient({
   debug: isDev, // Включаем отладку
   tracesSampleRate: 1.0, // Фиксируем все трассировки
   allowUrls: ['*'], // Разрешаем все URL
-  beforeSend: (event) => {
-    console.log('Sending event to Sentry:', event);
-    return event;
-  },
 });
 
 const scope = new Scope();
@@ -40,16 +36,6 @@ scope.setClient(client);
 
 // Function to capture exceptions
 export const captureException = (error: Error, errorInfo?: ErrorInfo) => {
-  // In development, log to console for debugging
-  console.group('Error captured for Sentry:');
-  console.error('Error:', error);
-  console.info('Name:', error.name);
-  console.info('Message:', error.message);
-  console.info('Stack trace:', error.stack);
-  console.info('Component Stack:', errorInfo?.componentStack);
-  console.groupEnd();
-  console.log('Sending to Sentry...');
-
   // Set additional context to help with debugging
   scope.setTag('error.type', error.name);
   scope.setTag('handled', 'true');
@@ -70,9 +56,7 @@ export const captureException = (error: Error, errorInfo?: ErrorInfo) => {
 
   // Always capture the exception and log the result
   try {
-    const eventId = client.captureException(error, hint);
-    console.log(`Error sent to Sentry with ID: ${eventId}`);
-    return eventId;
+    return client.captureException(error, hint);
   } catch (sendError) {
     console.error('Failed to send error to Sentry:', sendError);
     return null;
@@ -81,9 +65,6 @@ export const captureException = (error: Error, errorInfo?: ErrorInfo) => {
 
 // Helper to manually capture messages
 export const captureMessage = (message: string, level: 'info' | 'warning' | 'error' = 'info') => {
-  console.log(`[${level.toUpperCase()}] ${message}`);
-  console.log('Sending message to Sentry...');
-
   // Set additional context
   scope.setTag('message.level', level);
   scope.setLevel(level);
@@ -95,9 +76,7 @@ export const captureMessage = (message: string, level: 'info' | 'warning' | 'err
 
   // Capture the message and log the result
   try {
-    const eventId = client.captureMessage(message, level);
-    console.log(`Message sent to Sentry with ID: ${eventId}`);
-    return eventId;
+    return client.captureMessage(message, level);
   } catch (sendError) {
     console.error('Failed to send message to Sentry:', sendError);
     return null;

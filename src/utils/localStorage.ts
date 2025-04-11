@@ -9,7 +9,7 @@ export const storageSet = (key: string, value: string | number | boolean) => {
   }
 };
 
-export const storageGet = (key: string, callback: (arg: any) => void) => {
+export const storageGet = (key: string, callback: (arg: unknown) => void) => {
   if (isChromeExtension()) {
     chrome.storage.local.get(key, (result) => {
       const value = result[key];
@@ -26,7 +26,7 @@ export const storageGet = (key: string, callback: (arg: any) => void) => {
   }
 };
 
-export const storageWatch = (key: string, callback: (data: string) => any) => {
+export const storageWatch = (key: string, callback: (data: string) => unknown) => {
   if (isChromeExtension()) {
     chrome.storage.onChanged.addListener((changes) => {
       if (typeof callback === 'function' && changes[key]) {
