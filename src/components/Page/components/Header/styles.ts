@@ -8,7 +8,7 @@ export const HeaderContainer = styled('div')(({ theme }) => ({
   background: theme.palette.primary.main,
   color: theme.palette.primary.contrastText,
   boxShadow: theme.shadows[4],
-  zIndex: 10,
+  zIndex: theme.zIndex.appBar,
 }));
 
 export const TitleContainer = styled('div')(({ theme }) => ({

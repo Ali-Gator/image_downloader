@@ -44,7 +44,7 @@ export const ImageItem = styled('div')(({ theme }) => ({
     position: 'absolute',
     top: theme.spacing(1),
     left: theme.spacing(1),
-    zIndex: 2,
+    zIndex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: '50%',
   },
