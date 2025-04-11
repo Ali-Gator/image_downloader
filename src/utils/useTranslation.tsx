@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+
+import { handleError } from './errorHandlers';
 import messages from '../../public/_locales/en/messages.json';
 
 type MessageKey = keyof typeof messages;
@@ -49,7 +51,7 @@ export const useTranslation = () => {
         // Если ничего не нашли, возвращаем ключ
         return key as string;
       } catch (error) {
-        console.error(`Error getting translation for key "${key}":`, error);
+        handleError(error);
         return key as string;
       }
     };
@@ -84,7 +86,7 @@ export const getLocalizedMessage = (
 
     return key as string;
   } catch (error) {
-    console.error(`Error getting translation for key "${key}":`, error);
+    handleError(error);
     return key as string;
   }
 };

@@ -8,7 +8,6 @@ import SortIcon from '@mui/icons-material/Sort';
 import StraightenIcon from '@mui/icons-material/Straighten';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
-import { useTranslation } from '../../../../utils/useTranslation';
 
 import {
   ControlItem,
@@ -23,6 +22,8 @@ import {
   ViewButton,
   ViewOptionsContainer,
 } from './styles';
+import { useTranslation } from '../../../../utils/useTranslation';
+
 
 interface ToolbarProps {
   filterText: string;

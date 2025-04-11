@@ -1,13 +1,14 @@
 import { FC } from 'react';
 
 import { CircularProgress, Typography } from '@mui/material';
-import { useTranslation } from '../../../../utils/useTranslation';
 
 import { LoadingOverlayContainer } from './styles';
+import { useTranslation } from '../../../../utils/useTranslation';
+
 
 export const LoadingOverlay: FC = () => {
   const { t } = useTranslation();
-  
+
   return (
     <LoadingOverlayContainer>
       <CircularProgress size={50} />

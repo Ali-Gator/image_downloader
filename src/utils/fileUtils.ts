@@ -1,3 +1,5 @@
+import { handleError } from './errorHandlers';
+
 /**
  * Extracts a filename from a URL
  * @param url - The URL to extract the filename from
@@ -24,6 +26,8 @@ export const getFileNameFromUrl = (url: string): string => {
     // If no filename found, use domain + shortened pathname as a fallback
     return `${urlObj.hostname}${pathname.length > 20 ? pathname.substring(0, 20) + '...' : pathname}`;
   } catch (e) {
+    // Тихая обработка ошибки - без уведомления пользователя
+    handleError(e);
     // If the URL is invalid, return a portion of the URL
     return url.substring(0, 30) + (url.length > 30 ? '...' : '');
   }
