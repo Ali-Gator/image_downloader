@@ -1,6 +1,8 @@
 import React from 'react';
-import { CircularProgress } from '@mui/material';
+
 import { PhotoLibrary } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
+
 import { StyledButton } from './styles';
 
 interface DownloadButtonProps {
@@ -31,4 +33,4 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ onClick, isLoading, tex
   );
 };
 
-export default DownloadButton; 
+export default DownloadButton;

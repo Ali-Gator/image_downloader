@@ -13,4 +13,4 @@ export const LoadingOverlayContainer = styled('div')(({ theme }) => ({
   backgroundColor: 'rgba(0, 0, 0, 0.7)',
   zIndex: theme.zIndex.modal,
   color: theme.palette.common.white,
-})); 
+}));

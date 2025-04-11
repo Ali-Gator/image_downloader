@@ -1,4 +1,5 @@
 import { Box, Typography, styled } from '@mui/material';
+
 import { colors } from '../../../../theme';
 
 export const HelpTextContainer = styled(Box)(({ theme }) => ({
@@ -15,5 +16,5 @@ export const HelpTextContainer = styled(Box)(({ theme }) => ({
 
 export const HelpTextContent = styled(Typography)(() => ({
   margin: 0,
-  fontSize: 'inherit'
+  fontSize: 'inherit',
 }));

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { HelpTextContainer, HelpTextContent } from './styles';
 
 interface HelpTextProps {
@@ -15,4 +16,4 @@ const HelpText: React.FC<HelpTextProps> = ({ text }) => {
   );
 };
 
-export default HelpText; 
+export default HelpText;

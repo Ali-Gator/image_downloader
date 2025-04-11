@@ -1,5 +1,6 @@
-import packageData from '../package.json';
 import { ManifestV3Export } from '@crxjs/vite-plugin';
+
+import packageData from '../package.json';
 
 const isDev: boolean = process.env.NODE_ENV == 'development';
 
@@ -24,11 +25,7 @@ const manifest: ManifestV3Export = {
     service_worker: 'src/background/index.ts',
     type: 'module',
   },
-  permissions: [
-    'scripting',
-    'activeTab',
-    'storage',
-  ],
+  permissions: ['scripting', 'activeTab', 'storage'],
   content_scripts: [
     {
       matches: ['http://*/*', 'https://*/*'],
@@ -52,9 +49,7 @@ const manifest: ManifestV3Export = {
       matches: ['<all_urls>'],
     },
   ],
-  host_permissions: [
-    '<all_urls>',
-  ],
+  host_permissions: ['<all_urls>'],
 };
 
 export default manifest;

@@ -1,3 +1,5 @@
+import type { ErrorInfo } from 'react';
+
 import {
   BrowserClient,
   defaultStackParser,
@@ -6,7 +8,7 @@ import {
   Scope,
   type EventHint,
 } from '@sentry/browser';
-import type { ErrorInfo } from 'react';
+
 import packageData from '../../package.json';
 
 const isDev: boolean = process.env.NODE_ENV == 'development';
@@ -30,7 +32,7 @@ const client = new BrowserClient({
   beforeSend: (event) => {
     console.log('Sending event to Sentry:', event);
     return event;
-  }
+  },
 });
 
 const scope = new Scope();
@@ -55,14 +57,14 @@ export const captureException = (error: Error, errorInfo?: ErrorInfo) => {
   scope.setContext('Error Details', {
     message: error.message,
     stack: error.stack,
-    componentStack: errorInfo?.componentStack
+    componentStack: errorInfo?.componentStack,
   });
 
   const hint: EventHint = {
     data: {
       react: errorInfo,
       handled: true,
-      source: 'manual-test'
+      source: 'manual-test',
     },
   };
 
@@ -88,7 +90,7 @@ export const captureMessage = (message: string, level: 'info' | 'warning' | 'err
   scope.setContext('Message Details', {
     timestamp: new Date().toISOString(),
     message,
-    source: 'manual-test'
+    source: 'manual-test',
   });
 
   // Capture the message and log the result

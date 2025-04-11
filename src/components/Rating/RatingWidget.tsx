@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
+
 import { createTheme, Rating, Stack, ThemeProvider, Typography } from '@mui/material';
-import { storageGet, storageSet } from '../../utils/localStorage';
+
 import { getI18nText } from '../../utils/i18n';
+import { storageGet, storageSet } from '../../utils/localStorage';
 
 export const RATING_KEY = 'app_rating_score';
 
 const FEEDBACK_FORM_LINK = 'https://forms.gle/9N1Z4ZTPWoS2r7356';
-const GOOD_REVIEW_LINK = 'https://chromewebstore.google.com/detail/image-downloader/hohnpmioogigogdedhigjpjjjonkojbk/reviews';
+const GOOD_REVIEW_LINK =
+  'https://chromewebstore.google.com/detail/image-downloader/hohnpmioogigogdedhigjpjjjonkojbk/reviews';
 
 function RatingWidget() {
   const [value, setValue] = useState<number | null>(0);

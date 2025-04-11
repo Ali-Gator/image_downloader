@@ -1,5 +1,7 @@
 import { FC } from 'react';
+
 import { CircularProgress, Typography } from '@mui/material';
+
 import { LoadingOverlayContainer } from './styles';
 
 export const LoadingOverlay: FC = () => {

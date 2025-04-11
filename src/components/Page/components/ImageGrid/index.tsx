@@ -1,5 +1,7 @@
 import { FC, useEffect, useState } from 'react';
+
 import { Checkbox, Typography } from '@mui/material';
+
 import { ImageGridContainer, ImageInfo, ImageItem, NoImagesMessage } from './styles';
 import { getFileNameFromUrl } from '../../../../utils/fileUtils';
 

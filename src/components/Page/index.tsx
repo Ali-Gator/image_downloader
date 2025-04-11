@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from 'react';
+
 import { Header, ImageGrid, LoadingOverlay, Toolbar } from './components';
 import { PageContainer } from './styles';
 
@@ -42,7 +43,7 @@ export const Page: FC = () => {
     if (selectedImages.length === 0) return;
 
     // Download logic will be implemented here
-    console.log('Downloading', selectedImages);
+    // TODO: Implement download functionality for selected images
   };
 
   return (

@@ -1,12 +1,14 @@
 import { FC } from 'react';
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+
 import FilterListIcon from '@mui/icons-material/FilterList';
-import StraightenIcon from '@mui/icons-material/Straighten';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-import SortIcon from '@mui/icons-material/Sort';
 import GridViewIcon from '@mui/icons-material/GridView';
+import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import SortIcon from '@mui/icons-material/Sort';
+import StraightenIcon from '@mui/icons-material/Straighten';
 import ViewListIcon from '@mui/icons-material/ViewList';
+import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+
 import {
   ControlItem,
   ControlsRow,

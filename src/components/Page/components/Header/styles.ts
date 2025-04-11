@@ -36,4 +36,4 @@ export const SelectAllContainer = styled('div')(({ theme }) => ({
     marginLeft: theme.spacing(0.5),
     cursor: 'pointer',
   },
-})); 
+}));

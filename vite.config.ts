@@ -27,5 +27,6 @@ export default defineConfig({
       org: 'blockdev',
       project: 'id',
       telemetry: false,
-    })],
+    }),
+  ],
 });

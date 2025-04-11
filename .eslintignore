@@ -1,0 +1,21 @@
+# Build files
+build/
+dist/
+
+# Node modules
+node_modules/
+
+# Config files
+vite.config.ts
+tsconfig.json
+tsconfig.node.json
+
+# Third-party libraries
+src/libs/jszip.min.js
+
+# Other files
+*.css
+*.scss
+*.html
+*.json
+!.eslintrc.json

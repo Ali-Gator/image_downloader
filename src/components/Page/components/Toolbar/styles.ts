@@ -21,7 +21,7 @@ export const ToolbarContainer = styled('div')(({ theme }) => ({
   },
 }));
 
-export const LeftSection = styled('div')(({ theme }) => ({
+export const LeftSection = styled('div')(() => ({
   display: 'flex',
   flexGrow: 1,
 }));
@@ -30,7 +30,7 @@ export const RightSection = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(2),
-  
+
   [theme.breakpoints.down('sm')]: {
     width: '100%',
     justifyContent: 'space-between',
@@ -42,7 +42,7 @@ export const ControlsRow = styled('div')(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(2),
   alignItems: 'center',
-  
+
   [theme.breakpoints.down('sm')]: {
     flexDirection: 'column',
     alignItems: 'stretch',
@@ -54,11 +54,11 @@ export const ControlItem = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
-  
+
   '& .MuiSvgIcon-root': {
     color: theme.palette.text.secondary,
   },
-  
+
   [theme.breakpoints.down('sm')]: {
     width: '100%',
     '& .MuiFormControl-root, & .MuiTextField-root': {
@@ -67,7 +67,7 @@ export const ControlItem = styled('div')(({ theme }) => ({
   },
 }));
 
-export const InfoContainer = styled('div')(({ theme }) => ({
+export const InfoContainer = styled('div')(() => ({
   display: 'flex',
   alignItems: 'center',
 }));
@@ -80,13 +80,13 @@ export const CounterBadge = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
   color: theme.palette.primary.contrastText,
   borderRadius: theme.shape.borderRadius,
-  
+
   '& .MuiSvgIcon-root': {
     fontSize: 18,
   },
 }));
 
-export const CounterText = styled('span')(({ theme }) => ({
+export const CounterText = styled('span')(() => ({
   fontSize: '0.875rem',
   whiteSpace: 'nowrap',
 }));
@@ -109,12 +109,12 @@ export const ViewButton = styled('button')<ViewButtonProps>(({ theme, active }) 
   borderRadius: theme.shape.borderRadius,
   cursor: 'pointer',
   transition: theme.transitions.create(['background-color', 'color', 'border-color']),
-  
+
   '&:hover': {
     backgroundColor: active ? theme.palette.primary.dark : theme.palette.action.hover,
   },
-  
+
   '& .MuiSvgIcon-root': {
     fontSize: 20,
   },
-})); 
+}));

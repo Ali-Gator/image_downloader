@@ -1,4 +1,5 @@
 import { Button, styled } from '@mui/material';
+
 import { gradients } from '../../../../theme';
 
 export const StyledButton = styled(Button)(({ theme }) => ({
@@ -30,5 +31,5 @@ export const StyledButton = styled(Button)(({ theme }) => ({
   '& .MuiSvgIcon-root': {
     marginRight: theme.spacing(1),
     fontSize: theme.typography.fontSize * 1.2,
-  }
-})); 
+  },
+}));

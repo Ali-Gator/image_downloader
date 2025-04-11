@@ -1,7 +1,9 @@
 import { ChangeEvent, FC } from 'react';
-import { Button, Checkbox, Typography } from '@mui/material';
+
 import DownloadIcon from '@mui/icons-material/Download';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+import { Button, Checkbox, Typography } from '@mui/material';
+
 import { ControlsContainer, HeaderContainer, SelectAllContainer, TitleContainer } from './styles';
 
 interface HeaderProps {

@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
+
 import { ThemeProvider, CssBaseline } from '@mui/material';
+import { createRoot } from 'react-dom/client';
+
 import { Page } from '../../components/Page';
 import theme from '../../theme';
 
@@ -10,5 +12,5 @@ createRoot(document.getElementById('root')!).render(
       <CssBaseline />
       <Page />
     </ThemeProvider>
-  </StrictMode>
+  </StrictMode>,
 );

@@ -1,4 +1,5 @@
 import { Box, Typography, styled } from '@mui/material';
+
 import { gradients, colors } from '../../../../theme';
 
 export const HeaderContainer = styled(Box)(({ theme }) => ({
@@ -14,5 +15,5 @@ export const HeaderTitle = styled(Typography)(({ theme }) => ({
   fontWeight: theme.typography.fontWeightMedium,
   margin: 0,
   textAlign: 'center',
-  lineHeight: 1.2
-})); 
+  lineHeight: 1.2,
+}));
