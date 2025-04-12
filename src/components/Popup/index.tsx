@@ -1,11 +1,12 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 
 import { DownloadButton, Header, HelpText } from './components';
 import { ContentContainer, PopupContainer } from './styles';
-import { ImageData } from '../../types';
 import { MessageAction, MessageResponse } from '../../utils/constants';
 import { handleError, withErrorHandling } from '../../utils/errorHandlers';
+import { sendImagesToTab } from '../../utils/messaging';
 import { useTranslation } from '../../utils/useTranslation';
+import { ImageData } from '../../types';
 import RatingWidget from '../RatingWidget';
 
 export const Popup: React.FC = () => {
@@ -19,15 +20,10 @@ export const Popup: React.FC = () => {
     });
 
     setTimeout(async () => {
-      try {
-        const response = await chrome.tabs.sendMessage(tab.id!, images);
-        if (response === MessageResponse.OK) {
-          await chrome.tabs.update(tab.id!, { active: true });
-        } else {
-          handleError(new Error('Failed to confirm images received'), true, 'Something went wrong');
-        }
-      } catch (error) {
-        handleError(error, true, 'Something went wrong');
+      if (tab.id) {
+        await sendImagesToTab(tab.id, images);
+      } else {
+        handleError(new Error('Invalid tab ID'), true, 'Something went wrong');
       }
     }, 500);
   }, []);

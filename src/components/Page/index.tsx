@@ -2,9 +2,10 @@ import { FC, useEffect, useState } from 'react';
 
 import { Header, ImageGrid, LoadingOverlay, Toolbar } from './components';
 import { PageContainer } from './styles';
-import { ImageData } from '../../types';
 import { MessageResponse, SizeFilter, SortOption } from '../../utils/constants';
 import { useTranslation } from '../../utils/useTranslation';
+import { setupImageListener } from '../../utils/messaging';
+import { ImageData } from '../../types';
 
 export const Page: FC = () => {
   const [images, setImages] = useState<ImageData[]>([]);
@@ -19,15 +20,8 @@ export const Page: FC = () => {
 
   // Listen for messages from popup
   useEffect(() => {
-    chrome.runtime.onMessage.addListener((images: ImageData[], _, sendResponse) => {
-      if (Array.isArray(images) && images.length > 0) {
-        setImages(images);
-        setIsLoading(false);
-        sendResponse(MessageResponse.OK);
-        return true;
-      }
-      return false;
-    });
+    const cleanup = setupImageListener(setImages, setIsLoading);
+    return cleanup;
   }, []);
 
   // Initialize filtered images whenever the images array changes

@@ -36,7 +36,7 @@ const isValidImage = (url: string): boolean => {
 };
 
 // Listen for messages from the popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   try {
     if (message.action === MessageAction.GRAB_IMAGES) {
       const images = Array.from(document.getElementsByTagName('img'))
