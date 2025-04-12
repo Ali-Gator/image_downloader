@@ -40,13 +40,7 @@ function RatingWidget() {
   });
 
   return (
-    <Stack
-      direction="row"
-      className="rating-widget"
-      justifyContent="center"
-      alignItems="center"
-      paddingTop="3px"
-    >
+    <Stack direction="row" className="rating-widget" justifyContent="center" alignItems="center">
       <Typography variant="body2" sx={{ marginRight: '5px' }}>
         {t('rateUs')}
       </Typography>

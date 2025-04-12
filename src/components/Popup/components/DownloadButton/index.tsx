@@ -4,14 +4,16 @@ import { PhotoLibrary } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 
 import { StyledButton } from './styles';
+import { useTranslation } from '../../../../utils/useTranslation';
 
 interface DownloadButtonProps {
   onClick: () => void;
   isLoading: boolean;
-  text: string;
 }
 
-const DownloadButton: React.FC<DownloadButtonProps> = ({ onClick, isLoading, text }) => {
+const DownloadButton: React.FC<DownloadButtonProps> = ({ onClick, isLoading }) => {
+  const { t } = useTranslation();
+
   return (
     <StyledButton
       id="grabBtn"
@@ -26,7 +28,7 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ onClick, isLoading, tex
       ) : (
         <>
           <PhotoLibrary />
-          <span id="downloadBtnText">{text}</span>
+          <span id="downloadBtnText">{t('download_btn')}</span>
         </>
       )}
     </StyledButton>

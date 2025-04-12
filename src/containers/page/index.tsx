@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import { createRoot } from 'react-dom/client';
 
 import ErrorBoundary from '../../components/ErrorBoundary';

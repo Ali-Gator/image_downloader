@@ -4,7 +4,7 @@ import { DownloadButton, Header, HelpText } from './components';
 import { ContentContainer, PopupContainer } from './styles';
 import { handleError } from '../../utils/errorHandlers';
 import { useTranslation } from '../../utils/useTranslation';
-import RatingWidget from '../Rating/RatingWidget';
+import RatingWidget from '../RatingWidget';
 
 export const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -82,7 +82,7 @@ export const Popup: React.FC = () => {
     <PopupContainer>
       <Header title={t('popup_title')} />
       <ContentContainer>
-        <DownloadButton onClick={handleGrabImages} isLoading={isLoading} text={t('download_btn')} />
+        <DownloadButton onClick={handleGrabImages} isLoading={isLoading} />
         <HelpText text={t('help_text')} />
         <RatingWidget />
       </ContentContainer>

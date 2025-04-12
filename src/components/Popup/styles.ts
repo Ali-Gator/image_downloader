@@ -8,9 +8,10 @@ export const PopupContainer = styled(Box)(({ theme }) => ({
 }));
 
 export const ContentContainer = styled(Box)(({ theme }) => ({
-  padding: `${theme.spacing(2)} ${theme.spacing(2)} ${theme.spacing(2.5)}`,
+  padding: `${theme.spacing(2.5)} ${theme.spacing(2)}`,
   backgroundColor: theme.palette.background.default,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
+  gap: theme.spacing(2),
 }));

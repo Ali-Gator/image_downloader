@@ -1,6 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 
-import { captureException } from '../utils/sentryCapturer';
+import { captureException } from '../../utils/sentryCapturer';
 
 interface Props {
   children: ReactNode;
