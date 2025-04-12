@@ -1,10 +1,16 @@
 import { ChangeEvent, FC } from 'react';
 
 import DownloadIcon from '@mui/icons-material/Download';
-import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import { Button, Checkbox, Typography } from '@mui/material';
 
-import { ControlsContainer, HeaderContainer, SelectAllContainer, TitleContainer } from './styles';
+import {
+  ControlsContainer,
+  HeaderContainer,
+  LogoImage,
+  SelectAllContainer,
+  TitleContainer,
+} from './styles';
+import { useTranslation } from '../../../../utils/useTranslation';
 
 interface HeaderProps {
   title: string;
@@ -21,6 +27,8 @@ export const Header: FC<HeaderProps> = ({
   onSelectAll,
   onDownload,
 }) => {
+  const { t } = useTranslation();
+
   const handleSelectAllChange = (e: ChangeEvent<HTMLInputElement>) => {
     onSelectAll(e.target.checked);
   };
@@ -31,7 +39,7 @@ export const Header: FC<HeaderProps> = ({
   return (
     <HeaderContainer>
       <TitleContainer>
-        <PhotoLibraryIcon />
+        <LogoImage src="/img/logo-64.png" alt="Logo" />
         <Typography variant="h6">{title}</Typography>
       </TitleContainer>
 
@@ -48,12 +56,12 @@ export const Header: FC<HeaderProps> = ({
 
         <Button
           variant="contained"
-          color="primary"
+          color="secondary"
           startIcon={<DownloadIcon />}
           onClick={onDownload}
           disabled={selectedCount === 0}
         >
-          Download
+          {t('download_btn')}
         </Button>
       </ControlsContainer>
     </HeaderContainer>
