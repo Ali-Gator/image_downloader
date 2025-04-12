@@ -52,7 +52,10 @@ export const Popup: React.FC = () => {
   const handleGrabImages = async () => {
     setIsLoading(true);
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
 
       if (!tab) {
         handleError(new Error('No active tabs'), true, 'There are no active tabs');

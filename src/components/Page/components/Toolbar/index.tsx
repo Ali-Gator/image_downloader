@@ -24,7 +24,6 @@ import {
 } from './styles';
 import { useTranslation } from '../../../../utils/useTranslation';
 
-
 interface ToolbarProps {
   filterText: string;
   setFilterText: (text: string) => void;
