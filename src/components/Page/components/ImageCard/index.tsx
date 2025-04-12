@@ -2,9 +2,10 @@ import { memo, useCallback } from 'react';
 
 import { Checkbox, Typography } from '@mui/material';
 
+import { ImageCardProps } from '@components/Page/types';
+import { getFileNameFromUrl } from '@utils';
+
 import { ImageInfo, ImageItem } from './styles';
-import { getFileNameFromUrl } from '../../../../utils/fileUtils';
-import { ImageCardProps } from '../../types';
 
 export const ImageCard = memo(({ image, isSelected, onSelect }: ImageCardProps) => {
   const { src, alt, width, height } = image;

@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { createTheme, Rating, Stack, ThemeProvider, Typography } from '@mui/material';
 
-import { storageGet, storageSet } from '../../utils/localStorage';
-import { useTranslation } from '../../utils/useTranslation';
+import { storageGet, storageSet, useTranslation } from '@utils';
 
 export const RATING_KEY = 'app_rating_score';
 

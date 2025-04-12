@@ -1,5 +1,5 @@
-import { ImageData } from '../../types';
-import { SizeFilter, SortOption } from '../../utils/constants';
+import { ImageData } from '@types';
+import { SizeFilter, SortOption } from '@utils';
 
 /**
  * Props for the ImageGrid component

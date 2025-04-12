@@ -1,5 +1,4 @@
-import { MessageAction, PlaceholderImages } from '../utils/constants';
-import { handleError } from '../utils/errorHandlers';
+import { handleError, MessageAction, PlaceholderImages } from '@utils';
 
 /**
  * Проверяет, является ли URL допустимым изображением

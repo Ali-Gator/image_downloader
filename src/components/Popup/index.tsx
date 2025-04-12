@@ -1,5 +1,7 @@
 import React, { useCallback, useState } from 'react';
 
+import { DownloadButton, Header, HelpText } from '@components/Popup/components';
+import { ContentContainer, PopupContainer } from '@components/Popup/styles';
 import RatingWidget from '@components/RatingWidget';
 import { ImageData } from '@types';
 import {
@@ -9,9 +11,6 @@ import {
   useTranslation,
   withErrorHandling,
 } from '@utils';
-
-import { DownloadButton, Header, HelpText } from './components';
-import { ContentContainer, PopupContainer } from './styles';
 
 export const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);

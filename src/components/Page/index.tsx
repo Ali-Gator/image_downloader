@@ -1,10 +1,10 @@
 import { FC, useEffect, useState } from 'react';
 
+import { Header, ImageGrid, LoadingOverlay, Toolbar } from '@components/Page/components';
+import { ImageData } from '@components/Popup/types';
 import { setupImageListener, SizeFilter, SortOption, useTranslation } from '@utils';
 
-import { Header, ImageGrid, LoadingOverlay, Toolbar } from './components';
 import { PageContainer } from './styles';
-import { ImageData } from '../Popup/types';
 
 export const Page: FC = () => {
   const [images, setImages] = useState<ImageData[]>([]);

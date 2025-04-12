@@ -2,11 +2,11 @@ import { FC, useCallback, useMemo } from 'react';
 
 import { Typography } from '@mui/material';
 
+import { ImageCard } from '@components/Page/components';
+import { ImageGridProps } from '@components/Page/types';
 import { useTranslation } from '@utils';
 
 import { ImageGridContainer, NoImagesMessage } from './styles';
-import { ImageGridProps } from '../../types';
-import { ImageCard } from '../ImageCard';
 
 export const ImageGrid: FC<ImageGridProps> = ({
   images,
