@@ -1,6 +1,7 @@
+import { ImageData } from '@components/Popup/types';
+
 import { MessageResponse } from './constants';
 import { handleError } from './errorHandlers';
-import { ImageData } from '../types';
 
 /**
  * Sends image data to an active tab and handles the response

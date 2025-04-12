@@ -1,10 +1,7 @@
 import React from 'react';
 
 import { HelpTextContainer, HelpTextContent } from './styles';
-
-interface HelpTextProps {
-  text: string;
-}
+import { HelpTextProps } from '../../types';
 
 const HelpText: React.FC<HelpTextProps> = ({ text }) => {
   return (

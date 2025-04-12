@@ -2,8 +2,9 @@ import { FC, useCallback, useMemo } from 'react';
 
 import { Typography } from '@mui/material';
 
+import { useTranslation } from '@utils';
+
 import { ImageGridContainer, NoImagesMessage } from './styles';
-import { useTranslation } from '../../../../utils/useTranslation';
 import { ImageGridProps } from '../../types';
 import { ImageCard } from '../ImageCard';
 

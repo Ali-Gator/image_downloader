@@ -1,13 +1,17 @@
 import React, { useCallback, useState } from 'react';
 
+import RatingWidget from '@components/RatingWidget';
+import { ImageData } from '@types';
+import {
+  handleError,
+  MessageAction,
+  sendImagesToTab,
+  useTranslation,
+  withErrorHandling,
+} from '@utils';
+
 import { DownloadButton, Header, HelpText } from './components';
 import { ContentContainer, PopupContainer } from './styles';
-import { ImageData } from '../../types';
-import { MessageAction } from '../../utils/constants';
-import { handleError, withErrorHandling } from '../../utils/errorHandlers';
-import { sendImagesToTab } from '../../utils/messaging';
-import { useTranslation } from '../../utils/useTranslation';
-import RatingWidget from '../RatingWidget';
 
 export const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);

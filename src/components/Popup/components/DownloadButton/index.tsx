@@ -3,13 +3,10 @@ import React from 'react';
 import { PhotoLibrary } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 
-import { StyledButton } from './styles';
-import { useTranslation } from '../../../../utils/useTranslation';
+import { useTranslation } from '@utils';
 
-interface DownloadButtonProps {
-  onClick: () => void;
-  isLoading: boolean;
-}
+import { StyledButton } from './styles';
+import { DownloadButtonProps } from '../../types';
 
 const DownloadButton: React.FC<DownloadButtonProps> = ({ onClick, isLoading }) => {
   const { t } = useTranslation();

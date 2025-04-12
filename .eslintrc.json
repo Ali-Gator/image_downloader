@@ -33,7 +33,21 @@
     "import/resolver": {
       "node": {
         "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      },
+      "typescript": {
+        "alwaysTryTypes": true
+      },
+      "alias": {
+        "map": [
+          ["@utils", "./src/utils"],
+          ["@components", "./src/components"],
+          ["@types", "./src/types"]
+        ],
+        "extensions": [".ts", ".tsx", ".js", ".jsx", ".json"]
       }
+    },
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
     }
   },
   "rules": {
