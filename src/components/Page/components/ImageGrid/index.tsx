@@ -1,9 +1,11 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Checkbox, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 
-import { ImageGridContainer, ImageInfo, ImageItem, NoImagesMessage } from './styles';
+import { ImageGridContainer, NoImagesMessage } from './styles';
 import { getFileNameFromUrl } from '../../../../utils/fileUtils';
+import { useTranslation } from '../../../../utils/useTranslation';
+import { ImageCard } from '../ImageCard';
 
 interface ImageGridProps {
   images: string[];
@@ -21,33 +23,42 @@ export const ImageGrid: FC<ImageGridProps> = ({
   const [imageDimensions, setImageDimensions] = useState<
     Record<string, { width: number; height: number }>
   >({});
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Reset dimensions when images change
     setImageDimensions({});
   }, [images]);
 
-  const handleImageLoad = (url: string, width: number, height: number) => {
+  const handleImageLoad = useCallback((url: string, width: number, height: number) => {
     setImageDimensions((prev) => ({
       ...prev,
       [url]: { width, height },
     }));
-  };
+  }, []);
 
-  const handleImageSelect = (url: string) => {
-    if (selectedImages.includes(url)) {
-      setSelectedImages(selectedImages.filter((img) => img !== url));
-    } else {
-      setSelectedImages([...selectedImages, url]);
-    }
-  };
+  const handleImageSelect = useCallback(
+    (url: string) => {
+      if (selectedImages.includes(url)) {
+        setSelectedImages(selectedImages.filter((img) => img !== url));
+      } else {
+        setSelectedImages([...selectedImages, url]);
+      }
+    },
+    [selectedImages, setSelectedImages],
+  );
+
+  const noImagesMessage = useMemo(
+    () => (
+      <NoImagesMessage>
+        <Typography variant="h6">{t('no_images_found')}</Typography>
+      </NoImagesMessage>
+    ),
+    [t],
+  );
 
   if (images.length === 0) {
-    return (
-      <NoImagesMessage>
-        <Typography variant="h6">No images found</Typography>
-      </NoImagesMessage>
-    );
+    return noImagesMessage;
   }
 
   return (
@@ -58,32 +69,15 @@ export const ImageGrid: FC<ImageGridProps> = ({
         const fileName = getFileNameFromUrl(url);
 
         return (
-          <ImageItem key={`${url}-${index}`} className={isSelected ? 'selected' : ''}>
-            <Checkbox
-              checked={isSelected}
-              onChange={() => handleImageSelect(url)}
-              className="image-checkbox"
-            />
-            <img
-              src={url}
-              alt={fileName}
-              loading="lazy"
-              onLoad={(e) => {
-                const img = e.target as HTMLImageElement;
-                handleImageLoad(url, img.naturalWidth, img.naturalHeight);
-              }}
-            />
-            <ImageInfo>
-              <Typography variant="body2" className="file-name">
-                {fileName}
-              </Typography>
-              {dimensions && (
-                <Typography variant="caption" className="dimensions">
-                  {dimensions.width} × {dimensions.height} px
-                </Typography>
-              )}
-            </ImageInfo>
-          </ImageItem>
+          <ImageCard
+            key={`${url}-${index}`}
+            url={url}
+            isSelected={isSelected}
+            fileName={fileName}
+            dimensions={dimensions}
+            onSelect={handleImageSelect}
+            onImageLoad={handleImageLoad}
+          />
         );
       })}
     </ImageGridContainer>
