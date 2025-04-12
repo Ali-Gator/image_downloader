@@ -27,6 +27,29 @@ export function handleError(error: unknown, showAlert = false, customMessage?: s
 }
 
 /**
+ * Обертка для обработки ошибок с управлением состоянием загрузки
+ * @param action Асинхронная функция, которую нужно выполнить
+ * @param setLoading Функция для установки состояния загрузки
+ * @param errorMessage Пользовательское сообщение об ошибке
+ * @returns Promise<T | undefined> Результат выполнения action или undefined в случае ошибки
+ */
+export async function withErrorHandling<T>(
+  action: () => Promise<T>,
+  setLoading: (isLoading: boolean) => void,
+  errorMessage = 'Something went wrong',
+): Promise<T | undefined> {
+  setLoading(true);
+  try {
+    return await action();
+  } catch (error) {
+    handleError(error, true, errorMessage);
+    return undefined;
+  } finally {
+    setLoading(false);
+  }
+}
+
+/**
  * Creates an unhandled rejection handler that reports to Sentry
  * Call this function once early in your application
  */

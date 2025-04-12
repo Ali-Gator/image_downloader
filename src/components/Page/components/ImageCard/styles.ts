@@ -36,12 +36,12 @@ export const ImageItem = styled('div')(({ theme }) => ({
     transition: theme.transitions.create(['transform', 'opacity', 'visibility']),
     opacity: 0,
     visibility: 'hidden',
-    
+
     '&:hover': {
       transform: 'scale(1.1)',
     },
   },
-  
+
   '&:hover .image-checkbox, & .image-checkbox.Mui-checked': {
     opacity: 1,
     visibility: 'visible',
