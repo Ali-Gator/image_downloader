@@ -3,13 +3,13 @@ import { memo, useCallback } from 'react';
 import { Checkbox, Typography } from '@mui/material';
 
 import { ImageCardProps } from '@components/Page/types';
-import { getFileNameFromUrl } from '@utils';
+import { getSmartFileName } from '@utils';
 
 import { ImageInfo, ImageItem } from './styles';
 
 export const ImageCard = memo(({ image, isSelected, onSelect }: ImageCardProps) => {
   const { src, alt, width, height } = image;
-  const fileName = getFileNameFromUrl(src);
+  const fileName = getSmartFileName(image);
 
   const handleSelect = useCallback(() => {
     onSelect(src);

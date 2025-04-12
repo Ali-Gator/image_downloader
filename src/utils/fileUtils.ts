@@ -1,3 +1,5 @@
+import { ImageData } from '@components/Popup/types';
+
 import { handleError } from './errorHandlers';
 
 /**
@@ -31,4 +33,39 @@ export const getFileNameFromUrl = (url: string): string => {
     // If the URL is invalid, return a portion of the URL
     return url.substring(0, 30) + (url.length > 30 ? '...' : '');
   }
+};
+
+/**
+ * Gets a smart file name based on image data
+ * Uses alt text if meaningful, otherwise falls back to URL-based name
+ * @param image The image data object
+ * @returns A meaningful file name
+ */
+export const getSmartFileName = (image: ImageData): string => {
+  const { src, alt } = image;
+  const defaultName = getFileNameFromUrl(src);
+
+  // If alt text is meaningful (not empty, not equals URL, not generic), use it
+  if (
+    alt &&
+    alt.trim() &&
+    !src.includes(alt) &&
+    !['image', 'picture', 'photo'].includes(alt.toLowerCase())
+  ) {
+    // Convert alt to suitable filename (remove invalid characters)
+    const sanitizedAlt = alt
+      .trim()
+      .replace(/[^\w\s.-]/g, '')
+      .replace(/\s+/g, '_')
+      .substring(0, 30); // Limit length to 30 characters
+
+    // Add extension from original file
+    const extension = defaultName.includes('.')
+      ? defaultName.substring(defaultName.lastIndexOf('.'))
+      : '.jpg';
+
+    return `${sanitizedAlt}${extension}`;
+  }
+
+  return defaultName;
 };
