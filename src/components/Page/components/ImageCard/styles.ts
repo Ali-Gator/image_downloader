@@ -33,11 +33,18 @@ export const ImageItem = styled('div')(({ theme }) => ({
     zIndex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: '50%',
-    transition: theme.transitions.create(['transform', 'opacity']),
+    transition: theme.transitions.create(['transform', 'opacity', 'visibility']),
+    opacity: 0,
+    visibility: 'hidden',
     
     '&:hover': {
       transform: 'scale(1.1)',
     },
+  },
+  
+  '&:hover .image-checkbox, & .image-checkbox.Mui-checked': {
+    opacity: 1,
+    visibility: 'visible',
   },
 
   img: {
@@ -45,14 +52,14 @@ export const ImageItem = styled('div')(({ theme }) => ({
     height: 'auto',
     display: 'block',
     objectFit: 'contain',
-    maxHeight: 200,
+    maxHeight: theme.spacing(25), // 25 * 8 = 200px
     backgroundColor: theme.palette.grey[100],
     pointerEvents: 'none',
 
     '.list-view &': {
-      maxHeight: 100,
+      maxHeight: theme.spacing(12.5), // 12.5 * 8 = 100px
       width: 'auto',
-      maxWidth: '150px',
+      maxWidth: theme.spacing(18.75), // 18.75 * 8 = 150px
       pointerEvents: 'none',
     },
   },
@@ -66,6 +73,9 @@ export const ImageItem = styled('div')(({ theme }) => ({
     '.image-checkbox': {
       position: 'static',
       marginRight: theme.spacing(1),
+      // В режиме списка чекбоксы всегда видны
+      opacity: 1,
+      visibility: 'visible',
     },
   },
 }));
@@ -90,4 +100,4 @@ export const ImageInfo = styled('div')(({ theme }) => ({
     flexDirection: 'column',
     flexGrow: 1,
   },
-})); 
+}));
