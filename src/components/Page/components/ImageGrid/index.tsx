@@ -3,7 +3,7 @@ import { FC, useCallback, useMemo } from 'react';
 import { Typography } from '@mui/material';
 
 import { ImageCard } from '@components/Page/components';
-import { ImageGridProps } from '@components/Page/types';
+import { ImageGridProps, ViewMode } from '@components/Page/types';
 import { useTranslation } from '@utils';
 
 import { ImageGridContainer, NoImagesMessage } from './styles';
@@ -54,6 +54,7 @@ export const ImageGrid: FC<ImageGridProps> = ({
             image={image}
             isSelected={isSelected}
             onSelect={handleImageSelect}
+            viewMode={isGridView ? ViewMode.Grid : ViewMode.List}
           />
         );
       })}

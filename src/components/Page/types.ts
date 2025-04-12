@@ -18,6 +18,7 @@ export interface ImageCardProps {
   image: ImageData;
   isSelected: boolean;
   onSelect: (url: string) => void;
+  viewMode?: ViewMode;
 }
 
 /**
@@ -45,4 +46,9 @@ export interface HeaderProps {
   totalCount: number;
   onSelectAll: (select: boolean) => void;
   onDownload: () => void;
+}
+
+export enum ViewMode {
+  List = 'list',
+  Grid = 'grid',
 }
