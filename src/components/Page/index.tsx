@@ -2,10 +2,10 @@ import { FC, useEffect, useState } from 'react';
 
 import { Header, ImageGrid, LoadingOverlay, Toolbar } from './components';
 import { PageContainer } from './styles';
-import { MessageResponse, SizeFilter, SortOption } from '../../utils/constants';
-import { useTranslation } from '../../utils/useTranslation';
-import { setupImageListener } from '../../utils/messaging';
 import { ImageData } from '../../types';
+import { SizeFilter, SortOption } from '../../utils/constants';
+import { setupImageListener } from '../../utils/messaging';
+import { useTranslation } from '../../utils/useTranslation';
 
 export const Page: FC = () => {
   const [images, setImages] = useState<ImageData[]>([]);
@@ -18,13 +18,14 @@ export const Page: FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useTranslation();
 
-  // Listen for messages from popup
   useEffect(() => {
-    const cleanup = setupImageListener(setImages, setIsLoading);
-    return cleanup;
+    const removeListener = setupImageListener(setImages, setIsLoading);
+
+    return () => {
+      removeListener();
+    };
   }, []);
 
-  // Initialize filtered images whenever the images array changes
   useEffect(() => {
     setFilteredImages(images);
   }, [images]);

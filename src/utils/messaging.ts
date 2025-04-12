@@ -15,11 +15,7 @@ export const sendImagesToTab = async (tabId: number, images: ImageData[]): Promi
       await chrome.tabs.update(tabId, { active: true });
       return true;
     } else {
-      handleError(
-        new Error('Failed to confirm images received'), 
-        true, 
-        'Something went wrong'
-      );
+      handleError(new Error('Failed to confirm images received'), true, 'Something went wrong');
       return false;
     }
   } catch (error) {
@@ -36,9 +32,13 @@ export const sendImagesToTab = async (tabId: number, images: ImageData[]): Promi
  */
 export const setupImageListener = (
   setImages: (images: ImageData[]) => void,
-  setIsLoading: (isLoading: boolean) => void
-): () => void => {
-  const listener = (images: ImageData[], sender: chrome.runtime.MessageSender, sendResponse: (response: any) => void) => {
+  setIsLoading: (isLoading: boolean) => void,
+): (() => void) => {
+  const listener = (
+    images: ImageData[],
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (response: unknown) => void,
+  ) => {
     if (Array.isArray(images) && images.length > 0) {
       setImages(images);
       setIsLoading(false);
@@ -49,9 +49,9 @@ export const setupImageListener = (
   };
 
   chrome.runtime.onMessage.addListener(listener);
-  
+
   // Return cleanup function
   return () => {
     chrome.runtime.onMessage.removeListener(listener);
   };
-}; 
+};

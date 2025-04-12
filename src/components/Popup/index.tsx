@@ -1,12 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { DownloadButton, Header, HelpText } from './components';
 import { ContentContainer, PopupContainer } from './styles';
-import { MessageAction, MessageResponse } from '../../utils/constants';
+import { ImageData } from '../../types';
+import { MessageAction } from '../../utils/constants';
 import { handleError, withErrorHandling } from '../../utils/errorHandlers';
 import { sendImagesToTab } from '../../utils/messaging';
 import { useTranslation } from '../../utils/useTranslation';
-import { ImageData } from '../../types';
 import RatingWidget from '../RatingWidget';
 
 export const Popup: React.FC = () => {
