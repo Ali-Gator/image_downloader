@@ -11,14 +11,7 @@ import {
   TitleContainer,
 } from './styles';
 import { useTranslation } from '../../../../utils/useTranslation';
-
-interface HeaderProps {
-  title: string;
-  selectedCount: number;
-  totalCount: number;
-  onSelectAll: (selected: boolean) => void;
-  onDownload: () => void;
-}
+import { HeaderProps } from '../../types';
 
 export const Header: FC<HeaderProps> = ({
   title,

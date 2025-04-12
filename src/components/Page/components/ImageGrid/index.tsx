@@ -3,16 +3,9 @@ import { FC, useCallback, useMemo } from 'react';
 import { Typography } from '@mui/material';
 
 import { ImageGridContainer, NoImagesMessage } from './styles';
-import { ImageData } from '../../../../types';
 import { useTranslation } from '../../../../utils/useTranslation';
+import { ImageGridProps } from '../../types';
 import { ImageCard } from '../ImageCard';
-
-interface ImageGridProps {
-  images: ImageData[];
-  selectedImages: ImageData[];
-  setSelectedImages: (images: ImageData[]) => void;
-  isGridView: boolean;
-}
 
 export const ImageGrid: FC<ImageGridProps> = ({
   images,

@@ -3,14 +3,8 @@ import { memo, useCallback } from 'react';
 import { Checkbox, Typography } from '@mui/material';
 
 import { ImageInfo, ImageItem } from './styles';
-import { ImageData } from '../../../../types';
 import { getFileNameFromUrl } from '../../../../utils/fileUtils';
-
-export interface ImageCardProps {
-  image: ImageData;
-  isSelected: boolean;
-  onSelect: (url: string) => void;
-}
+import { ImageCardProps } from '../../types';
 
 export const ImageCard = memo(({ image, isSelected, onSelect }: ImageCardProps) => {
   const { src, alt, width, height } = image;

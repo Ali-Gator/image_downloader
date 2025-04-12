@@ -24,19 +24,7 @@ import {
 } from './styles';
 import { SizeFilter, SortOption } from '../../../../utils/constants';
 import { useTranslation } from '../../../../utils/useTranslation';
-
-interface ToolbarProps {
-  filterText: string;
-  setFilterText: (text: string) => void;
-  sizeFilter: SizeFilter;
-  setSizeFilter: (size: SizeFilter) => void;
-  sortOption: SortOption;
-  setSortOption: (option: SortOption) => void;
-  isGridView: boolean;
-  setIsGridView: (isGrid: boolean) => void;
-  selectedCount: number;
-  totalCount: number;
-}
+import { ToolbarProps } from '../../types';
 
 export const Toolbar: FC<ToolbarProps> = ({
   filterText,
