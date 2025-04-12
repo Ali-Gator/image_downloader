@@ -1,27 +1,18 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { DownloadButton, Header, HelpText } from './components';
 import { ContentContainer, PopupContainer } from './styles';
-import { MessageAction } from '../../utils/constants';
+import { ImageData } from '../../types';
+import { MessageAction, MessageResponse } from '../../utils/constants';
 import { handleError, withErrorHandling } from '../../utils/errorHandlers';
 import { useTranslation } from '../../utils/useTranslation';
 import RatingWidget from '../RatingWidget';
-
-interface ImageData {
-  src: string;
-  alt: string;
-  width: number;
-  height: number;
-  aspectRatio?: number;
-}
 
 export const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
 
   const openImagesPage = useCallback(async (images: ImageData[]) => {
-    const urls = images.map((img) => img.src);
-
     const tab = await chrome.tabs.create({
       url: 'page.html',
       active: false,
@@ -29,8 +20,8 @@ export const Popup: React.FC = () => {
 
     setTimeout(async () => {
       try {
-        const response = await chrome.tabs.sendMessage(tab.id!, urls);
-        if (response === 'OK') {
+        const response = await chrome.tabs.sendMessage(tab.id!, images);
+        if (response === MessageResponse.OK) {
           await chrome.tabs.update(tab.id!, { active: true });
         } else {
           handleError(new Error('Failed to confirm images received'), true, 'Something went wrong');

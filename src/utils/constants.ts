@@ -6,6 +6,34 @@ export enum MessageAction {
 }
 
 /**
+ * Standard responses for inter-component communication
+ */
+export enum MessageResponse {
+  OK = 'OK',
+}
+
+/**
+ * Image size filter options
+ */
+export enum SizeFilter {
+  ALL = 'all',
+  SMALL = 'small',
+  MEDIUM = 'medium',
+  LARGE = 'large',
+}
+
+/**
+ * Image sort options
+ */
+export enum SortOption {
+  DEFAULT = 'default',
+  NAME_ASC = 'name-asc',
+  NAME_DESC = 'name-desc',
+  SIZE_ASC = 'size-asc',
+  SIZE_DESC = 'size-desc',
+}
+
+/**
  * Common image formats and patterns to filter out in image detection
  */
 export const PlaceholderImages = {

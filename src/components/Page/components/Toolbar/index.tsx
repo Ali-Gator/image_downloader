@@ -22,15 +22,16 @@ import {
   ViewButton,
   ViewOptionsContainer,
 } from './styles';
+import { SizeFilter, SortOption } from '../../../../utils/constants';
 import { useTranslation } from '../../../../utils/useTranslation';
 
 interface ToolbarProps {
   filterText: string;
   setFilterText: (text: string) => void;
-  sizeFilter: string;
-  setSizeFilter: (size: string) => void;
-  sortOption: string;
-  setSortOption: (option: string) => void;
+  sizeFilter: SizeFilter;
+  setSizeFilter: (size: SizeFilter) => void;
+  sortOption: SortOption;
+  setSortOption: (option: SortOption) => void;
   isGridView: boolean;
   setIsGridView: (isGrid: boolean) => void;
   selectedCount: number;
@@ -53,8 +54,8 @@ export const Toolbar: FC<ToolbarProps> = ({
 
   const handleClearFilters = () => {
     setFilterText('');
-    setSizeFilter('all');
-    setSortOption('default');
+    setSizeFilter(SizeFilter.ALL);
+    setSortOption(SortOption.DEFAULT);
   };
 
   return (
@@ -79,13 +80,13 @@ export const Toolbar: FC<ToolbarProps> = ({
               <Select
                 labelId="size-filter-label"
                 value={sizeFilter}
-                onChange={(e) => setSizeFilter(e.target.value)}
+                onChange={(e) => setSizeFilter(e.target.value as SizeFilter)}
                 label={t('size_text')}
               >
-                <MenuItem value="all">{t('size_filter_all')}</MenuItem>
-                <MenuItem value="small">{t('size_filter_small')}</MenuItem>
-                <MenuItem value="medium">{t('size_filter_medium')}</MenuItem>
-                <MenuItem value="large">{t('size_filter_large')}</MenuItem>
+                <MenuItem value={SizeFilter.ALL}>{t('size_filter_all')}</MenuItem>
+                <MenuItem value={SizeFilter.SMALL}>{t('size_filter_small')}</MenuItem>
+                <MenuItem value={SizeFilter.MEDIUM}>{t('size_filter_medium')}</MenuItem>
+                <MenuItem value={SizeFilter.LARGE}>{t('size_filter_large')}</MenuItem>
               </Select>
             </FormControl>
           </ControlItem>
@@ -120,14 +121,14 @@ export const Toolbar: FC<ToolbarProps> = ({
             <Select
               labelId="sort-images-label"
               value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
+              onChange={(e) => setSortOption(e.target.value as SortOption)}
               label={t('sort_text')}
             >
-              <MenuItem value="default">{t('sort_default')}</MenuItem>
-              <MenuItem value="name-asc">{t('sort_name_asc')}</MenuItem>
-              <MenuItem value="name-desc">{t('sort_name_desc')}</MenuItem>
-              <MenuItem value="size-asc">{t('sort_size_asc')}</MenuItem>
-              <MenuItem value="size-desc">{t('sort_size_desc')}</MenuItem>
+              <MenuItem value={SortOption.DEFAULT}>{t('sort_default')}</MenuItem>
+              <MenuItem value={SortOption.NAME_ASC}>{t('sort_name_asc')}</MenuItem>
+              <MenuItem value={SortOption.NAME_DESC}>{t('sort_name_desc')}</MenuItem>
+              <MenuItem value={SortOption.SIZE_ASC}>{t('sort_size_asc')}</MenuItem>
+              <MenuItem value={SortOption.SIZE_DESC}>{t('sort_size_desc')}</MenuItem>
             </Select>
           </FormControl>
         </SortContainer>

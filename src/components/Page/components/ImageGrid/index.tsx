@@ -1,16 +1,16 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { FC, useCallback, useMemo } from 'react';
 
 import { Typography } from '@mui/material';
 
 import { ImageGridContainer, NoImagesMessage } from './styles';
-import { getFileNameFromUrl } from '../../../../utils/fileUtils';
+import { ImageData } from '../../../../types';
 import { useTranslation } from '../../../../utils/useTranslation';
 import { ImageCard } from '../ImageCard';
 
 interface ImageGridProps {
-  images: string[];
-  selectedImages: string[];
-  setSelectedImages: (images: string[]) => void;
+  images: ImageData[];
+  selectedImages: ImageData[];
+  setSelectedImages: (images: ImageData[]) => void;
   isGridView: boolean;
 }
 
@@ -20,32 +20,20 @@ export const ImageGrid: FC<ImageGridProps> = ({
   setSelectedImages,
   isGridView,
 }) => {
-  const [imageDimensions, setImageDimensions] = useState<
-    Record<string, { width: number; height: number }>
-  >({});
   const { t } = useTranslation();
-
-  useEffect(() => {
-    // Reset dimensions when images change
-    setImageDimensions({});
-  }, [images]);
-
-  const handleImageLoad = useCallback((url: string, width: number, height: number) => {
-    setImageDimensions((prev) => ({
-      ...prev,
-      [url]: { width, height },
-    }));
-  }, []);
 
   const handleImageSelect = useCallback(
     (url: string) => {
-      if (selectedImages.includes(url)) {
-        setSelectedImages(selectedImages.filter((img) => img !== url));
+      const image = images.find((img) => img.src === url);
+      if (!image) return;
+
+      if (selectedImages.some((img) => img.src === url)) {
+        setSelectedImages(selectedImages.filter((img) => img.src !== url));
       } else {
-        setSelectedImages([...selectedImages, url]);
+        setSelectedImages([...selectedImages, image]);
       }
     },
-    [selectedImages, setSelectedImages],
+    [images, selectedImages, setSelectedImages],
   );
 
   const noImagesMessage = useMemo(
@@ -63,20 +51,15 @@ export const ImageGrid: FC<ImageGridProps> = ({
 
   return (
     <ImageGridContainer className={isGridView ? 'grid-view' : 'list-view'}>
-      {images.map((url, index) => {
-        const dimensions = imageDimensions[url];
-        const isSelected = selectedImages.includes(url);
-        const fileName = getFileNameFromUrl(url);
+      {images.map((image, index) => {
+        const isSelected = selectedImages.some((img) => img.src === image.src);
 
         return (
           <ImageCard
-            key={`${url}-${index}`}
-            url={url}
+            key={`${image.src}-${index}`}
+            image={image}
             isSelected={isSelected}
-            fileName={fileName}
-            dimensions={dimensions}
             onSelect={handleImageSelect}
-            onImageLoad={handleImageLoad}
           />
         );
       })}

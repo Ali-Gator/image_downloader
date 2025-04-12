@@ -1,66 +1,39 @@
-import { ChangeEvent, memo, SyntheticEvent, useCallback } from 'react';
+import { memo, useCallback } from 'react';
 
 import { Checkbox, Typography } from '@mui/material';
 
 import { ImageInfo, ImageItem } from './styles';
+import { ImageData } from '../../../../types';
+import { getFileNameFromUrl } from '../../../../utils/fileUtils';
 
 export interface ImageCardProps {
-  url: string;
+  image: ImageData;
   isSelected: boolean;
-  fileName: string;
-  dimensions?: { width: number; height: number };
   onSelect: (url: string) => void;
-  onImageLoad: (url: string, width: number, height: number) => void;
 }
 
-export const ImageCard = memo(
-  ({ url, isSelected, fileName, dimensions, onSelect, onImageLoad }: ImageCardProps) => {
-    const handleSelect = useCallback(() => {
-      onSelect(url);
-    }, [url, onSelect]);
+export const ImageCard = memo(({ image, isSelected, onSelect }: ImageCardProps) => {
+  const { src, alt, width, height } = image;
+  const fileName = getFileNameFromUrl(src);
 
-    const handleCheckboxChange = useCallback(
-      (e: ChangeEvent<HTMLInputElement>) => {
-        e.stopPropagation();
-        onSelect(url);
-      },
-      [url, onSelect],
-    );
+  const handleSelect = useCallback(() => {
+    onSelect(src);
+  }, [src, onSelect]);
 
-    const handleImageLoad = useCallback(
-      (e: SyntheticEvent<HTMLImageElement>) => {
-        const img = e.target as HTMLImageElement;
-        onImageLoad(url, img.naturalWidth, img.naturalHeight);
-      },
-      [url, onImageLoad],
-    );
-
-    const stopPropagation = useCallback((e: SyntheticEvent<HTMLButtonElement>) => {
-      e.stopPropagation();
-    }, []);
-
-    return (
-      <ImageItem className={isSelected ? 'selected' : ''} onClick={handleSelect}>
-        <Checkbox
-          checked={isSelected}
-          onChange={handleCheckboxChange}
-          className="image-checkbox"
-          onClick={stopPropagation}
-        />
-        <img src={url} alt={fileName} loading="lazy" onLoad={handleImageLoad} />
-        <ImageInfo>
-          <Typography variant="body2" className="file-name">
-            {fileName}
-          </Typography>
-          {dimensions && (
-            <Typography variant="caption" className="dimensions">
-              {dimensions.width} × {dimensions.height} px
-            </Typography>
-          )}
-        </ImageInfo>
-      </ImageItem>
-    );
-  },
-);
+  return (
+    <ImageItem className={isSelected ? 'selected' : ''} onClick={handleSelect}>
+      <Checkbox checked={isSelected} className="image-checkbox" readOnly />
+      <img src={src} alt={alt || fileName} loading="lazy" />
+      <ImageInfo>
+        <Typography variant="body2" className="file-name">
+          {fileName}
+        </Typography>
+        <Typography variant="caption" className="dimensions">
+          {width} × {height} px
+        </Typography>
+      </ImageInfo>
+    </ImageItem>
+  );
+});
 
 ImageCard.displayName = 'ImageCard';

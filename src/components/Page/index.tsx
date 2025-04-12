@@ -2,26 +2,28 @@ import { FC, useEffect, useState } from 'react';
 
 import { Header, ImageGrid, LoadingOverlay, Toolbar } from './components';
 import { PageContainer } from './styles';
+import { ImageData } from '../../types';
+import { MessageResponse, SizeFilter, SortOption } from '../../utils/constants';
 import { useTranslation } from '../../utils/useTranslation';
 
 export const Page: FC = () => {
-  const [images, setImages] = useState<string[]>([]);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  const [filteredImages, setFilteredImages] = useState<string[]>([]);
+  const [images, setImages] = useState<ImageData[]>([]);
+  const [selectedImages, setSelectedImages] = useState<ImageData[]>([]);
+  const [filteredImages, setFilteredImages] = useState<ImageData[]>([]);
   const [isGridView, setIsGridView] = useState(true);
   const [filterText, setFilterText] = useState('');
-  const [sizeFilter, setSizeFilter] = useState('all');
-  const [sortOption, setSortOption] = useState('default');
+  const [sizeFilter, setSizeFilter] = useState<SizeFilter>(SizeFilter.ALL);
+  const [sortOption, setSortOption] = useState<SortOption>(SortOption.DEFAULT);
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useTranslation();
 
   // Listen for messages from popup
   useEffect(() => {
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (Array.isArray(request) && request.length > 0) {
-        setImages(request.filter((url) => typeof url === 'string'));
+    chrome.runtime.onMessage.addListener((images: ImageData[], _, sendResponse) => {
+      if (Array.isArray(images) && images.length > 0) {
+        setImages(images);
         setIsLoading(false);
-        sendResponse('OK');
+        sendResponse(MessageResponse.OK);
         return true;
       }
       return false;
