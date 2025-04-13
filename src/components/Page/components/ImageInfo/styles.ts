@@ -31,6 +31,7 @@ const commonInfoStyles = (theme: Theme): SxProps<Theme> => ({
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     width: '100%',
+    maxWidth: '100%',
   },
 
   '.dimensions': {
@@ -102,6 +103,9 @@ export const listImageInfoStyles = (theme: Theme): SxProps<Theme> => ({
 
   '.file-name': {
     maxWidth: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
 
   '.image-url': {
@@ -120,6 +124,9 @@ export const listImageInfoStyles = (theme: Theme): SxProps<Theme> => ({
     gap: theme.spacing(0.5),
     '&:hover': {
       color: theme.palette.primary.main,
+      '& .url-icon': {
+        color: theme.palette.primary.main,
+      },
     },
   },
 
@@ -128,6 +135,7 @@ export const listImageInfoStyles = (theme: Theme): SxProps<Theme> => ({
     verticalAlign: 'middle',
     color: theme.palette.text.secondary,
     fontSize: '0.875rem',
+    transition: 'color 0.2s',
   },
 
   '.url-text': {

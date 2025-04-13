@@ -22,6 +22,17 @@ export interface ImageCardProps {
 }
 
 /**
+ * Props for the ImageInfo component
+ */
+export interface ImageInfoProps {
+  fileName: string;
+  width?: number;
+  height?: number;
+  src: string;
+  isListMode: boolean;
+}
+
+/**
  * Props for the Toolbar component
  */
 export interface ToolbarProps {
@@ -51,12 +62,4 @@ export interface HeaderProps {
 export enum ViewMode {
   List = 'list',
   Grid = 'grid',
-}
-
-export interface ImageInfoProps {
-  fileName: string;
-  width?: number;
-  height?: number;
-  src: string;
-  isListMode: boolean;
 }

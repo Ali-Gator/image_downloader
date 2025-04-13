@@ -63,18 +63,51 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
     (e: React.MouseEvent) => {
       e.stopPropagation();
 
-      // Create a temporary anchor element for downloading
-      const a = document.createElement('a');
-      a.href = src;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      // Use chrome.downloads API for all URL types
+      if (chrome.downloads && chrome.downloads.download) {
+        chrome.downloads.download(
+          {
+            url: src,
+            filename: fileName,
+            saveAs: false,
+          },
+          (_) => {
+            if (chrome.runtime.lastError) {
+              console.error('Download error:', chrome.runtime.lastError);
+              enqueueSnackbar('Error downloading image', {
+                variant: 'error',
+                autoHideDuration: 2000,
+              });
+            } else {
+              enqueueSnackbar('Image download started', {
+                variant: 'success',
+                autoHideDuration: 2000,
+              });
+            }
+          },
+        );
+      } else {
+        // Fallback for when chrome.downloads API is not available
+        try {
+          const a = document.createElement('a');
+          a.href = src;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
 
-      enqueueSnackbar('Image download started', {
-        variant: 'success',
-        autoHideDuration: 2000,
-      });
+          enqueueSnackbar('Image download started', {
+            variant: 'success',
+            autoHideDuration: 2000,
+          });
+        } catch (error) {
+          console.error('Download error:', error);
+          enqueueSnackbar('Error downloading image', {
+            variant: 'error',
+            autoHideDuration: 2000,
+          });
+        }
+      }
     },
     [src, fileName, enqueueSnackbar],
   );
@@ -121,13 +154,11 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
       {isListMode && (
         <>
           <Box className="actions-container">
-            {canOpenExternally && (
-              <Tooltip title="Download image">
-                <IconButton size="small" onClick={handleDownload} className="action-button">
-                  <FileDownloadIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            )}
+            <Tooltip title="Download image">
+              <IconButton size="small" onClick={handleDownload} className="action-button">
+                <FileDownloadIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
 
             <Tooltip title="Copy URL">
               <IconButton size="small" onClick={handleCopyUrl} className="action-button">
@@ -139,13 +170,7 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
           <Box className="url-container">
             {canOpenExternally ? (
               <Tooltip title={urlDisplay.tooltip}>
-                <a
-                  href={src}
-                  className="image-url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  // onClick={(e) => e.stopPropagation()}
-                >
+                <a href={src} className="image-url" target="_blank" rel="noopener noreferrer">
                   <OpenInNewIcon className="url-icon" fontSize="small" />
                   <span className="url-text">{urlDisplay.text}</span>
                 </a>

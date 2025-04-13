@@ -25,7 +25,7 @@ const manifest: ManifestV3Export = {
     service_worker: 'src/background/index.ts',
     type: 'module',
   },
-  permissions: ['scripting', 'activeTab', 'storage'],
+  permissions: ['scripting', 'activeTab', 'storage', 'downloads'],
   content_scripts: [
     {
       matches: ['http://*/*', 'https://*/*'],
