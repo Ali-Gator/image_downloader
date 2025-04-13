@@ -1,6 +1,7 @@
 import { ImageData } from '@components/Popup/types';
 
 import { handleError } from './errorHandlers';
+import { getFileExtension } from './imageUtils';
 
 /**
  * Extracts a filename from a URL
@@ -9,29 +10,52 @@ import { handleError } from './errorHandlers';
  */
 export const getFileNameFromUrl = (url: string): string => {
   try {
+    // Для data:URL используем generic имя
+    if (url.startsWith('data:')) {
+      return 'image';
+    }
+
     // Try to create a URL object to parse the URL
     const urlObj = new URL(url);
 
     // Get the pathname
     const pathname = urlObj.pathname;
 
+    // Удаляем параметры запроса, если они есть
+    const pathWithoutQuery = pathname.split('?')[0];
+
     // Extract the filename from the path
-    const segments = pathname.split('/');
-    const lastSegment = segments[segments.length - 1];
+    const segments = pathWithoutQuery.split('/');
+    let lastSegment = segments[segments.length - 1];
+
+    // Если последний сегмент пустой, используем предпоследний (для URL с / в конце)
+    if (!lastSegment && segments.length > 1) {
+      lastSegment = segments[segments.length - 2];
+    }
+
+    // Удаляем параметры после имени файла (если есть = в имени)
+    if (lastSegment.includes('=')) {
+      lastSegment = lastSegment.split('=')[0];
+    }
 
     // Return the filename if it exists, or a fallback
     if (lastSegment && lastSegment.length > 0) {
       // Decode URI components to handle encoded characters
-      return decodeURIComponent(lastSegment);
+      try {
+        return decodeURIComponent(lastSegment);
+      } catch (e) {
+        // Если декодирование не удалось, используем как есть
+        return lastSegment;
+      }
     }
 
-    // If no filename found, use domain + shortened pathname as a fallback
-    return `${urlObj.hostname}${pathname.length > 20 ? pathname.substring(0, 20) + '...' : pathname}`;
+    // If no filename found, generate a name based on hostname
+    return `image_from_${urlObj.hostname.replace(/\./g, '_')}`;
   } catch (e) {
     // Тихая обработка ошибки - без уведомления пользователя
     handleError(e);
-    // If the URL is invalid, return a portion of the URL
-    return url.substring(0, 30) + (url.length > 30 ? '...' : '');
+    // If the URL is invalid, return a generic name
+    return 'image';
   }
 };
 
@@ -43,29 +67,53 @@ export const getFileNameFromUrl = (url: string): string => {
  */
 export const getSmartFileName = (image: ImageData): string => {
   const { src, alt } = image;
+  
+  // Получаем базовое имя файла из URL
   const defaultName = getFileNameFromUrl(src);
-
-  // If alt text is meaningful (not empty, not equals URL, not generic), use it
+  
+  // Определяем расширение на основе источника изображения
+  const extension = `.${getFileExtension(src).toLowerCase()}`;
+  
+  // Если alt текст содержит значимую информацию, используем его
   if (
     alt &&
     alt.trim() &&
     !src.includes(alt) &&
     !['image', 'picture', 'photo'].includes(alt.toLowerCase())
   ) {
-    // Convert alt to suitable filename (remove invalid characters)
+    // Обрабатываем alt текст для создания валидного имени файла
     const sanitizedAlt = alt
       .trim()
       .replace(/[^\w\s.-]/g, '')
       .replace(/\s+/g, '_')
-      .substring(0, 30); // Limit length to 30 characters
-
-    // Add extension from original file
-    const extension = defaultName.includes('.')
-      ? defaultName.substring(defaultName.lastIndexOf('.'))
-      : '.png';
-
+      .substring(0, 30); // Ограничиваем длину
+    
     return `${sanitizedAlt}${extension}`;
   }
-
-  return defaultName;
+  
+  // Проверяем, содержит ли имя файла уже расширение
+  if (defaultName.includes('.')) {
+    const dotIndex = defaultName.lastIndexOf('.');
+    if (dotIndex > 0) {
+      const nameWithoutExt = defaultName.substring(0, dotIndex);
+      const currentExt = defaultName.substring(dotIndex).toLowerCase();
+      
+      // Проверяем, является ли текущее расширение валидным
+      if (/^\.[a-z0-9]+$/i.test(currentExt)) {
+        // Если расширение в имени совпадает с определенным из URL/content-type, используем его
+        if (currentExt === extension) {
+          return defaultName;
+        }
+        
+        // Если они отличаются, заменяем расширение на правильное
+        return nameWithoutExt + extension;
+      }
+      
+      // Если текущее расширение невалидное, добавляем правильное
+      return defaultName + extension;
+    }
+  }
+  
+  // Если имя файла не содержит расширение, добавляем его
+  return defaultName + extension;
 };
