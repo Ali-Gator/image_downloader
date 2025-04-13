@@ -52,3 +52,11 @@ export enum ViewMode {
   List = 'list',
   Grid = 'grid',
 }
+
+export interface ImageInfoProps {
+  fileName: string;
+  width?: number;
+  height?: number;
+  src: string;
+  isListMode: boolean;
+}

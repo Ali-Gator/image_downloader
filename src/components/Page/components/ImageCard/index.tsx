@@ -1,43 +1,16 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, MouseEvent } from 'react';
 
-import { Box, Checkbox, Typography, useTheme } from '@mui/material';
+import { Box, Checkbox, useTheme } from '@mui/material';
 
 import { ImageCardProps, ViewMode } from '@components/Page/types';
 import { getSmartFileName } from '@utils';
 
-import {
-  gridImageInfoStyles,
-  gridImageItemStyles,
-  listImageInfoStyles,
-  listImageItemStyles,
-} from './styles';
+import { ImageInfo } from '../ImageInfo';
+import { gridImageItemStyles, listImageItemStyles } from './styles';
 
 /**
- * Компонент для отображения информации об изображении (имя файла, размеры)
- */
-const ImageInfo = ({ fileName, width, height, isListMode }: {
-  fileName: string;
-  width: number;
-  height: number;
-  isListMode: boolean;
-}) => {
-  const theme = useTheme();
-  
-  return (
-    <Box sx={isListMode ? listImageInfoStyles(theme) : gridImageInfoStyles(theme)}>
-      <Typography variant="body2" className="file-name">
-        {fileName}
-      </Typography>
-      <Typography variant="caption" className="dimensions">
-        {width} × {height} px
-      </Typography>
-    </Box>
-  );
-};
-
-/**
- * Компонент для отображения карточки изображения
- * Поддерживает два режима отображения: сетка (grid) и список (list)
+ * Component for displaying an image card
+ * Supports two display modes: grid and list
  */
 export const ImageCard = memo(
   ({ image, isSelected, onSelect, viewMode = ViewMode.Grid }: ImageCardProps) => {
@@ -46,26 +19,50 @@ export const ImageCard = memo(
     const theme = useTheme();
     const isListMode = viewMode === ViewMode.List;
 
-    const handleSelect = useCallback(() => {
-      onSelect(src);
-    }, [src, onSelect]);
+    // Handler for clicking on the card to select the image
+    const handleSelect = useCallback(
+      (event: MouseEvent<HTMLDivElement>) => {
+        // In list mode, only allow selection when clicking the checkbox area
+        if (isListMode) {
+          // Only select if clicking on the checkbox container
+          const isCheckboxAreaClick =
+            event.target instanceof Element &&
+            (event.target.classList.contains('checkbox-area') ||
+              event.target.closest('.checkbox-area'));
+
+          if (!isCheckboxAreaClick) {
+            return;
+          }
+        } else {
+          // Grid mode - check if click is on interactive elements
+          if (
+            event.target instanceof Element &&
+            (event.target.closest('.image-url') || event.target.closest('button'))
+          ) {
+            return;
+          }
+        }
+
+        onSelect(src);
+      },
+      [src, onSelect, isListMode],
+    );
 
     const cardStyles = isListMode ? listImageItemStyles(theme) : gridImageItemStyles(theme);
 
     return (
-      <Box
-        sx={cardStyles}
-        className={isSelected ? 'selected' : ''}
-        onClick={handleSelect}
-      >
-        <Checkbox checked={isSelected} className="image-checkbox" readOnly />
+      <Box sx={cardStyles} className={isSelected ? 'selected' : ''} onClick={handleSelect}>
+        <Box className="checkbox-area">
+          <Checkbox checked={isSelected} className="image-checkbox" readOnly />
+        </Box>
         <Box className="image-container">
           <img src={src} alt={alt || fileName} loading="lazy" />
         </Box>
-        <ImageInfo 
+        <ImageInfo
           fileName={fileName}
           width={width}
           height={height}
+          src={src}
           isListMode={isListMode}
         />
       </Box>

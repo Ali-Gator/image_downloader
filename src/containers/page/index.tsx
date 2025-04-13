@@ -1,13 +1,13 @@
 import { StrictMode } from 'react';
 
 import { CssBaseline, ThemeProvider } from '@mui/material';
+import { SnackbarProvider } from 'notistack';
 import { createRoot } from 'react-dom/client';
 
-import ErrorBoundary from '../../components/ErrorBoundary';
-import { Page } from '../../components/Page';
+import { ErrorBoundary, Page } from '@components';
+import { DOMLocalization, setupGlobalErrorHandlers } from '@utils';
+
 import theme from '../../theme';
-import { setupGlobalErrorHandlers } from '../../utils/errorHandlers';
-import { DOMLocalization } from '../../utils/useTranslation';
 
 // Set up global error handlers for Sentry
 setupGlobalErrorHandlers();
@@ -19,9 +19,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <ErrorBoundary>
-        <Page />
-      </ErrorBoundary>
+      <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+        <ErrorBoundary>
+          <Page />
+        </ErrorBoundary>
+      </SnackbarProvider>
     </ThemeProvider>
   </StrictMode>,
 );
