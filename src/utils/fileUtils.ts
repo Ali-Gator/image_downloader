@@ -62,7 +62,7 @@ export const getSmartFileName = (image: ImageData): string => {
     // Add extension from original file
     const extension = defaultName.includes('.')
       ? defaultName.substring(defaultName.lastIndexOf('.'))
-      : '.jpg';
+      : '.png';
 
     return `${sanitizedAlt}${extension}`;
   }

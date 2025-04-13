@@ -19,6 +19,9 @@ export * from './localStorage';
 // Re-export file utilities
 export * from './fileUtils';
 
+// Re-export image utilities
+export * from './imageUtils';
+
 // Re-export general utilities
 export * from './utils';
 

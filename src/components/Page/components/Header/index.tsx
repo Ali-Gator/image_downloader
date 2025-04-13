@@ -3,6 +3,8 @@ import { ChangeEvent, FC } from 'react';
 import DownloadIcon from '@mui/icons-material/Download';
 import { Button, Checkbox, Typography } from '@mui/material';
 
+import { useTranslation } from '@utils';
+
 import {
   ControlsContainer,
   HeaderContainer,
@@ -10,7 +12,6 @@ import {
   SelectAllContainer,
   TitleContainer,
 } from './styles';
-import { useTranslation } from '../../../../utils/useTranslation';
 import { HeaderProps } from '../../types';
 
 export const Header: FC<HeaderProps> = ({
