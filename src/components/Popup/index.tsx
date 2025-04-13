@@ -24,12 +24,15 @@ export const Popup: React.FC = () => {
 
     setTimeout(async () => {
       if (tab.id) {
-        await sendImagesToTab(tab.id, images);
+        const success = await sendImagesToTab(tab.id, images);
+        if (!success) {
+          handleError(new Error('Failed to send images to tab'), true, t('error_text'));
+        }
       } else {
-        handleError(new Error('Invalid tab ID'), true, 'Something went wrong');
+        handleError(new Error('Invalid tab ID'), true, t('error_text'));
       }
     }, 500);
-  }, []);
+  }, [t]);
 
   const handleGrabImages = useCallback(async () => {
     await withErrorHandling(
@@ -71,7 +74,7 @@ export const Popup: React.FC = () => {
             }
 
             if (!response.images || !response.images.length) {
-              reject(new Error('No images found'));
+              reject(new Error(t('no_images_found')));
               return;
             }
 
@@ -81,9 +84,9 @@ export const Popup: React.FC = () => {
         });
       },
       setIsLoading,
-      'Could not retrieve images from the page',
+      t('error_text'),
     );
-  }, [openImagesPage]);
+  }, [openImagesPage, t]);
 
   return (
     <PopupContainer>

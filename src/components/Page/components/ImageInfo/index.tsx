@@ -7,6 +7,7 @@ import { Box, IconButton, Tooltip, Typography, useTheme } from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import { ImageInfoProps } from '@components/Page/types';
+import { useTranslation } from '@utils';
 
 import { gridImageInfoStyles, listImageInfoStyles } from './styles';
 
@@ -58,6 +59,7 @@ const getFriendlyUrlDisplay = (url: string): { text: string; tooltip: string } =
 export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: ImageInfoProps) => {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation();
 
   const handleDownload = useCallback(
     (e: React.MouseEvent) => {
@@ -74,12 +76,12 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
           (_) => {
             if (chrome.runtime.lastError) {
               console.error('Download error:', chrome.runtime.lastError);
-              enqueueSnackbar('Error downloading image', {
+              enqueueSnackbar(t('download_error_text'), {
                 variant: 'error',
                 autoHideDuration: 2000,
               });
             } else {
-              enqueueSnackbar('Image download started', {
+              enqueueSnackbar(t('download_started_text'), {
                 variant: 'success',
                 autoHideDuration: 2000,
               });
@@ -96,20 +98,20 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
           a.click();
           document.body.removeChild(a);
 
-          enqueueSnackbar('Image download started', {
+          enqueueSnackbar(t('download_started_text'), {
             variant: 'success',
             autoHideDuration: 2000,
           });
         } catch (error) {
           console.error('Download error:', error);
-          enqueueSnackbar('Error downloading image', {
+          enqueueSnackbar(t('download_error_text'), {
             variant: 'error',
             autoHideDuration: 2000,
           });
         }
       }
     },
-    [src, fileName, enqueueSnackbar],
+    [src, fileName, enqueueSnackbar, t],
   );
 
   const handleCopyUrl = useCallback(
@@ -118,20 +120,20 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
       navigator.clipboard
         .writeText(src)
         .then(() => {
-          enqueueSnackbar('URL copied to clipboard', {
+          enqueueSnackbar(t('url_copied_text'), {
             variant: 'success',
             autoHideDuration: 2000,
           });
         })
         .catch((error) => {
           console.error('Error copying URL', error);
-          enqueueSnackbar('Error copying URL', {
+          enqueueSnackbar(t('url_copy_error_text'), {
             variant: 'error',
             autoHideDuration: 2000,
           });
         });
     },
-    [src, enqueueSnackbar],
+    [src, enqueueSnackbar, t],
   );
 
   const styles = isListMode ? listImageInfoStyles(theme) : gridImageInfoStyles(theme);
@@ -154,13 +156,13 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
       {isListMode && (
         <>
           <Box className="actions-container">
-            <Tooltip title="Download image">
+            <Tooltip title={t('download_image_tooltip')}>
               <IconButton size="small" onClick={handleDownload} className="action-button">
                 <FileDownloadIcon fontSize="small" />
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="Copy URL">
+            <Tooltip title={t('copy_url_tooltip')}>
               <IconButton size="small" onClick={handleCopyUrl} className="action-button">
                 <ContentCopyIcon fontSize="small" />
               </IconButton>
@@ -185,7 +187,7 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
       )}
 
       {!isListMode && (
-        <Tooltip title="Copy URL">
+        <Tooltip title={t('copy_url_tooltip')}>
           <IconButton size="small" onClick={handleCopyUrl} className="copy-button">
             <ContentCopyIcon fontSize="small" />
           </IconButton>

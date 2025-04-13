@@ -1,5 +1,5 @@
 import { ImageData } from '@components/Popup/types';
-import { handleError, MessageResponse } from '@utils';
+import { handleError, MessageResponse, getLocalizedMessage } from '@utils';
 
 /**
  * Sends image data to an active tab and handles the response
@@ -14,11 +14,15 @@ export const sendImagesToTab = async (tabId: number, images: ImageData[]): Promi
       await chrome.tabs.update(tabId, { active: true });
       return true;
     } else {
-      handleError(new Error('Failed to confirm images received'), true, 'Something went wrong');
+      handleError(
+        new Error('Failed to confirm images received'),
+        true,
+        getLocalizedMessage('error_text'),
+      );
       return false;
     }
   } catch (error) {
-    handleError(error, true, 'Something went wrong');
+    handleError(error, true, getLocalizedMessage('error_text'));
     return false;
   }
 };

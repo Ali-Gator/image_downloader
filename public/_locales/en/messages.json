@@ -129,8 +129,7 @@
     "message": "Reset all filters and sorting"
   },
   "no_images_found": {
-    "message": "No images found",
-    "description": "Message displayed when no images are found on the page"
+    "message": "No images found"
   },
   "loading_dimension": {
     "message": "Loading..."
@@ -152,5 +151,17 @@
   },
   "rateUs": {
     "message": "Rate us:"
+  },
+  "url_copied_text": {
+    "message": "URL copied to clipboard"
+  },
+  "url_copy_error_text": {
+    "message": "Error copying URL"
+  },
+  "download_image_tooltip": {
+    "message": "Download image"
+  },
+  "copy_url_tooltip": {
+    "message": "Copy URL"
   }
 }
