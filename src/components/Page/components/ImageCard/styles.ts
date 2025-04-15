@@ -30,7 +30,6 @@ const commonCardStyles = (theme: Theme): SxProps<Theme> => ({
   boxShadow: theme.shadows[1],
   transition: theme.transitions.create(['box-shadow', 'transform', 'border-color']),
   border: `1px solid ${theme.palette.divider}`,
-  userSelect: 'none',
 
   '&.selected': {
     border: `2px solid ${theme.palette.primary.main}`,

@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
@@ -7,7 +7,7 @@ import { Tooltip } from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import { ImageInfoProps } from '@components/Page/types';
-import { getFileExtension, getFriendlyUrlDisplay, useTranslation } from '@utils';
+import { getFileExtension, getFriendlyUrlDisplay, getFileSize, useTranslation } from '@utils';
 
 import {
   ActionButton,
@@ -16,6 +16,7 @@ import {
   Dimensions,
   DimensionsContainer,
   FileExtension,
+  FileSize,
   FileName,
   ImageInfoContainer,
   ImageUrl,
@@ -30,6 +31,29 @@ import {
 export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: ImageInfoProps) => {
   const { enqueueSnackbar } = useSnackbar();
   const { t } = useTranslation();
+  const [fileSize, setFileSize] = useState<string | null>(null);
+  const [isLoadingSize, setIsLoadingSize] = useState(false);
+
+  // Load file size when component mounts
+  useEffect(() => {
+    if (isListMode) {
+      setIsLoadingSize(true);
+      
+      const fetchFileSize = async () => {
+        try {
+          const size = await getFileSize(src);
+          setFileSize(size);
+        } catch (error) {
+          console.error('Error getting file size:', error);
+          setFileSize(null);
+        } finally {
+          setIsLoadingSize(false);
+        }
+      };
+      
+      fetchFileSize();
+    }
+  }, [src, isListMode]);
 
   const handleDownload = useCallback(
     (e: React.MouseEvent) => {
@@ -120,6 +144,7 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
       {dimensions && (
         <DimensionsContainer className="dimensions-container">
           <Dimensions className="dimensions">{dimensions}</Dimensions>
+          {isListMode && !isLoadingSize && fileSize && <FileSize className="file-size">{fileSize}</FileSize>}
           {isListMode && <FileExtension className="file-extension">{fileExtension}</FileExtension>}
         </DimensionsContainer>
       )}

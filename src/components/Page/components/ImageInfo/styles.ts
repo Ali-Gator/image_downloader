@@ -41,6 +41,22 @@ export const DimensionsContainer = styled(Box)(({ theme }) => ({
 export const Dimensions = styled('span')(({ theme }) => ({
   fontSize: '0.75rem',
   color: theme.palette.text.secondary,
+  backgroundColor: theme.palette.grey[100],
+  border: `1px solid ${theme.palette.grey[300]}`,
+  borderRadius: '2px',
+  padding: '1px 3px',
+}));
+
+export const FileSize = styled('span')(({ theme }) => ({
+  fontSize: '0.75rem',
+  color: theme.palette.text.secondary,
+  backgroundColor: theme.palette.grey[100],
+  border: `1px solid ${theme.palette.grey[300]}`,
+  borderRadius: '2px',
+  padding: '1px 3px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 }));
 
 export const FileExtension = styled('span')(({ theme }) => ({
