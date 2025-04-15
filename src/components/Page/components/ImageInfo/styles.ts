@@ -70,6 +70,10 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
   padding: theme.spacing(0.5),
   minWidth: 'auto',
   flexShrink: 0,
+
+  '&:hover': {
+    color: theme.palette.primary.main,
+  },
 }));
 
 export const UrlContainer = styled(Box)(() => ({

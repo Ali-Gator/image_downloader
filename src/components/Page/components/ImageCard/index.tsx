@@ -1,4 +1,4 @@
-import { memo, useCallback, MouseEvent } from 'react';
+import { memo, MouseEvent, useCallback } from 'react';
 
 import { Box, Checkbox, useTheme } from '@mui/material';
 
@@ -35,10 +35,7 @@ export const ImageCard = memo(
           }
         } else {
           // Grid mode - check if click is on interactive elements
-          if (
-            event.target instanceof Element &&
-            (event.target.closest('.image-url') || event.target.closest('button'))
-          ) {
+          if (event.target instanceof Element && event.target.closest('button')) {
             return;
           }
         }

@@ -1,14 +1,13 @@
 import { Theme } from '@mui/material/styles';
 import { SxProps } from '@mui/system';
 
-// Константы для размеров и стилей
+// Constants for sizes and styles
 const CARD_STYLES = {
   GRID: {
-    IMAGE_CONTAINER_MIN_HEIGHT: 18, // в единицах spacing
+    IMAGE_CONTAINER_MIN_HEIGHT: 18, // in spacing units
     IMAGE_MAX_HEIGHT: 25,
   },
   LIST: {
-    CARD_HEIGHT: 14,
     IMAGE_CONTAINER_HEIGHT: 12,
     IMAGE_CONTAINER_WIDTH: 15,
     IMAGE_MAX_HEIGHT: 12.5,
@@ -21,8 +20,9 @@ const CARD_STYLES = {
   },
 };
 
-// Базовые стили для карточек
-export const commonCardStyles = (theme: Theme): SxProps<Theme> => ({
+// Common styles
+const commonCardStyles = (theme: Theme): SxProps<Theme> => ({
+  height: '100%',
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
   backgroundColor: theme.palette.background.paper,
@@ -38,34 +38,17 @@ export const commonCardStyles = (theme: Theme): SxProps<Theme> => ({
   },
 });
 
-const checkboxStyles = (theme: Theme, isGrid: boolean) => ({
-  position: isGrid ? 'absolute' : 'static',
-  ...(isGrid
-    ? {
-        top: theme.spacing(CARD_STYLES.COMMON.CHECKBOX_SIZE),
-        left: theme.spacing(CARD_STYLES.COMMON.CHECKBOX_SIZE),
-        zIndex: 1,
-        opacity: 0,
-        visibility: 'hidden',
-      }
-    : {
-        marginRight: theme.spacing(CARD_STYLES.COMMON.PADDING),
-        opacity: 1,
-        visibility: 'visible',
-      }),
+const commonCheckboxStyles = (theme: Theme) => ({
   backgroundColor: 'rgba(255, 255, 255, 0.7)',
   borderRadius: '50%',
   transition: theme.transitions.create(['transform', 'opacity', 'visibility']),
   '&:hover': {
     transform: 'scale(1.1)',
   },
-
-  // Fix for the checkbox input that covers the whole card
   '& .MuiSvgIcon-root': {
     zIndex: 1,
     position: 'relative',
   },
-
   '& .PrivateSwitchBase-input': {
     width: '100%',
     height: '100%',
@@ -76,82 +59,109 @@ const checkboxStyles = (theme: Theme, isGrid: boolean) => ({
   },
 });
 
-const checkboxAreaStyles = (theme: Theme, isGrid: boolean) => ({
-  ...(isGrid
-    ? {
-        // No specific styles for grid mode
-      }
-    : {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        width: theme.spacing(CARD_STYLES.LIST.CHECKBOX_AREA_WIDTH),
-        cursor: 'pointer',
-        position: 'relative',
-        zIndex: 1,
-      }),
-});
-
-const imageContainerStyles = (theme: Theme, isGrid: boolean) => ({
+const commonImageContainerStyles = (theme: Theme) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
   overflow: 'hidden',
   backgroundColor: theme.palette.grey[100],
-  ...(isGrid
-    ? {
-        position: 'relative',
-        flex: '1 0 auto',
-        minHeight: theme.spacing(CARD_STYLES.GRID.IMAGE_CONTAINER_MIN_HEIGHT),
-      }
-    : {
-        height: theme.spacing(CARD_STYLES.LIST.IMAGE_CONTAINER_HEIGHT),
-        width: theme.spacing(CARD_STYLES.LIST.IMAGE_CONTAINER_WIDTH),
-        flexShrink: 0,
-        cursor: 'default',
-      }),
 });
 
-const imageStyles = (theme: Theme, isGrid: boolean) => ({
+const commonImageStyles = {
   display: 'block',
   objectFit: 'contain',
   width: 'auto',
   height: 'auto',
   backgroundColor: 'transparent',
   pointerEvents: 'none',
-  ...(isGrid
-    ? {
-        maxWidth: '100%',
-        maxHeight: theme.spacing(CARD_STYLES.GRID.IMAGE_MAX_HEIGHT),
-        margin: '0 auto',
-      }
-    : {
-        maxHeight: theme.spacing(CARD_STYLES.LIST.IMAGE_MAX_HEIGHT),
-        maxWidth: theme.spacing(CARD_STYLES.LIST.IMAGE_MAX_WIDTH),
-        margin: 'auto',
-      }),
+};
+
+// Grid-specific styles
+const gridCheckboxStyles = (theme: Theme) => ({
+  position: 'absolute',
+  top: theme.spacing(CARD_STYLES.COMMON.CHECKBOX_SIZE),
+  left: theme.spacing(CARD_STYLES.COMMON.CHECKBOX_SIZE),
+  zIndex: 1,
+  opacity: 0,
+  visibility: 'hidden',
 });
 
-// Компоненты карточек для режимов сетки и списка
+const gridCheckboxAreaStyles = () => ({
+  // Grid mode doesn't need specific styles
+});
+
+const gridImageContainerStyles = (theme: Theme) => ({
+  position: 'relative',
+  flex: '1 0 auto',
+  minHeight: theme.spacing(CARD_STYLES.GRID.IMAGE_CONTAINER_MIN_HEIGHT),
+});
+
+const gridImageStyles = (theme: Theme) => ({
+  maxWidth: '100%',
+  maxHeight: theme.spacing(CARD_STYLES.GRID.IMAGE_MAX_HEIGHT),
+  margin: '0 auto',
+});
+
+// List-specific styles
+const listCheckboxStyles = (theme: Theme) => ({
+  position: 'static',
+  marginRight: theme.spacing(CARD_STYLES.COMMON.PADDING),
+  opacity: 1,
+  visibility: 'visible',
+});
+
+const listCheckboxAreaStyles = (theme: Theme) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  width: theme.spacing(CARD_STYLES.LIST.CHECKBOX_AREA_WIDTH),
+  cursor: 'pointer',
+  position: 'relative',
+  zIndex: 1,
+  height: '100%',
+});
+
+const listImageContainerStyles = (theme: Theme) => ({
+  height: theme.spacing(CARD_STYLES.LIST.IMAGE_CONTAINER_HEIGHT),
+  width: theme.spacing(CARD_STYLES.LIST.IMAGE_CONTAINER_WIDTH),
+  flexShrink: 0,
+  cursor: 'default',
+});
+
+const listImageStyles = (theme: Theme) => ({
+  maxHeight: theme.spacing(CARD_STYLES.LIST.IMAGE_MAX_HEIGHT),
+  maxWidth: theme.spacing(CARD_STYLES.LIST.IMAGE_MAX_WIDTH),
+  margin: 'auto',
+});
+
+// Combined styles
 export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   ...commonCardStyles(theme),
   display: 'flex',
   flexDirection: 'column',
-  height: '100%',
   cursor: 'pointer',
 
-  '.checkbox-area': checkboxAreaStyles(theme, true),
-  '.image-checkbox': checkboxStyles(theme, true),
+  '.checkbox-area': gridCheckboxAreaStyles(),
+  '.image-checkbox': {
+    ...commonCheckboxStyles(theme),
+    ...gridCheckboxStyles(theme),
+  },
 
   '&:hover .image-checkbox, & .image-checkbox.Mui-checked': {
     opacity: 1,
     visibility: 'visible',
   },
 
-  '.image-container': imageContainerStyles(theme, true),
+  '.image-container': {
+    ...commonImageContainerStyles(theme),
+    ...gridImageContainerStyles(theme),
+  },
 
-  img: imageStyles(theme, true),
+  img: {
+    ...commonImageStyles,
+    ...gridImageStyles(theme),
+  },
 });
 
 export const listImageItemStyles = (theme: Theme): SxProps<Theme> => ({
@@ -161,12 +171,20 @@ export const listImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   alignItems: 'center',
   padding: theme.spacing(CARD_STYLES.COMMON.PADDING),
   gap: theme.spacing(2),
-  height: theme.spacing(CARD_STYLES.LIST.CARD_HEIGHT),
   cursor: 'default',
 
-  '.checkbox-area': checkboxAreaStyles(theme, false),
-  '.image-container': imageContainerStyles(theme, false),
-  '.image-checkbox': checkboxStyles(theme, false),
+  '.checkbox-area': listCheckboxAreaStyles(theme),
+  '.image-container': {
+    ...commonImageContainerStyles(theme),
+    ...listImageContainerStyles(theme),
+  },
+  '.image-checkbox': {
+    ...commonCheckboxStyles(theme),
+    ...listCheckboxStyles(theme),
+  },
 
-  img: imageStyles(theme, false),
+  img: {
+    ...commonImageStyles,
+    ...listImageStyles(theme),
+  },
 });
