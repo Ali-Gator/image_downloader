@@ -1,6 +1,4 @@
-import React from 'react';
-
-import { ImageActionsProps } from '@components/Page/types';
+import { ImageActionsProps } from '@types';
 
 import { CopyButton } from '../CopyButton';
 import { DownloadButton } from '../DownloadButton';

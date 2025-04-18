@@ -3,7 +3,7 @@ import React from 'react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Tooltip } from '@mui/material';
 
-import { CopyButtonProps } from '@components/Page/types';
+import { CopyButtonProps } from '@types';
 
 import { ActionIconButton } from './styles';
 

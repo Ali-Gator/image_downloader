@@ -163,5 +163,17 @@
   },
   "copy_url_tooltip": {
     "message": "Copy URL"
+  },
+  "no_active_tabs": {
+    "message": "No active tabs"
+  },
+  "cannot_access_tab": {
+    "message": "Cannot access active tab"
+  },
+  "content_script_failed": {
+    "message": "Content script communication failed"
+  },
+  "no_response_from_script": {
+    "message": "No response from content script"
   }
 }

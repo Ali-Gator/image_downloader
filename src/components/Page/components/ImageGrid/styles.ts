@@ -1,5 +1,23 @@
 import { styled } from '@mui/material/styles';
 
+export const GridContainer = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  flexGrow: 1,
+  overflow: 'auto',
+  padding: theme.spacing(2),
+}));
+
+export const NoImagesMessage = styled('div')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: theme.spacing(4),
+  color: theme.palette.text.secondary,
+  height: '50vh',
+}));
+
+// Keep the old container for backward compatibility
 export const ImageGridContainer = styled('div')(({ theme }) => ({
   display: 'grid',
   padding: theme.spacing(2),
@@ -35,13 +53,4 @@ export const ImageGridContainer = styled('div')(({ theme }) => ({
   '&.list-view': {
     gridTemplateColumns: '1fr',
   },
-}));
-
-export const NoImagesMessage = styled('div')(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: theme.spacing(4),
-  color: theme.palette.text.secondary,
-  height: '50vh',
 }));

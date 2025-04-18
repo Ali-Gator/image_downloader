@@ -9,6 +9,9 @@ import StraightenIcon from '@mui/icons-material/Straighten';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 
+import { useImageStore } from '@store';
+import { SizeFilter, SortOption, useTranslation } from '@utils';
+
 import {
   ControlItem,
   ControlsRow,
@@ -22,23 +25,24 @@ import {
   ViewButton,
   ViewOptionsContainer,
 } from './styles';
-import { SizeFilter, SortOption } from '../../../../utils/constants';
-import { useTranslation } from '../../../../utils/useTranslation';
-import { ToolbarProps } from '../../types';
 
-export const Toolbar: FC<ToolbarProps> = ({
-  filterText,
-  setFilterText,
-  sizeFilter,
-  setSizeFilter,
-  sortOption,
-  setSortOption,
-  isGridView,
-  setIsGridView,
-  selectedCount,
-  totalCount,
-}) => {
+export const Toolbar: FC = () => {
   const { t } = useTranslation();
+  const {
+    filterText,
+    setFilterText,
+    sizeFilter,
+    setSizeFilter,
+    sortOption,
+    setSortOption,
+    isGridView,
+    setIsGridView,
+    filteredImages,
+    selectedImages,
+  } = useImageStore();
+
+  const selectedCount = selectedImages.length;
+  const totalCount = filteredImages.length;
 
   const handleClearFilters = () => {
     setFilterText('');

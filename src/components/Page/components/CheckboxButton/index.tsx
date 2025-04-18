@@ -1,6 +1,4 @@
-import React from 'react';
-
-import { CheckboxButtonProps } from '@components/Page/types';
+import { CheckboxButtonProps } from '@types';
 
 import { StyledCheckbox } from './styles';
 

@@ -15,14 +15,25 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path Aliases */
     "baseUrl": ".",
     "paths": {
-      "@utils": ["src/utils"],
-      "@utils/*": ["src/utils/*"],
       "@components": ["src/components"],
       "@components/*": ["src/components/*"],
+      "@utils": ["src/utils"],
+      "@utils/*": ["src/utils/*"],
       "@types": ["src/types"],
-      "@types/*": ["src/types/*"]
+      "@types/*": ["src/types/*"],
+      "@store": ["src/store"],
+      "@store/*": ["src/store/*"],
+      "@theme": ["src/theme"],
+      "@theme/*": ["src/theme/*"]
     }
   },
   "include": ["src", "vite.config.ts"],

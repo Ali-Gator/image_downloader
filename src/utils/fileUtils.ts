@@ -1,4 +1,4 @@
-import { ImageData } from '@components/Popup/types';
+import { ImageData } from '@types';
 
 import { handleError } from './errorHandlers';
 import { getFileExtension } from './imageUtils';

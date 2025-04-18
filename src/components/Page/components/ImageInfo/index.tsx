@@ -1,12 +1,13 @@
-import React, { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Tooltip } from '@mui/material';
 
-import { ImageInfoProps } from '@components/Page/types';
-import { getFileExtension, getFileSize, getFriendlyUrlDisplay, useTranslation } from '@utils';
+import { useImageStore } from '@store';
+import { ImageInfoProps } from '@types';
+import { getFileExtension, getFileSize, getFriendlyUrlDisplay, getSmartFileName, useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
 
 import {
@@ -27,15 +28,39 @@ import {
 /**
  * Component for displaying information about an image (filename, dimensions)
  */
-export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: ImageInfoProps) => {
+export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   const { t } = useTranslation();
   const [fileSize, setFileSize] = useState<string | null>(null);
   const [isLoadingSize, setIsLoadingSize] = useState(false);
+
+  const { filteredImages, isGridView } = useImageStore();
+  const image = filteredImages.find((img) => img.id === imageId);
+
+  // Хуки всегда вызываются, даже если image не найден
+  const isListMode = !isGridView;
+  const emptyStr = '';
+  const defaultSrc = '';
+  const defaultFileName = '';
+
+  // Безопасно извлекаем значения, используя дефолтные, если image не найден
+  const src = image?.src || defaultSrc;
+  const width = image?.width;
+  const height = image?.height;
+  const fileName = image ? getSmartFileName(image) : defaultFileName;
+
+  // Используем хуки всегда, даже если image не найден
   const { handleCopyUrl, handleDownload } = useImageOperations(src, fileName);
 
-  useEffect(() => {
-    setIsLoadingSize(true);
+  // Вычисляем свойства, основанные на извлеченных данных
+  const dimensions = width && height ? `${width} × ${height}` : emptyStr;
+  const urlDisplay = getFriendlyUrlDisplay(src);
+  const canOpenExternally = !src.startsWith('data:') && !src.startsWith('blob:');
+  const fileExtension = getFileExtension(fileName);
 
+  useEffect(() => {
+    if (!src) return;
+
+    setIsLoadingSize(true);
     const fetchFileSize = async () => {
       try {
         const size = await getFileSize(src);
@@ -51,10 +76,10 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
     fetchFileSize();
   }, [src]);
 
-  const dimensions = width && height ? `${width} × ${height}` : '';
-  const urlDisplay = getFriendlyUrlDisplay(src);
-  const canOpenExternally = !src.startsWith('data:') && !src.startsWith('blob:');
-  const fileExtension = getFileExtension(fileName);
+  // Если изображение не найдено, возвращаем пустой контейнер
+  if (!image) {
+    return <ImageInfoContainer />;
+  }
 
   return (
     <ImageInfoContainer className={isListMode ? 'list-mode' : ''}>

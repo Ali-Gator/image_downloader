@@ -1,6 +1,6 @@
-import React, { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
-import { ImageMetadataProps } from '@components/Page/types';
+import { ImageMetadataProps } from '@types';
 import { getFileExtension, getFileSize, getSmartFileName } from '@utils';
 
 import { MetadataBadge } from '../MetadataBadge';

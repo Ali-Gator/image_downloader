@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { HeaderContainer, HeaderTitle } from './styles';
-import { HeaderProps } from '../../types';
+import { PopupHeaderProps } from '@types';
 
-const Header: React.FC<HeaderProps> = ({ title }) => {
+import { HeaderContainer, HeaderTitle } from './styles';
+
+const Header: React.FC<PopupHeaderProps> = ({ title }) => {
   return (
     <HeaderContainer>
       <HeaderTitle id="popupTitle" variant="h1">

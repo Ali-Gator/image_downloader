@@ -1,8 +1,6 @@
 import { styled } from '@mui/material/styles';
 
-interface ViewButtonProps {
-  active: boolean;
-}
+import { ViewButtonProps } from '@types';
 
 export const ToolbarContainer = styled('div')(({ theme }) => ({
   display: 'flex',

@@ -3,7 +3,7 @@ import React from 'react';
 import { Tooltip } from '@mui/material';
 
 import { StyledIconButton } from '@components/Page/components/ActionButton/styles';
-import { ActionButtonProps } from '@components/Page/types';
+import { ActionButtonProps } from '@types';
 
 export const ActionButton = ({
   tooltip,

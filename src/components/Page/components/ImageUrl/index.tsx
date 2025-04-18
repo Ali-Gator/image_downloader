@@ -1,9 +1,7 @@
-import React from 'react';
-
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Tooltip } from '@mui/material';
 
-import { ImageUrlProps } from '@components/Page/types';
+import { ImageUrlProps } from '@types';
 import { getFriendlyUrlDisplay } from '@utils';
 
 import { NonClickableUrl, UrlContainer, UrlLink, UrlText } from './styles';

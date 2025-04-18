@@ -3,12 +3,12 @@ import React from 'react';
 import { PhotoLibrary } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 
+import { PopupDownloadButtonProps } from '@types';
 import { useTranslation } from '@utils';
 
 import { StyledButton } from './styles';
-import { DownloadButtonProps } from '../../types';
 
-const DownloadButton: React.FC<DownloadButtonProps> = ({ onClick, isLoading }) => {
+const DownloadButton: React.FC<PopupDownloadButtonProps> = ({ onClick, isLoading }) => {
   const { t } = useTranslation();
 
   return (

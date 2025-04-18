@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface ImageData {
   id: string;
   src: string;
@@ -5,4 +7,131 @@ export interface ImageData {
   width: number;
   height: number;
   aspectRatio?: number;
+}
+
+// View modes for image display
+export enum ViewMode {
+  List = 'list',
+  Grid = 'grid',
+}
+
+/**
+ * Props for the ImageCard component
+ */
+export interface ImageCardProps {
+  image: ImageData;
+}
+
+/**
+ * Props for the ImageInfo component
+ */
+export interface ImageInfoProps {
+  imageId: string;
+}
+
+/**
+ * Props for action buttons
+ */
+export interface ActionButtonProps {
+  tooltip: string;
+  onClick: (event: React.MouseEvent) => void;
+  'aria-label'?: string;
+  children: React.ReactNode;
+}
+
+/**
+ * Props for checkbox buttons
+ */
+export interface CheckboxButtonProps {
+  checked: boolean;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  readOnly?: boolean;
+  className?: string;
+}
+
+/**
+ * Props for the ImageThumbnail component
+ */
+export interface ImageThumbnailProps {
+  image: ImageData;
+  mode?: 'grid' | 'list';
+}
+
+/**
+ * Props for the ImageMetadata component
+ */
+export interface ImageMetadataProps {
+  image: ImageData;
+  isListMode?: boolean;
+  compact?: boolean;
+}
+
+/**
+ * Props for the MetadataBadge component
+ */
+export interface MetadataBadgeProps {
+  children: React.ReactNode;
+  emphasis?: boolean;
+}
+
+/**
+ * Props for the ImageUrl component
+ */
+export interface ImageUrlProps {
+  image: ImageData;
+}
+
+/**
+ * Props for the CopyButton component
+ */
+export interface CopyButtonProps {
+  url: string;
+  onCopyClick: (url: string) => void;
+}
+
+/**
+ * Props for the DownloadButton component
+ */
+export interface DownloadButtonProps {
+  url: string;
+  onDownloadClick: (url: string) => void;
+}
+
+/**
+ * Props for the ImageActions component
+ */
+export interface ImageActionsProps {
+  image: ImageData;
+  orientation?: 'horizontal' | 'vertical';
+  showCopy?: boolean;
+  showDownload?: boolean;
+}
+
+/**
+ * Props for styling view buttons
+ */
+export interface ViewButtonProps {
+  active: boolean;
+}
+
+/**
+ * Props for the Popup Header component
+ */
+export interface PopupHeaderProps {
+  title: string;
+}
+
+/**
+ * Props for the Popup DownloadButton component
+ */
+export interface PopupDownloadButtonProps {
+  onClick: () => void;
+  isLoading: boolean;
+}
+
+/**
+ * Props for the HelpText component
+ */
+export interface HelpTextProps {
+  text: string;
 }

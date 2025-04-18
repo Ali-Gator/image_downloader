@@ -3,6 +3,7 @@ import { ChangeEvent, FC } from 'react';
 import DownloadIcon from '@mui/icons-material/Download';
 import { Button, Checkbox, Typography } from '@mui/material';
 
+import { useImageStore } from '@store';
 import { useTranslation } from '@utils';
 
 import {
@@ -12,21 +13,33 @@ import {
   SelectAllContainer,
   TitleContainer,
 } from './styles';
-import { HeaderProps } from '../../types';
 
-export const Header: FC<HeaderProps> = ({
-  title,
-  selectedCount,
-  totalCount,
-  onSelectAll,
-  onDownload,
-}) => {
+export const Header: FC = () => {
   const { t } = useTranslation();
+  const { 
+    filteredImages, 
+    selectedImages, 
+    selectAll, 
+    deselectAll 
+  } = useImageStore();
 
   const handleSelectAllChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onSelectAll(e.target.checked);
+    if (e.target.checked) {
+      selectAll();
+    } else {
+      deselectAll();
+    }
   };
 
+  const handleDownload = () => {
+    if (selectedImages.length === 0) return;
+    
+    // Download logic will be implemented here
+    // TODO: Implement download functionality for selected images
+  };
+
+  const selectedCount = selectedImages.length;
+  const totalCount = filteredImages.length;
   const isAllSelected = selectedCount > 0 && selectedCount === totalCount;
   const isIndeterminate = selectedCount > 0 && selectedCount < totalCount;
 
@@ -34,7 +47,7 @@ export const Header: FC<HeaderProps> = ({
     <HeaderContainer>
       <TitleContainer>
         <LogoImage src="/img/logo-64.png" alt="Logo" />
-        <Typography variant="h6">{title}</Typography>
+        <Typography variant="h6">{t('popup_title')}</Typography>
       </TitleContainer>
 
       <ControlsContainer>
@@ -52,7 +65,7 @@ export const Header: FC<HeaderProps> = ({
           variant="contained"
           color="secondary"
           startIcon={<DownloadIcon />}
-          onClick={onDownload}
+          onClick={handleDownload}
           disabled={selectedCount === 0}
         >
           {t('download_btn')}

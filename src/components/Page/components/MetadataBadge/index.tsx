@@ -1,6 +1,4 @@
-import React from 'react';
-
-import { MetadataBadgeProps } from '@components/Page/types';
+import { MetadataBadgeProps } from '@types';
 
 import { StyledBadge } from './styles';
 

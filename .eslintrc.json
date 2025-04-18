@@ -35,13 +35,16 @@
         "extensions": [".js", ".jsx", ".ts", ".tsx"]
       },
       "typescript": {
-        "alwaysTryTypes": true
+        "alwaysTryTypes": true,
+        "project": "./tsconfig.json"
       },
       "alias": {
         "map": [
           ["@utils", "./src/utils"],
           ["@components", "./src/components"],
-          ["@types", "./src/types"]
+          ["@types", "./src/types"],
+          ["@store", "./src/store"],
+          ["@theme", "./src/theme"]
         ],
         "extensions": [".ts", ".tsx", ".js", ".jsx", ".json"]
       }

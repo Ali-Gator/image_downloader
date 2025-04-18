@@ -1,8 +1,9 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 
 import { DownloadButton, Header, HelpText } from '@components/Popup/components';
 import { ContentContainer, PopupContainer } from '@components/Popup/styles';
 import RatingWidget from '@components/RatingWidget';
+import { useImageStore } from '@store';
 import { ImageData } from '@types';
 import {
   handleError,
@@ -13,7 +14,7 @@ import {
 } from '@utils';
 
 export const Popup: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, setIsLoading } = useImageStore();
   const { t } = useTranslation();
 
   const openImagesPage = useCallback(
@@ -46,11 +47,11 @@ export const Popup: React.FC = () => {
         });
 
         if (!tab) {
-          throw new Error('No active tabs');
+          throw new Error(t('no_active_tabs'));
         }
 
         if (!tab.id) {
-          throw new Error('Cannot access active tab');
+          throw new Error(t('cannot_access_tab'));
         }
 
         // Создаем Promise для коллбек-стиля chrome API
@@ -60,14 +61,14 @@ export const Popup: React.FC = () => {
             if (chrome.runtime.lastError) {
               reject(
                 new Error(
-                  chrome.runtime.lastError.message || 'Content script communication failed',
+                  chrome.runtime.lastError.message || t('content_script_failed'),
                 ),
               );
               return;
             }
 
             if (!response) {
-              reject(new Error('No response from content script'));
+              reject(new Error(t('no_response_from_script')));
               return;
             }
 
@@ -89,7 +90,7 @@ export const Popup: React.FC = () => {
       setIsLoading,
       t('error_text'),
     );
-  }, [openImagesPage, t]);
+  }, [openImagesPage, t, setIsLoading]);
 
   return (
     <PopupContainer>

@@ -27,6 +27,8 @@ export default defineConfig({
       '@utils': resolve(__dirname, 'src/utils'),
       '@components': resolve(__dirname, 'src/components'),
       '@types': resolve(__dirname, 'src/types'),
+      '@store': resolve(__dirname, 'src/store'),
+      '@theme': resolve(__dirname, 'src/theme'),
     },
   },
   plugins: [

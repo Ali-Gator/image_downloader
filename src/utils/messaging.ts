@@ -1,5 +1,5 @@
-import { ImageData } from '@components/Popup/types';
-import { handleError, MessageResponse, getLocalizedMessage } from '@utils';
+import { ImageData } from '@types';
+import { getLocalizedMessage, handleError, MessageResponse } from '@utils';
 
 /**
  * Sends image data to an active tab and handles the response
@@ -39,7 +39,7 @@ export const setupImageListener = (
 ): (() => void) => {
   const listener = (
     images: ImageData[],
-    sender: chrome.runtime.MessageSender,
+    _: chrome.runtime.MessageSender,
     sendResponse: (response: unknown) => void,
   ) => {
     if (Array.isArray(images) && images.length > 0) {

@@ -1,6 +1,4 @@
-import React from 'react';
-
-import { ImageThumbnailProps } from '@components/Page/types';
+import { ImageThumbnailProps } from '@types';
 import { getSmartFileName } from '@utils';
 
 import { StyledImageContainer } from './styles';
