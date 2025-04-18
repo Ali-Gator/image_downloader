@@ -16,7 +16,7 @@ export const StyledTopActionBar = styled(Box)(({ theme }) => ({
   right: 0,
   height: theme.spacing(6),
   display: 'flex',
-  justifyContent: 'left',
+  justifyContent: 'space-between',
   alignItems: 'center',
   padding: theme.spacing(0.5),
   zIndex: 2,
@@ -24,11 +24,18 @@ export const StyledTopActionBar = styled(Box)(({ theme }) => ({
   backgroundColor: 'rgba(0, 0, 0, 0.3)',
   transition: 'opacity 0.2s ease',
   opacity: 0,
-
-  '& > *:not(:first-child)': {
-    marginLeft: 'auto', // Push all except the first child (checkbox) to the right
-  },
 }));
+
+// Простые обертки для левой и правой частей
+export const TopBarLeftSection = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+});
+
+export const TopBarRightSection = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+});
 
 export const StyledImageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -76,7 +83,6 @@ const CARD_STYLES = {
 // ===== COMMON STYLES =====
 // Base styles shared between grid and list modes
 const commonCardStyles = (theme: Theme) => ({
-  height: '100%',
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
   backgroundColor: theme.palette.background.paper,

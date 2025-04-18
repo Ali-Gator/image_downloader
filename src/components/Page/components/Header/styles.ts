@@ -1,6 +1,6 @@
 import { styled } from '@mui/material/styles';
 
-import { gradients } from '../../../../theme';
+import { gradients } from '@theme';
 
 export const HeaderContainer = styled('div')(({ theme }) => ({
   display: 'flex',

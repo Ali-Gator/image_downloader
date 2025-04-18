@@ -9,6 +9,16 @@ export interface ImageData {
   aspectRatio?: number;
 }
 
+/**
+ * Custom size filter type for min width/height
+ */
+export interface CustomSizeFilter {
+  minWidth?: number;
+  maxWidth?: number;
+  minHeight?: number;
+  maxHeight?: number;
+}
+
 // View modes for image display
 export enum ViewMode {
   List = 'list',

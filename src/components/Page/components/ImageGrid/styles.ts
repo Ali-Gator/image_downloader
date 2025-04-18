@@ -24,10 +24,12 @@ export const ImageGridContainer = styled('div')(({ theme }) => ({
   gap: theme.spacing(2),
   flexGrow: 1,
   overflow: 'auto',
+  alignContent: 'flex-start',
 
   '&.grid-view': {
     // Mobile - small screens (up to 4 columns)
     gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+    gridAutoRows: 'max-content',
 
     // Medium screens (up to 5-6 columns)
     [theme.breakpoints.up('md')]: {
@@ -52,5 +54,6 @@ export const ImageGridContainer = styled('div')(({ theme }) => ({
 
   '&.list-view': {
     gridTemplateColumns: '1fr',
+    gridAutoRows: 'max-content',
   },
 }));

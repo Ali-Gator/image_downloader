@@ -14,11 +14,13 @@ import { useImageOperations } from '@utils/imageOperations';
 import { ImageInfo } from '../ImageInfo';
 import {
   ActionButtonsContainer,
-  gridImageItemStyles,
-  listImageItemStyles,
   StyledCheckboxArea,
   StyledImageContainer,
   StyledTopActionBar,
+  TopBarLeftSection,
+  TopBarRightSection,
+  gridImageItemStyles,
+  listImageItemStyles,
 } from './styles';
 
 /**
@@ -74,15 +76,19 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
     >
       {!isListMode && (
         <StyledTopActionBar className="top-action-bar">
-          <CheckboxButton checked={isSelected} readOnly />
-          <ActionButtonsContainer>
-            <ActionButton tooltip={t('copy_url_tooltip')} onClick={handleCopyUrl}>
-              <ContentCopyIcon fontSize="small" />
-            </ActionButton>
-            <ActionButton tooltip={t('download_image_tooltip')} onClick={handleDownload}>
-              <FileDownloadIcon fontSize="small" />
-            </ActionButton>
-          </ActionButtonsContainer>
+          <TopBarLeftSection>
+            <CheckboxButton checked={isSelected} readOnly />
+          </TopBarLeftSection>
+          <TopBarRightSection>
+            <ActionButtonsContainer>
+              <ActionButton tooltip={t('copy_url_tooltip')} onClick={handleCopyUrl}>
+                <ContentCopyIcon fontSize="small" />
+              </ActionButton>
+              <ActionButton tooltip={t('download_image_tooltip')} onClick={handleDownload}>
+                <FileDownloadIcon fontSize="small" />
+              </ActionButton>
+            </ActionButtonsContainer>
+          </TopBarRightSection>
         </StyledTopActionBar>
       )}
 

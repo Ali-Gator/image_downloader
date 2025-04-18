@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState, useEffect } from 'react';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
 import GridViewIcon from '@mui/icons-material/GridView';
@@ -7,7 +7,21 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SortIcon from '@mui/icons-material/Sort';
 import StraightenIcon from '@mui/icons-material/Straighten';
 import ViewListIcon from '@mui/icons-material/ViewList';
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { 
+  Button, 
+  Checkbox, 
+  Divider,
+  FormControl, 
+  FormControlLabel, 
+  FormGroup, 
+  InputLabel, 
+  MenuItem, 
+  OutlinedInput,
+  Popover,
+  Select,
+  TextField,
+  Typography
+} from '@mui/material';
 
 import { useImageStore } from '@store';
 import { SizeFilter, SortOption, useTranslation } from '@utils';
@@ -17,9 +31,13 @@ import {
   ControlsRow,
   CounterBadge,
   CounterText,
+  CustomDimensionsContainer,
+  DimensionInput,
+  DividerContainer,
   InfoContainer,
   LeftSection,
   RightSection,
+  SizePopoverContent,
   SortContainer,
   ToolbarContainer,
   ViewButton,
@@ -31,8 +49,11 @@ export const Toolbar: FC = () => {
   const {
     filterText,
     setFilterText,
-    sizeFilter,
-    setSizeFilter,
+    sizeFilters,
+    setSizeFilters,
+    toggleSizeFilter,
+    customSizeFilter,
+    setCustomSizeFilter,
     sortOption,
     setSortOption,
     isGridView,
@@ -41,13 +62,129 @@ export const Toolbar: FC = () => {
     selectedImages,
   } = useImageStore();
 
+  // Size filter popover state
+  const [sizeAnchorEl, setSizeAnchorEl] = useState<HTMLElement | null>(null);
+  const sizePopoverOpen = Boolean(sizeAnchorEl);
+  
+  // Custom dimensions state
+  const [minWidth, setMinWidth] = useState<string>(customSizeFilter.minWidth?.toString() || '');
+  const [minHeight, setMinHeight] = useState<string>(customSizeFilter.minHeight?.toString() || '');
+  
+  // Track if custom dimensions have user input
+  const hasCustomDimensions = Boolean(minWidth || minHeight);
+
   const selectedCount = selectedImages.length;
   const totalCount = filteredImages.length;
 
+  const handleSizeFilterClick = (event: React.MouseEvent<HTMLElement>) => {
+    setSizeAnchorEl(event.currentTarget);
+  };
+
+  const handleSizePopoverClose = () => {
+    setSizeAnchorEl(null);
+  };
+  
+  const handleSizeFilterChange = (filter: SizeFilter) => {
+    // Clear custom dimensions if user selects a standard filter
+    if (hasCustomDimensions) {
+      setMinWidth('');
+      setMinHeight('');
+      setCustomSizeFilter({ minWidth: undefined, minHeight: undefined });
+    }
+    toggleSizeFilter(filter);
+  };
+  
+  const handleCustomDimensionsChange = (field: 'width' | 'height', value: string) => {
+    // Сохраняем введенные значения
+    if (field === 'width') {
+      setMinWidth(value);
+    } else {
+      setMinHeight(value);
+    }
+  };
+  
+  const handleApplyFilters = () => {
+    // Проверяем, есть ли введенные значения для кастомных фильтров
+    const hasCustomWidth = Boolean(minWidth && minWidth !== '0');
+    const hasCustomHeight = Boolean(minHeight && minHeight !== '0');
+    
+    if (hasCustomWidth || hasCustomHeight) {
+      // Если есть кастомные размеры, применяем их
+      const newFilter = {
+        minWidth: hasCustomWidth ? parseInt(minWidth, 10) : undefined,
+        minHeight: hasCustomHeight ? parseInt(minHeight, 10) : undefined,
+      };
+      setCustomSizeFilter(newFilter);
+      // Снимаем стандартные фильтры
+      setSizeFilters([]);
+    } else {
+      // Если нет кастомных размеров, очищаем их
+      setCustomSizeFilter({ minWidth: undefined, minHeight: undefined });
+      
+      // Проверяем стандартные фильтры
+      if (sizeFilters.length === 0) {
+        // Если не выбраны стандартные фильтры, устанавливаем ALL
+        setSizeFilters([SizeFilter.ALL]);
+      }
+    }
+    
+    // Close the popover
+    handleSizePopoverClose();
+  };
+
   const handleClearFilters = () => {
     setFilterText('');
-    setSizeFilter(SizeFilter.ALL);
+    setSizeFilters([SizeFilter.ALL]);
+    setCustomSizeFilter({ minWidth: undefined, minHeight: undefined });
+    setMinWidth('');
+    setMinHeight('');
     setSortOption(SortOption.DEFAULT);
+  };
+
+  const handleWidthFocus = () => {
+    if (minWidth === '0') {
+      setMinWidth('');
+    }
+  };
+
+  const handleHeightFocus = () => {
+    if (minHeight === '0') {
+      setMinHeight('');
+    }
+  };
+
+  const getSizeFilterLabel = () => {
+    // Show custom dimensions if they are set
+    if (customSizeFilter.minWidth || customSizeFilter.minHeight) {
+      const parts = [];
+      if (customSizeFilter.minWidth) {
+        parts.push(`W ≥ ${customSizeFilter.minWidth}px`);
+      }
+      if (customSizeFilter.minHeight) {
+        parts.push(`H ≥ ${customSizeFilter.minHeight}px`);
+      }
+      return parts.join(', ');
+    }
+    
+    // Otherwise show standard filters
+    if (sizeFilters.includes(SizeFilter.ALL)) {
+      return t('size_filter_all');
+    }
+    
+    if (sizeFilters.length === 1) {
+      switch (sizeFilters[0]) {
+        case SizeFilter.SMALL:
+          return t('size_filter_small');
+        case SizeFilter.MEDIUM:
+          return t('size_filter_medium');
+        case SizeFilter.LARGE:
+          return t('size_filter_large');
+        default:
+          return t('filter_by_size_text');
+      }
+    }
+    
+    return `${sizeFilters.length} ${t('size_filters_selected')}`;
   };
 
   return (
@@ -67,20 +204,113 @@ export const Toolbar: FC = () => {
 
           <ControlItem>
             <StraightenIcon />
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-              <InputLabel id="size-filter-label">{t('size_text')}</InputLabel>
-              <Select
-                labelId="size-filter-label"
-                value={sizeFilter}
-                onChange={(e) => setSizeFilter(e.target.value as SizeFilter)}
-                label={t('size_text')}
-              >
-                <MenuItem value={SizeFilter.ALL}>{t('size_filter_all')}</MenuItem>
-                <MenuItem value={SizeFilter.SMALL}>{t('size_filter_small')}</MenuItem>
-                <MenuItem value={SizeFilter.MEDIUM}>{t('size_filter_medium')}</MenuItem>
-                <MenuItem value={SizeFilter.LARGE}>{t('size_filter_large')}</MenuItem>
-              </Select>
-            </FormControl>
+            <Button
+              variant="outlined"
+              size="medium"
+              onClick={handleSizeFilterClick}
+              aria-describedby="size-filter-popover"
+            >
+              {getSizeFilterLabel()}
+            </Button>
+            
+            <Popover
+              id="size-filter-popover"
+              open={sizePopoverOpen}
+              anchorEl={sizeAnchorEl}
+              onClose={handleSizePopoverClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+            >
+              <SizePopoverContent>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={sizeFilters.includes(SizeFilter.ALL)}
+                        onChange={() => handleSizeFilterChange(SizeFilter.ALL)}
+                      />
+                    }
+                    label={t('size_filter_all')}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={sizeFilters.includes(SizeFilter.SMALL)}
+                        onChange={() => handleSizeFilterChange(SizeFilter.SMALL)}
+                      />
+                    }
+                    label={t('size_filter_small')}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={sizeFilters.includes(SizeFilter.MEDIUM)}
+                        onChange={() => handleSizeFilterChange(SizeFilter.MEDIUM)}
+                      />
+                    }
+                    label={t('size_filter_medium')}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={sizeFilters.includes(SizeFilter.LARGE)}
+                        onChange={() => handleSizeFilterChange(SizeFilter.LARGE)}
+                      />
+                    }
+                    label={t('size_filter_large')}
+                  />
+                </FormGroup>
+                
+                <DividerContainer>
+                  <Divider />
+                  <Typography variant="body2" color="text.secondary">
+                    OR
+                  </Typography>
+                  <Divider />
+                </DividerContainer>
+                
+                <CustomDimensionsContainer>
+                  <DimensionInput>
+                    <TextField
+                      label={t('min_width')}
+                      type="number"
+                      size="small"
+                      value={minWidth}
+                      onChange={(e) => handleCustomDimensionsChange('width', e.target.value)}
+                      onFocus={handleWidthFocus}
+                      InputProps={{ inputProps: { min: 0 } }}
+                    />
+                  </DimensionInput>
+                  <DimensionInput>
+                    <TextField
+                      label={t('min_height')}
+                      type="number"
+                      size="small"
+                      value={minHeight}
+                      onChange={(e) => handleCustomDimensionsChange('height', e.target.value)}
+                      onFocus={handleHeightFocus}
+                      InputProps={{ inputProps: { min: 0 } }}
+                    />
+                  </DimensionInput>
+                </CustomDimensionsContainer>
+                
+                <Button 
+                  variant="contained" 
+                  size="medium"
+                  fullWidth
+                  onClick={handleApplyFilters}
+                  sx={{ mt: 2 }}
+                >
+                  {t('apply_btn')}
+                </Button>
+              </SizePopoverContent>
+            </Popover>
           </ControlItem>
 
           <ControlItem>

@@ -6,7 +6,7 @@ export const ToolbarContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  padding: theme.spacing(1, 2),
+  padding: theme.spacing(2),
   backgroundColor: theme.palette.background.paper,
   borderBottom: `1px solid ${theme.palette.divider}`,
   boxShadow: theme.shadows[1],
@@ -114,5 +114,46 @@ export const ViewButton = styled('button')<ViewButtonProps>(({ theme, active }) 
 
   '& .MuiSvgIcon-root': {
     fontSize: 20,
+  },
+}));
+
+// New components for size filter popover UI
+export const SizePopoverContent = styled('div')(({ theme }) => ({
+  padding: theme.spacing(2),
+  width: theme.spacing(30),
+  maxWidth: '100%',
+}));
+
+export const CustomDimensionsContainer = styled('div')(({ theme }) => ({
+  marginTop: theme.spacing(2),
+  padding: theme.spacing(1.5),
+  backgroundColor: theme.palette.grey[50],
+  borderRadius: theme.shape.borderRadius,
+  border: `1px solid ${theme.palette.divider}`,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1.5),
+}));
+
+export const DimensionInput = styled('div')(() => ({
+  width: '100%',
+  
+  '& .MuiFormControl-root': {
+    width: '100%',
+  },
+}));
+
+export const DividerContainer = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  margin: `${theme.spacing(2)} 0`,
+  
+  '& .MuiDivider-root': {
+    flexGrow: 1,
+  },
+  
+  '& .MuiTypography-root': {
+    margin: `0 ${theme.spacing(1)}`,
+    fontWeight: 500,
   },
 }));

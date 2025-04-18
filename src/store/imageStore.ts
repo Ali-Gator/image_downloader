@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { ImageData } from '@types';
+import { CustomSizeFilter, ImageData } from '@types';
 import { SizeFilter, SortOption } from '@utils';
 
 interface ImageState {
@@ -15,7 +15,8 @@ interface ImageState {
 
   // Filter state
   filterText: string;
-  sizeFilter: SizeFilter;
+  sizeFilters: SizeFilter[];
+  customSizeFilter: CustomSizeFilter;
   sortOption: SortOption;
 
   // Actions
@@ -28,7 +29,9 @@ interface ImageState {
   setIsLoading: (isLoading: boolean) => void;
   setIsGridView: (isGridView: boolean) => void;
   setFilterText: (text: string) => void;
-  setSizeFilter: (filter: SizeFilter) => void;
+  setSizeFilters: (filters: SizeFilter[]) => void;
+  toggleSizeFilter: (filter: SizeFilter) => void;
+  setCustomSizeFilter: (filter: CustomSizeFilter) => void;
   setSortOption: (option: SortOption) => void;
   applyFilters: () => void;
 }
@@ -41,7 +44,8 @@ export const useImageStore = create<ImageState>((set, get) => ({
   isLoading: false,
   isGridView: true,
   filterText: '',
-  sizeFilter: SizeFilter.ALL,
+  sizeFilters: [SizeFilter.ALL],
+  customSizeFilter: { minWidth: 0, minHeight: 0 },
   sortOption: SortOption.DEFAULT,
 
   // Actions
@@ -83,8 +87,46 @@ export const useImageStore = create<ImageState>((set, get) => ({
     get().applyFilters();
   },
 
-  setSizeFilter: (sizeFilter) => {
-    set({ sizeFilter });
+  setSizeFilters: (sizeFilters) => {
+    set({ sizeFilters });
+    get().applyFilters();
+  },
+
+  toggleSizeFilter: (filter) => {
+    const { sizeFilters } = get();
+
+    // Special case for 'ALL' filter
+    if (filter === SizeFilter.ALL) {
+      // If ALL is being toggled and wasn't already selected, select only ALL
+      if (!sizeFilters.includes(SizeFilter.ALL)) {
+        set({ sizeFilters: [SizeFilter.ALL] });
+      } else if (sizeFilters.length > 1) {
+        // If there are other filters and ALL is being toggled off, remove ALL
+        set({ sizeFilters: sizeFilters.filter((f) => f !== SizeFilter.ALL) });
+      }
+      // Don't allow removing ALL if it's the only filter selected
+    } else {
+      // For non-ALL filters
+      // If the filter is already selected, remove it
+      if (sizeFilters.includes(filter)) {
+        // Ensure at least one filter remains selected
+        if (sizeFilters.length > 1) {
+          set({ sizeFilters: sizeFilters.filter((f) => f !== filter) });
+        }
+      } else {
+        // If the filter isn't selected, add it and remove ALL if it was selected
+        const newFilters = sizeFilters.includes(SizeFilter.ALL)
+          ? [filter]
+          : [...sizeFilters, filter];
+        set({ sizeFilters: newFilters });
+      }
+    }
+
+    get().applyFilters();
+  },
+
+  setCustomSizeFilter: (customSizeFilter) => {
+    set({ customSizeFilter });
     get().applyFilters();
   },
 
@@ -94,7 +136,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
   },
 
   applyFilters: () => {
-    const { images, filterText, sizeFilter, sortOption } = get();
+    const { images, filterText, sizeFilters, customSizeFilter, sortOption } = get();
 
     // Filter by text
     let filtered = filterText
@@ -105,17 +147,29 @@ export const useImageStore = create<ImageState>((set, get) => ({
         )
       : [...images];
 
-    // Filter by size
-    if (sizeFilter !== SizeFilter.ALL) {
+    // Используем либо стандартные фильтры размера, либо кастомные, но не оба вместе
+    if (customSizeFilter.minWidth || customSizeFilter.minHeight) {
+      // Если заданы кастомные фильтры, используем только их
       filtered = filtered.filter((img) => {
-        if (sizeFilter === SizeFilter.SMALL) {
-          return img.width < 300 || img.height < 300;
-        } else if (sizeFilter === SizeFilter.MEDIUM) {
-          return (img.width >= 300 && img.width < 1000) || (img.height >= 300 && img.height < 1000);
-        } else if (sizeFilter === SizeFilter.LARGE) {
-          return img.width >= 1000 || img.height >= 1000;
-        }
-        return true;
+        const passesMinWidth = !customSizeFilter.minWidth || img.width >= customSizeFilter.minWidth;
+        const passesMinHeight =
+          !customSizeFilter.minHeight || img.height >= customSizeFilter.minHeight;
+        return passesMinWidth && passesMinHeight;
+      });
+    } else if (!sizeFilters.includes(SizeFilter.ALL)) {
+      // Иначе используем стандартные фильтры, если не выбран ALL
+      filtered = filtered.filter((img) => {
+        // Check if the image matches any of the selected size filters
+        return sizeFilters.some((filter) => {
+          if (filter === SizeFilter.SMALL) {
+            return img.width < 300;
+          } else if (filter === SizeFilter.MEDIUM) {
+            return img.width >= 300 && img.width < 1000;
+          } else if (filter === SizeFilter.LARGE) {
+            return img.width >= 1000;
+          }
+          return false;
+        });
       });
     }
 
