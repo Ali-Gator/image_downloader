@@ -1,4 +1,6 @@
+import { ImageData } from '@types';
 import { handleError, MessageAction, PlaceholderImages } from '@utils';
+import { getSmartFileName } from '@utils/fileUtils';
 
 /**
  * Проверяет, является ли URL допустимым изображением
@@ -43,7 +45,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   try {
     if (message.action === MessageAction.GRAB_IMAGES) {
       const allImgElements = Array.from(document.getElementsByTagName('img'));
-
+      
       // Сразу отфильтровываем и создаем объекты с нужными свойствами
       const filteredImages = [];
       const seenUrls = new Set<string>();
@@ -63,15 +65,22 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
         // Добавляем URL в множество просмотренных
         seenUrls.add(img.src);
 
-        // Добавляем изображение в отфильтрованный список
-        filteredImages.push({
+        // Создаем объект изображения с именем файла для поиска
+        const imageData: ImageData = {
           id: generateImageId(img.src, img.naturalWidth, img.naturalHeight),
           src: img.src,
           alt: img.alt || '',
           width: img.naturalWidth,
           height: img.naturalHeight,
           aspectRatio: img.naturalWidth / img.naturalHeight,
-        });
+          filename: ''
+        };
+        
+        // Затем добавляем умное имя файла, которое зависит от полей изображения
+        imageData.filename = getSmartFileName(imageData);
+
+        // Добавляем изображение в отфильтрованный список
+        filteredImages.push(imageData);
       }
 
       sendResponse({ images: filteredImages });

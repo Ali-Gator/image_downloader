@@ -140,11 +140,18 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
     // Filter by text
     let filtered = filterText
-      ? images.filter(
-          (img) =>
-            img.alt.toLowerCase().includes(filterText.toLowerCase()) ||
-            img.src.toLowerCase().includes(filterText.toLowerCase()),
-        )
+      ? images.filter((img) => {
+          const searchTerm = filterText.toLowerCase();
+          const altText = (img.alt || '').toLowerCase();
+          const srcUrl = img.src.toLowerCase();
+          const filename = (img.filename || '').toLowerCase();
+
+          return (
+            altText.includes(searchTerm) ||
+            srcUrl.includes(searchTerm) ||
+            filename.includes(searchTerm)
+          );
+        })
       : [...images];
 
     // Используем либо стандартные фильтры размера, либо кастомные, но не оба вместе
