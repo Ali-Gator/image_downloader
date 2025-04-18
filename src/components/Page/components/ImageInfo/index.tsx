@@ -11,7 +11,6 @@ import {
   getFileExtension,
   getFileSize,
   getFriendlyUrlDisplay,
-  getSmartFileName,
   useTranslation,
 } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
@@ -52,7 +51,7 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   const src = image?.src || defaultSrc;
   const width = image?.width;
   const height = image?.height;
-  const fileName = image ? getSmartFileName(image) : defaultFileName;
+  const fileName = image ? image.filename : defaultFileName;
 
   // Используем хуки всегда, даже если image не найден
   const { handleCopyUrl, handleDownload } = useImageOperations(src, fileName);

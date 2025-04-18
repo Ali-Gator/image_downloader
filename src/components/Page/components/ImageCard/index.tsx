@@ -8,19 +8,19 @@ import { ActionButton } from '@components/Page/components/ActionButton';
 import { CheckboxButton } from '@components/Page/components/CheckboxButton';
 import { useImageStore } from '@store';
 import { ImageCardProps } from '@types';
-import { getSmartFileName, useTranslation } from '@utils';
+import { useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
 
 import { ImageInfo } from '../ImageInfo';
 import {
   ActionButtonsContainer,
+  gridImageItemStyles,
+  listImageItemStyles,
   StyledCheckboxArea,
   StyledImageContainer,
   StyledTopActionBar,
   TopBarLeftSection,
   TopBarRightSection,
-  gridImageItemStyles,
-  listImageItemStyles,
 } from './styles';
 
 /**
@@ -28,11 +28,10 @@ import {
  * Supports two display modes: grid and list
  */
 export const ImageCard = memo(({ image }: ImageCardProps) => {
-  const { id, src, alt } = image;
-  const fileName = getSmartFileName(image);
+  const { id, src, alt, filename } = image;
   const theme = useTheme();
   const { t } = useTranslation();
-  const { handleCopyUrl, handleDownload } = useImageOperations(src, fileName);
+  const { handleCopyUrl, handleDownload } = useImageOperations(src, filename);
 
   const { isGridView, selectedImages, toggleSelectImage } = useImageStore();
 
@@ -99,7 +98,7 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
       )}
 
       <StyledImageContainer className="image-container">
-        <img src={src} alt={alt || fileName} loading="lazy" />
+        <img src={src} alt={alt || filename} loading="lazy" />
       </StyledImageContainer>
 
       <ImageInfo imageId={id} />

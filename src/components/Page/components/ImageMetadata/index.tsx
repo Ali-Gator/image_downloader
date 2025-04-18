@@ -1,14 +1,13 @@
 import { memo, useEffect, useState } from 'react';
 
 import { ImageMetadataProps } from '@types';
-import { getFileExtension, getFileSize, getSmartFileName } from '@utils';
+import { getFileExtension, getFileSize } from '@utils';
 
 import { MetadataBadge } from '../MetadataBadge';
 import { DimensionsContainer, FileName, MetadataContainer } from './styles';
 
 export const ImageMetadata = memo(({ image, isListMode = false }: ImageMetadataProps) => {
-  const { src, width, height } = image;
-  const fileName = getSmartFileName(image);
+  const { src, width, height, filename } = image;
   const [fileSize, setFileSize] = useState<string | null>(null);
   const [isLoadingSize, setIsLoadingSize] = useState(false);
 
@@ -31,12 +30,12 @@ export const ImageMetadata = memo(({ image, isListMode = false }: ImageMetadataP
   }, [src]);
 
   const dimensions = width && height ? `${width} × ${height}` : '';
-  const fileExtension = getFileExtension(fileName);
+  const fileExtension = getFileExtension(filename);
 
   return (
     <MetadataContainer isListMode={isListMode}>
-      <FileName variant="body1" title={fileName}>
-        {fileName}
+      <FileName variant="body1" title={filename}>
+        {filename}
       </FileName>
 
       {dimensions && (

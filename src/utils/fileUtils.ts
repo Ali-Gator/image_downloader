@@ -61,7 +61,8 @@ export const getFileNameFromUrl = (url: string): string => {
 
 /**
  * Gets a smart file name based on image data
- * Uses alt text if meaningful, otherwise falls back to URL-based name
+ * This function should only be used at image creation time in content-script.ts
+ * After that, the UI components directly access 'image.filename' from the store
  * @param image The image data object
  * @returns A meaningful file name
  */

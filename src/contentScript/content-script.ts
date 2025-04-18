@@ -45,7 +45,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   try {
     if (message.action === MessageAction.GRAB_IMAGES) {
       const allImgElements = Array.from(document.getElementsByTagName('img'));
-      
+
       // Сразу отфильтровываем и создаем объекты с нужными свойствами
       const filteredImages = [];
       const seenUrls = new Set<string>();
@@ -75,8 +75,8 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
           aspectRatio: img.naturalWidth / img.naturalHeight,
           filename: ''
         };
-        
-        // Затем добавляем умное имя файла, которое зависит от полей изображения
+
+        // Генерируем умное имя файла, которое будет использоваться всеми компонентами
         imageData.filename = getSmartFileName(imageData);
 
         // Добавляем изображение в отфильтрованный список
