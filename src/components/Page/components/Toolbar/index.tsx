@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, SyntheticEvent, useState } from 'react';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
 import GridViewIcon from '@mui/icons-material/GridView';
@@ -7,20 +7,19 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SortIcon from '@mui/icons-material/Sort';
 import StraightenIcon from '@mui/icons-material/Straighten';
 import ViewListIcon from '@mui/icons-material/ViewList';
-import { 
-  Button, 
-  Checkbox, 
+import {
+  Button,
+  Checkbox,
   Divider,
-  FormControl, 
-  FormControlLabel, 
-  FormGroup, 
-  InputLabel, 
-  MenuItem, 
-  OutlinedInput,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  InputLabel,
+  MenuItem,
   Popover,
   Select,
   TextField,
-  Typography
+  Typography,
 } from '@mui/material';
 
 import { useImageStore } from '@store';
@@ -65,25 +64,25 @@ export const Toolbar: FC = () => {
   // Size filter popover state
   const [sizeAnchorEl, setSizeAnchorEl] = useState<HTMLElement | null>(null);
   const sizePopoverOpen = Boolean(sizeAnchorEl);
-  
+
   // Custom dimensions state
   const [minWidth, setMinWidth] = useState<string>(customSizeFilter.minWidth?.toString() || '');
   const [minHeight, setMinHeight] = useState<string>(customSizeFilter.minHeight?.toString() || '');
-  
+
   // Track if custom dimensions have user input
   const hasCustomDimensions = Boolean(minWidth || minHeight);
 
   const selectedCount = selectedImages.length;
   const totalCount = filteredImages.length;
 
-  const handleSizeFilterClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleSizeFilterClick = (event: SyntheticEvent<HTMLElement>) => {
     setSizeAnchorEl(event.currentTarget);
   };
 
   const handleSizePopoverClose = () => {
     setSizeAnchorEl(null);
   };
-  
+
   const handleSizeFilterChange = (filter: SizeFilter) => {
     // Clear custom dimensions if user selects a standard filter
     if (hasCustomDimensions) {
@@ -93,7 +92,7 @@ export const Toolbar: FC = () => {
     }
     toggleSizeFilter(filter);
   };
-  
+
   const handleCustomDimensionsChange = (field: 'width' | 'height', value: string) => {
     // Сохраняем введенные значения
     if (field === 'width') {
@@ -102,12 +101,12 @@ export const Toolbar: FC = () => {
       setMinHeight(value);
     }
   };
-  
+
   const handleApplyFilters = () => {
     // Проверяем, есть ли введенные значения для кастомных фильтров
     const hasCustomWidth = Boolean(minWidth && minWidth !== '0');
     const hasCustomHeight = Boolean(minHeight && minHeight !== '0');
-    
+
     if (hasCustomWidth || hasCustomHeight) {
       // Если есть кастомные размеры, применяем их
       const newFilter = {
@@ -120,14 +119,14 @@ export const Toolbar: FC = () => {
     } else {
       // Если нет кастомных размеров, очищаем их
       setCustomSizeFilter({ minWidth: undefined, minHeight: undefined });
-      
+
       // Проверяем стандартные фильтры
       if (sizeFilters.length === 0) {
         // Если не выбраны стандартные фильтры, устанавливаем ALL
         setSizeFilters([SizeFilter.ALL]);
       }
     }
-    
+
     // Close the popover
     handleSizePopoverClose();
   };
@@ -165,12 +164,12 @@ export const Toolbar: FC = () => {
       }
       return parts.join(', ');
     }
-    
+
     // Otherwise show standard filters
     if (sizeFilters.includes(SizeFilter.ALL)) {
       return t('size_filter_all');
     }
-    
+
     if (sizeFilters.length === 1) {
       switch (sizeFilters[0]) {
         case SizeFilter.SMALL:
@@ -183,7 +182,7 @@ export const Toolbar: FC = () => {
           return t('filter_by_size_text');
       }
     }
-    
+
     return `${sizeFilters.length} ${t('size_filters_selected')}`;
   };
 
@@ -212,7 +211,7 @@ export const Toolbar: FC = () => {
             >
               {getSizeFilterLabel()}
             </Button>
-            
+
             <Popover
               id="size-filter-popover"
               open={sizePopoverOpen}
@@ -266,7 +265,7 @@ export const Toolbar: FC = () => {
                     label={t('size_filter_large')}
                   />
                 </FormGroup>
-                
+
                 <DividerContainer>
                   <Divider />
                   <Typography variant="body2" color="text.secondary">
@@ -274,7 +273,7 @@ export const Toolbar: FC = () => {
                   </Typography>
                   <Divider />
                 </DividerContainer>
-                
+
                 <CustomDimensionsContainer>
                   <DimensionInput>
                     <TextField
@@ -299,9 +298,9 @@ export const Toolbar: FC = () => {
                     />
                   </DimensionInput>
                 </CustomDimensionsContainer>
-                
-                <Button 
-                  variant="contained" 
+
+                <Button
+                  variant="contained"
                   size="medium"
                   fullWidth
                   onClick={handleApplyFilters}

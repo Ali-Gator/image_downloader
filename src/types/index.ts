@@ -14,9 +14,7 @@ export interface ImageData {
  */
 export interface CustomSizeFilter {
   minWidth?: number;
-  maxWidth?: number;
   minHeight?: number;
-  maxHeight?: number;
 }
 
 // View modes for image display

@@ -137,7 +137,7 @@ export const CustomDimensionsContainer = styled('div')(({ theme }) => ({
 
 export const DimensionInput = styled('div')(() => ({
   width: '100%',
-  
+
   '& .MuiFormControl-root': {
     width: '100%',
   },
@@ -147,11 +147,11 @@ export const DividerContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   margin: `${theme.spacing(2)} 0`,
-  
+
   '& .MuiDivider-root': {
     flexGrow: 1,
   },
-  
+
   '& .MuiTypography-root': {
     margin: `0 ${theme.spacing(1)}`,
     fontWeight: 500,
