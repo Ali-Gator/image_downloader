@@ -13,11 +13,11 @@ import { useImageOperations } from '@utils/imageOperations';
 import { ImageInfo } from '../ImageInfo';
 import {
   ActionButtonsContainer,
+  gridImageItemStyles,
+  listImageItemStyles,
   StyledCheckboxArea,
   StyledImageContainer,
   StyledTopActionBar,
-  gridImageItemStyles,
-  listImageItemStyles,
 } from './styles';
 
 /**
@@ -26,7 +26,7 @@ import {
  */
 export const ImageCard = memo(
   ({ image, isSelected, onSelect, viewMode = ViewMode.Grid }: ImageCardProps) => {
-    const { src, alt, width, height } = image;
+    const { id, src, alt, width, height } = image;
     const fileName = getSmartFileName(image);
     const theme = useTheme();
     const isListMode = viewMode === ViewMode.List;
@@ -54,9 +54,9 @@ export const ImageCard = memo(
           }
         }
 
-        onSelect(src);
+        onSelect(id);
       },
-      [src, onSelect, isListMode],
+      [id, onSelect, isListMode],
     );
 
     // Use theme-based styles but apply them via className with emotion

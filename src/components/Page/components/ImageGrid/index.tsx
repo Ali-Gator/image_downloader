@@ -17,12 +17,15 @@ export const ImageGrid: FC<ImageGridProps> = ({
   const { t } = useTranslation();
 
   const handleImageSelect = useCallback(
-    (url: string) => {
-      const image = images.find((img) => img.src === url);
+    (imageId: string) => {
+      const image = images.find((img) => img.id === imageId);
+
       if (!image) return;
 
-      if (selectedImages.some((img) => img.src === url)) {
-        setSelectedImages(selectedImages.filter((img) => img.src !== url));
+      const isAlreadySelected = selectedImages.some((img) => img.id === image.id);
+
+      if (isAlreadySelected) {
+        setSelectedImages(selectedImages.filter((img) => !(img.id === image.id)));
       } else {
         setSelectedImages([...selectedImages, image]);
       }
@@ -45,12 +48,12 @@ export const ImageGrid: FC<ImageGridProps> = ({
 
   return (
     <ImageGridContainer className={isGridView ? 'grid-view' : 'list-view'}>
-      {images.map((image, index) => {
-        const isSelected = selectedImages.some((img) => img.src === image.src);
+      {images.map((image) => {
+        const isSelected = selectedImages.some((img) => img.id === image.id);
 
         return (
           <ImageCard
-            key={`${image.src}-${index}`}
+            key={image.id}
             image={image}
             isSelected={isSelected}
             onSelect={handleImageSelect}

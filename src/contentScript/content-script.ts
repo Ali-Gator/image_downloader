@@ -34,29 +34,47 @@ const isValidImage = (url: string): boolean => {
   }
 };
 
+const generateImageId = (src: string, width: number, height: number): string => {
+  return `${src}_${width}_${height}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+};
+
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   try {
     if (message.action === MessageAction.GRAB_IMAGES) {
-      const images = Array.from(document.getElementsByTagName('img'))
-        // Фильтруем невалидные изображения и слишком маленькие (иконки)
-        .filter((img) => {
-          const isValid = isValidImage(img.src);
-          const isBigEnough =
-            img.naturalWidth > PlaceholderImages.MIN_SIZE_PX &&
-            img.naturalHeight > PlaceholderImages.MIN_SIZE_PX;
-          return isValid && isBigEnough;
-        })
-        .map((img) => ({
+      const allImgElements = Array.from(document.getElementsByTagName('img'));
+
+      // Сразу отфильтровываем и создаем объекты с нужными свойствами
+      const filteredImages = [];
+      const seenUrls = new Set<string>();
+
+      for (const img of allImgElements) {
+        // Проверяем, является ли изображение допустимым и достаточно большим
+        const isValid = isValidImage(img.src);
+        const isBigEnough =
+          img.naturalWidth > PlaceholderImages.MIN_SIZE_PX &&
+          img.naturalHeight > PlaceholderImages.MIN_SIZE_PX;
+
+        // Пропускаем невалидные изображения и дубликаты
+        if (!isValid || !isBigEnough || seenUrls.has(img.src)) {
+          continue;
+        }
+
+        // Добавляем URL в множество просмотренных
+        seenUrls.add(img.src);
+
+        // Добавляем изображение в отфильтрованный список
+        filteredImages.push({
+          id: generateImageId(img.src, img.naturalWidth, img.naturalHeight),
           src: img.src,
           alt: img.alt || '',
           width: img.naturalWidth,
           height: img.naturalHeight,
-          // Добавляем больше метаданных для будущей фильтрации
           aspectRatio: img.naturalWidth / img.naturalHeight,
-        }));
+        });
+      }
 
-      sendResponse({ images });
+      sendResponse({ images: filteredImages });
       return true; // Указываем, что ответ будет асинхронным
     }
   } catch (error) {

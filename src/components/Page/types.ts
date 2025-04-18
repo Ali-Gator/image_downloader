@@ -19,7 +19,7 @@ export interface ImageGridProps {
 export interface ImageCardProps {
   image: ImageData;
   isSelected: boolean;
-  onSelect: (url: string) => void;
+  onSelect: (imageId: string) => void;
   viewMode?: ViewMode;
 }
 
