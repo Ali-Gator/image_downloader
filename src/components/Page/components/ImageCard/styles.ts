@@ -4,8 +4,10 @@ import { SxProps } from '@mui/system';
 // Constants for sizes and styles
 const CARD_STYLES = {
   GRID: {
-    IMAGE_CONTAINER_MIN_HEIGHT: 18, // in spacing units
-    IMAGE_MAX_HEIGHT: 25,
+    IMAGE_CONTAINER_MIN_HEIGHT: 16, // Balanced height for grid view
+    IMAGE_MAX_HEIGHT: 22, // Slightly higher max height to maintain aspect ratio
+    INFO_SECTION_HEIGHT: 3, // Reduced info section height
+    ASPECT_RATIO: 1.2, // Target aspect ratio (width/height) for image container
   },
   LIST: {
     IMAGE_CONTAINER_HEIGHT: 12,
@@ -93,6 +95,9 @@ const gridImageContainerStyles = (theme: Theme) => ({
   position: 'relative',
   flex: '1 0 auto',
   minHeight: theme.spacing(CARD_STYLES.GRID.IMAGE_CONTAINER_MIN_HEIGHT),
+  display: 'flex',
+  alignItems: 'center',
+  marginBottom: theme.spacing(0.5),
 });
 
 const gridImageStyles = (theme: Theme) => ({
@@ -140,6 +145,7 @@ export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   display: 'flex',
   flexDirection: 'column',
   cursor: 'pointer',
+  paddingBottom: theme.spacing(0.75),
 
   '.checkbox-area': gridCheckboxAreaStyles(),
   '.image-checkbox': {
@@ -160,6 +166,15 @@ export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   img: {
     ...commonImageStyles,
     ...gridImageStyles(theme),
+    maxWidth: '100%',
+    objectFit: 'contain',
+  },
+
+  // Compact info container
+  '& .dimensions-container': {
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
+    gap: theme.spacing(0.25), // Smaller gap between elements
   },
 });
 

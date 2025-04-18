@@ -1,13 +1,13 @@
-import { Box, IconButton, Link, Typography } from '@mui/material';
+import { Box, IconButton, Link, Theme, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const ImageInfoContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1),
+  padding: theme.spacing(0.5, 1),
   cursor: 'pointer',
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(0.5),
+  gap: theme.spacing(0.25),
 
   '&.list-mode': {
     padding: theme.spacing(0, 1),
@@ -30,48 +30,55 @@ export const FileName = styled(Typography)(() => ({
   whiteSpace: 'nowrap',
   width: '100%',
   maxWidth: '100%',
+  marginBottom: '2px',
 }));
 
 export const DimensionsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(0.5),
+  gap: theme.spacing(0.35),
+  flexWrap: 'wrap',
+  width: '100%',
+  justifyContent: 'flex-start',
+  marginTop: 0,
+
+  '.list-mode &': {
+    flexWrap: 'nowrap',
+    gap: theme.spacing(0.5),
+  },
 }));
 
-export const Dimensions = styled('span')(({ theme }) => ({
-  fontSize: '0.75rem',
-  color: theme.palette.text.secondary,
-  backgroundColor: theme.palette.grey[100],
-  border: `1px solid ${theme.palette.grey[300]}`,
-  borderRadius: '2px',
-  padding: '1px 3px',
-}));
-
-export const FileSize = styled('span')(({ theme }) => ({
-  fontSize: '0.75rem',
-  color: theme.palette.text.secondary,
-  backgroundColor: theme.palette.grey[100],
-  border: `1px solid ${theme.palette.grey[300]}`,
-  borderRadius: '2px',
-  padding: '1px 3px',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-export const FileExtension = styled('span')(({ theme }) => ({
+const commonBadgeStyles = (theme: Theme) => ({
   fontSize: '0.7rem',
   color: theme.palette.text.secondary,
   backgroundColor: theme.palette.grey[100],
   border: `1px solid ${theme.palette.grey[300]}`,
   borderRadius: '2px',
   padding: '1px 3px',
-  fontWeight: 500,
-  letterSpacing: '0.02em',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  minWidth: '28px',
+  height: '18px',
+});
+
+export const Dimensions = styled('span')(({ theme }) => ({
+  ...commonBadgeStyles(theme),
+}));
+
+export const FileSize = styled('span')(({ theme }) => ({
+  ...commonBadgeStyles(theme),
+  margin: theme.spacing(0, 0.15),
+
+  '.list-mode &': {
+    margin: theme.spacing(0, 0.25),
+  }
+}));
+
+export const FileExtension = styled('span')(({ theme }) => ({
+  ...commonBadgeStyles(theme),
+  fontWeight: 500,
+  letterSpacing: '0.02em',
+  minWidth: '26px',
   textAlign: 'center',
 }));
 

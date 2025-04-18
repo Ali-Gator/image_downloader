@@ -8,10 +8,27 @@ export const ImageGridContainer = styled('div')(({ theme }) => ({
   overflow: 'auto',
 
   '&.grid-view': {
+    // Mobile - small screens (up to 4 columns)
     gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
 
+    // Medium screens (up to 5-6 columns)
     [theme.breakpoints.up('md')]: {
+      gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+    },
+    
+    // Large screens - limit columns to prevent stretching (up to 6-7 columns)
+    [theme.breakpoints.up('lg')]: {
       gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+    },
+    
+    // Extra large screens (>1440px) - limit to ~7-8 columns
+    [theme.breakpoints.up(1440)]: {
+      gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+    },
+    
+    // Ultra wide screens - limit to ~9-10 columns maximum
+    [theme.breakpoints.up(2000)]: {
+      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
     },
   },
 
