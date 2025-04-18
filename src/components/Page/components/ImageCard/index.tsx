@@ -31,15 +31,11 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const { handleCopyUrl, handleDownload } = useImageOperations(src, fileName);
-  
-  const { 
-    isGridView, 
-    selectedImages,
-    toggleSelectImage 
-  } = useImageStore();
-  
+
+  const { isGridView, selectedImages, toggleSelectImage } = useImageStore();
+
   const isListMode = !isGridView;
-  const isSelected = selectedImages.some(img => img.id === id);
+  const isSelected = selectedImages.some((img) => img.id === id);
 
   // Handler for clicking on the card to select the image
   const handleSelect = useCallback(

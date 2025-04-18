@@ -16,12 +16,7 @@ import {
 
 export const Header: FC = () => {
   const { t } = useTranslation();
-  const { 
-    filteredImages, 
-    selectedImages, 
-    selectAll, 
-    deselectAll 
-  } = useImageStore();
+  const { filteredImages, selectedImages, selectAll, deselectAll } = useImageStore();
 
   const handleSelectAllChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -33,7 +28,7 @@ export const Header: FC = () => {
 
   const handleDownload = () => {
     if (selectedImages.length === 0) return;
-    
+
     // Download logic will be implemented here
     // TODO: Implement download functionality for selected images
   };

@@ -59,11 +59,7 @@ export const Popup: React.FC = () => {
           // Отправляем сообщение в content-script
           chrome.tabs.sendMessage(tab.id!, { action: MessageAction.GRAB_IMAGES }, (response) => {
             if (chrome.runtime.lastError) {
-              reject(
-                new Error(
-                  chrome.runtime.lastError.message || t('content_script_failed'),
-                ),
-              );
+              reject(new Error(chrome.runtime.lastError.message || t('content_script_failed')));
               return;
             }
 
