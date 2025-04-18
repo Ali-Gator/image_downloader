@@ -73,7 +73,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
           width: img.naturalWidth,
           height: img.naturalHeight,
           aspectRatio: img.naturalWidth / img.naturalHeight,
-          filename: ''
+          filename: '',
         };
 
         // Генерируем умное имя файла, которое будет использоваться всеми компонентами

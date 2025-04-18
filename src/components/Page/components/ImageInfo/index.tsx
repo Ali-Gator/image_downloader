@@ -7,12 +7,7 @@ import { Tooltip } from '@mui/material';
 
 import { useImageStore } from '@store';
 import { ImageInfoProps } from '@types';
-import {
-  getFileExtension,
-  getFileSize,
-  getFriendlyUrlDisplay,
-  useTranslation,
-} from '@utils';
+import { getFileExtension, getFileSize, getFriendlyUrlDisplay, useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
 
 import {
