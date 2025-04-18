@@ -1,9 +1,10 @@
 import React from 'react';
-import { Tooltip } from '@mui/material';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-import { getFriendlyUrlDisplay } from '@utils';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { Tooltip } from '@mui/material';
+
 import { ImageUrlProps } from '@components/Page/types';
+import { getFriendlyUrlDisplay } from '@utils';
 
 import { NonClickableUrl, UrlContainer, UrlLink, UrlText } from './styles';
 
@@ -28,4 +29,4 @@ export const ImageUrl = ({ image }: ImageUrlProps) => {
       )}
     </UrlContainer>
   );
-}; 
+};

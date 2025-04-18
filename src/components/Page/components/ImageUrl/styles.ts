@@ -53,4 +53,4 @@ export const NonClickableUrl = styled('span')(({ theme }) => ({
   whiteSpace: 'nowrap',
   color: theme.palette.text.secondary,
   fontSize: '0.75rem',
-})); 
+}));

@@ -24,32 +24,34 @@ export const StyledImageContainer = styled(Box, {
   alignItems: 'center',
   overflow: 'hidden',
   backgroundColor: theme.palette.grey[100],
-  
-  ...(mode === 'grid' ? {
-    position: 'relative',
-    flex: '1 0 auto',
-    minHeight: theme.spacing(SIZES.GRID.IMAGE_CONTAINER_MIN_HEIGHT),
-    marginBottom: theme.spacing(0.5),
-    
-    '& img': {
-      maxWidth: '100%',
-      maxHeight: theme.spacing(SIZES.GRID.IMAGE_MAX_HEIGHT),
-      margin: '0 auto',
-    },
-  } : {
-    // List mode
-    height: theme.spacing(SIZES.LIST.IMAGE_CONTAINER_HEIGHT),
-    width: theme.spacing(SIZES.LIST.IMAGE_CONTAINER_WIDTH),
-    flexShrink: 0,
-    cursor: 'default',
-    
-    '& img': {
-      maxHeight: theme.spacing(SIZES.LIST.IMAGE_MAX_HEIGHT),
-      maxWidth: theme.spacing(SIZES.LIST.IMAGE_MAX_WIDTH),
-      margin: 'auto',
-    },
-  }),
-  
+
+  ...(mode === 'grid'
+    ? {
+        position: 'relative',
+        flex: '1 0 auto',
+        minHeight: theme.spacing(SIZES.GRID.IMAGE_CONTAINER_MIN_HEIGHT),
+        marginBottom: theme.spacing(0.5),
+
+        '& img': {
+          maxWidth: '100%',
+          maxHeight: theme.spacing(SIZES.GRID.IMAGE_MAX_HEIGHT),
+          margin: '0 auto',
+        },
+      }
+    : {
+        // List mode
+        height: theme.spacing(SIZES.LIST.IMAGE_CONTAINER_HEIGHT),
+        width: theme.spacing(SIZES.LIST.IMAGE_CONTAINER_WIDTH),
+        flexShrink: 0,
+        cursor: 'default',
+
+        '& img': {
+          maxHeight: theme.spacing(SIZES.LIST.IMAGE_MAX_HEIGHT),
+          maxWidth: theme.spacing(SIZES.LIST.IMAGE_MAX_WIDTH),
+          margin: 'auto',
+        },
+      }),
+
   '& img': {
     display: 'block',
     objectFit: 'contain',
@@ -58,4 +60,4 @@ export const StyledImageContainer = styled(Box, {
     backgroundColor: 'transparent',
     pointerEvents: 'none',
   },
-})); 
+}));

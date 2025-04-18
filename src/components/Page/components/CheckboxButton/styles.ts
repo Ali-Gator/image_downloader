@@ -24,7 +24,7 @@ export const StyledCheckbox = styled(Checkbox)(() => ({
     position: 'relative',
     fontSize: '1.25rem',
   },
-  
+
   '& .PrivateSwitchBase-input': {
     width: '100%',
     height: '100%',
@@ -33,4 +33,4 @@ export const StyledCheckbox = styled(Checkbox)(() => ({
     zIndex: 0,
     cursor: 'pointer',
   },
-})); 
+}));

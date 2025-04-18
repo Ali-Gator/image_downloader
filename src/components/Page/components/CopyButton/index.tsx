@@ -1,8 +1,10 @@
 import React from 'react';
-import { Tooltip } from '@mui/material';
+
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { Tooltip } from '@mui/material';
 
 import { CopyButtonProps } from '@components/Page/types';
+
 import { ActionIconButton } from './styles';
 
 export const CopyButton: React.FC<CopyButtonProps> = ({ url, onCopyClick }) => {
@@ -13,4 +15,4 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ url, onCopyClick }) => {
       </ActionIconButton>
     </Tooltip>
   );
-}; 
+};

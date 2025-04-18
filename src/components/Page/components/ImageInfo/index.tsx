@@ -78,7 +78,7 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
                 <FileDownloadIcon fontSize="small" />
               </ActionButton>
             </Tooltip>
-            
+
             <Tooltip title={t('copy_url_tooltip')}>
               <ActionButton size="small" onClick={handleCopyUrl} className="action-button">
                 <ContentCopyIcon fontSize="small" />

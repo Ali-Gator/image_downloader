@@ -10,4 +10,4 @@ export const ActionIconButton = styled(IconButton)(({ theme }) => ({
     color: theme.palette.primary.main,
   },
   margin: theme.spacing(0.5),
-})); 
+}));

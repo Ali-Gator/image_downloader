@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { getSmartFileName } from '@utils';
 import { ImageActionsProps } from '@components/Page/types';
 
 import { CopyButton } from '../CopyButton';
@@ -14,12 +13,11 @@ export const ImageActions = ({
   showDownload = true,
 }: ImageActionsProps) => {
   const { src } = image;
-  const fileName = getSmartFileName(image);
-  
+
   return (
     <ActionsContainer orientation={orientation} className="actions-container">
       {showCopy && <CopyButton url={src} onCopyClick={() => {}} />}
-      {showDownload && <DownloadButton url={src} fileName={fileName} onDownloadClick={() => {}} />}
+      {showDownload && <DownloadButton url={src} onDownloadClick={() => {}} />}
     </ActionsContainer>
   );
-}; 
+};

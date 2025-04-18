@@ -24,7 +24,7 @@ export const StyledTopActionBar = styled(Box)(({ theme }) => ({
   backgroundColor: 'rgba(0, 0, 0, 0.3)',
   transition: 'opacity 0.2s ease',
   opacity: 0,
-  
+
   '& > *:not(:first-child)': {
     marginLeft: 'auto', // Push all except the first child (checkbox) to the right
   },

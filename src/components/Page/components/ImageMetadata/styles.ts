@@ -10,7 +10,7 @@ export const MetadataContainer = styled(Box, {
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(0.25),
-  
+
   ...(isListMode && {
     padding: theme.spacing(0, 1),
     justifyContent: 'center',
@@ -43,9 +43,9 @@ export const DimensionsContainer = styled(Box, {
   width: '100%',
   justifyContent: 'flex-start',
   marginTop: 0,
-  
+
   ...(isListMode && {
     flexWrap: 'nowrap',
     gap: theme.spacing(0.5),
   }),
-})); 
+}));

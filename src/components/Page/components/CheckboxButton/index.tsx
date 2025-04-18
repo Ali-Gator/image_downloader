@@ -18,4 +18,4 @@ export const CheckboxButton = ({
       className={className}
     />
   );
-}; 
+};

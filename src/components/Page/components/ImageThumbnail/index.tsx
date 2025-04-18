@@ -1,7 +1,8 @@
 import React from 'react';
 
-import { getSmartFileName } from '@utils';
 import { ImageThumbnailProps } from '@components/Page/types';
+import { getSmartFileName } from '@utils';
+
 import { StyledImageContainer } from './styles';
 
 export const ImageThumbnail = ({ image, mode = 'grid' }: ImageThumbnailProps) => {
@@ -13,4 +14,4 @@ export const ImageThumbnail = ({ image, mode = 'grid' }: ImageThumbnailProps) =>
       <img src={src} alt={alt || fileName} loading="lazy" />
     </StyledImageContainer>
   );
-}; 
+};

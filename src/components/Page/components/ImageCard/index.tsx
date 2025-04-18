@@ -11,13 +11,13 @@ import { getSmartFileName, useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
 
 import { ImageInfo } from '../ImageInfo';
-import { 
-  ActionButtonsContainer, 
-  StyledCheckboxArea, 
-  StyledImageContainer, 
+import {
+  ActionButtonsContainer,
+  StyledCheckboxArea,
+  StyledImageContainer,
   StyledTopActionBar,
-  gridImageItemStyles, 
-  listImageItemStyles 
+  gridImageItemStyles,
+  listImageItemStyles,
 } from './styles';
 
 /**
@@ -61,19 +61,16 @@ export const ImageCard = memo(
 
     // Use theme-based styles but apply them via className with emotion
     const cardStyles = isListMode ? listImageItemStyles(theme) : gridImageItemStyles(theme);
-    
+
     return (
-      <Box 
+      <Box
         className={isSelected ? 'selected' : ''}
         sx={cardStyles} // Keeping sx here since it's the cleanest way to apply the dynamic styles
         onClick={handleSelect}
       >
         {!isListMode && (
           <StyledTopActionBar className="top-action-bar">
-            <CheckboxButton
-              checked={isSelected}
-              readOnly
-            />
+            <CheckboxButton checked={isSelected} readOnly />
             <ActionButtonsContainer>
               <ActionButton tooltip={t('copy_url_tooltip')} onClick={handleCopyUrl}>
                 <ContentCopyIcon fontSize="small" />
@@ -84,17 +81,17 @@ export const ImageCard = memo(
             </ActionButtonsContainer>
           </StyledTopActionBar>
         )}
-        
+
         {isListMode && (
           <StyledCheckboxArea className="checkbox-area">
             <CheckboxButton checked={isSelected} readOnly />
           </StyledCheckboxArea>
         )}
-        
+
         <StyledImageContainer className="image-container">
           <img src={src} alt={alt || fileName} loading="lazy" />
         </StyledImageContainer>
-        
+
         <ImageInfo
           fileName={fileName}
           width={width}

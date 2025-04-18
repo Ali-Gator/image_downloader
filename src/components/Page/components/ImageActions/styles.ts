@@ -12,4 +12,4 @@ export const ActionsContainer = styled(Box, {
     flexDirection: 'column',
     alignItems: 'flex-start',
   }),
-})); 
+}));

@@ -16,23 +16,26 @@ export const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
 
-  const openImagesPage = useCallback(async (images: ImageData[]) => {
-    const tab = await chrome.tabs.create({
-      url: 'page.html',
-      active: false,
-    });
+  const openImagesPage = useCallback(
+    async (images: ImageData[]) => {
+      const tab = await chrome.tabs.create({
+        url: 'page.html',
+        active: false,
+      });
 
-    setTimeout(async () => {
-      if (tab.id) {
-        const success = await sendImagesToTab(tab.id, images);
-        if (!success) {
-          handleError(new Error('Failed to send images to tab'), true, t('error_text'));
+      setTimeout(async () => {
+        if (tab.id) {
+          const success = await sendImagesToTab(tab.id, images);
+          if (!success) {
+            handleError(new Error('Failed to send images to tab'), true, t('error_text'));
+          }
+        } else {
+          handleError(new Error('Invalid tab ID'), true, t('error_text'));
         }
-      } else {
-        handleError(new Error('Invalid tab ID'), true, t('error_text'));
-      }
-    }, 500);
-  }, [t]);
+      }, 500);
+    },
+    [t],
+  );
 
   const handleGrabImages = useCallback(async () => {
     await withErrorHandling(

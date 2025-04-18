@@ -30,48 +30,57 @@ export const getFileExtension = (fileName: string): string => {
     if (fileName.startsWith('http://') || fileName.startsWith('https://')) {
       // Создаем URL объект для разбора
       const url = new URL(fileName);
-      
+
       // Проверяем, содержит ли URL специфические пути изображений
       // Например, google/cloudinary и другие CDN изображений
       const hostname = url.hostname.toLowerCase();
-      
+
       // Для некоторых фотохостингов определяем формат по URL или домену
-      if (hostname.includes('googleusercontent.com') || 
-          hostname.includes('gstatic.com') || 
-          hostname.includes('lh3.google.com')) {
+      if (
+        hostname.includes('googleusercontent.com') ||
+        hostname.includes('gstatic.com') ||
+        hostname.includes('lh3.google.com')
+      ) {
         // Google обычно использует WebP или PNG, но проверяем параметры
         if (url.searchParams.has('format')) {
           const format = url.searchParams.get('format')?.toLowerCase();
           if (format) return format.toUpperCase();
         }
-        
+
         // Если формат не указан явно, предполагаем PNG для иконок
         if (url.pathname.includes('s32-c-mo') || url.pathname.includes('favicon')) {
           return 'PNG';
         }
       }
-      
+
       // Удаляем параметры запроса
       const pathWithoutQuery = url.pathname.split('?')[0];
-      
+
       // Извлекаем последний сегмент пути
       const segments = pathWithoutQuery.split('/');
       let lastSegment = segments[segments.length - 1];
-      
+
       // Если есть параметры в имени файла (часть с =), удаляем их
       if (lastSegment.includes('=')) {
         lastSegment = lastSegment.split('=')[0];
       }
-      
+
       // Извлекаем расширение из последнего сегмента
       const dotIndex = lastSegment.lastIndexOf('.');
       if (dotIndex > 0 && dotIndex < lastSegment.length - 1) {
-        const ext = lastSegment.slice(dotIndex + 1).split('&')[0].split('#')[0];
-        if (ext && /^[a-z0-9]+$/i.test(ext) && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext.toLowerCase())) {
+        const ext = lastSegment
+          .slice(dotIndex + 1)
+          .split('&')[0]
+          .split('#')[0];
+        if (
+          ext &&
+          /^[a-z0-9]+$/i.test(ext) &&
+          ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext.toLowerCase())
+        ) {
           return ext.toUpperCase();
         }
       }
-      
+
       // Проверяем параметры запроса на наличие информации о типе файла
       if (url.searchParams.has('type')) {
         const type = url.searchParams.get('type')?.toLowerCase();
@@ -82,13 +91,17 @@ export const getFileExtension = (fileName: string): string => {
           return type!.toUpperCase();
         }
       }
-      
+
       // Если не удалось определить из URL, проверяем, содержит ли pathname указание на формат
       if (pathWithoutQuery.toLowerCase().includes('/png/')) return 'PNG';
-      if (pathWithoutQuery.toLowerCase().includes('/jpg/') || pathWithoutQuery.toLowerCase().includes('/jpeg/')) return 'JPEG';
+      if (
+        pathWithoutQuery.toLowerCase().includes('/jpg/') ||
+        pathWithoutQuery.toLowerCase().includes('/jpeg/')
+      )
+        return 'JPEG';
       if (pathWithoutQuery.toLowerCase().includes('/webp/')) return 'WEBP';
       if (pathWithoutQuery.toLowerCase().includes('/gif/')) return 'GIF';
-      
+
       // Не удалось определить расширение из URL
       return 'PNG';
     }
@@ -99,7 +112,7 @@ export const getFileExtension = (fileName: string): string => {
   // Стандартная логика для файлов с расширением
   // Удаляем параметры запроса, если они есть
   const fileNameWithoutParams = fileName.split('?')[0].split('#')[0];
-  
+
   // Извлекаем расширение
   const dotIndex = fileNameWithoutParams.lastIndexOf('.');
   if (dotIndex > 0 && dotIndex < fileNameWithoutParams.length - 1) {
@@ -112,7 +125,7 @@ export const getFileExtension = (fileName: string): string => {
       }
     }
   }
-  
+
   // Если не найдено валидное расширение, используем PNG по умолчанию
   return 'PNG';
 };
@@ -146,4 +159,4 @@ export const getFriendlyUrlDisplay = (url: string): { text: string; tooltip: str
     text: truncateUrl(url),
     tooltip: url,
   };
-}; 
+};

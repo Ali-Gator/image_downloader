@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState } from 'react';
 
-import { getFileExtension, getFileSize, getSmartFileName } from '@utils';
 import { ImageMetadataProps } from '@components/Page/types';
+import { getFileExtension, getFileSize, getSmartFileName } from '@utils';
 
 import { MetadataBadge } from '../MetadataBadge';
 import { DimensionsContainer, FileName, MetadataContainer } from './styles';
@@ -50,4 +50,4 @@ export const ImageMetadata = memo(({ image, isListMode = false }: ImageMetadataP
   );
 });
 
-ImageMetadata.displayName = 'ImageMetadata'; 
+ImageMetadata.displayName = 'ImageMetadata';

@@ -71,7 +71,7 @@ export const FileSize = styled('span')(({ theme }) => ({
 
   '.list-mode &': {
     margin: theme.spacing(0, 0.25),
-  }
+  },
 }));
 
 export const FileExtension = styled('span')(({ theme }) => ({

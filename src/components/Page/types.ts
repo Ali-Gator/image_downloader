@@ -125,7 +125,6 @@ export interface CopyButtonProps {
  */
 export interface DownloadButtonProps {
   url: string;
-  fileName: string;
   onDownloadClick: (url: string) => void;
 }
 

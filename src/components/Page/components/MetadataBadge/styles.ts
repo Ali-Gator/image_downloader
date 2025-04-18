@@ -12,11 +12,11 @@ export const StyledBadge = styled('span')<{ emphasis?: boolean }>(({ theme, emph
   justifyContent: 'center',
   height: '18px',
   margin: theme.spacing(0, 0.15),
-  
+
   ...(emphasis && {
     fontWeight: 500,
     letterSpacing: '0.02em',
     minWidth: '26px',
     textAlign: 'center',
   }),
-})); 
+}));
