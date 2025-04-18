@@ -1,6 +1,56 @@
-import { Theme } from '@mui/material/styles';
+import { Box } from '@mui/material';
+import { styled, Theme } from '@mui/material/styles';
 import { SxProps } from '@mui/system';
 
+// ===== STYLED COMPONENTS =====
+// Styled components for reuse
+export const ActionButtonsContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(0.5),
+}));
+
+export const StyledTopActionBar = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  height: theme.spacing(6),
+  display: 'flex',
+  justifyContent: 'left',
+  alignItems: 'center',
+  padding: theme.spacing(0.5),
+  zIndex: 2,
+  backdropFilter: 'blur(2px)',
+  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  transition: 'opacity 0.2s ease',
+  opacity: 0,
+  
+  '& > *:not(:first-child)': {
+    marginLeft: 'auto', // Push all except the first child (checkbox) to the right
+  },
+}));
+
+export const StyledImageContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  overflow: 'hidden',
+  backgroundColor: theme.palette.grey[100],
+}));
+
+export const StyledCheckboxArea = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  width: theme.spacing(5),
+  cursor: 'pointer',
+  position: 'relative',
+  zIndex: 1,
+  height: '100%',
+}));
+
+// ===== CONSTANTS =====
 // Constants for sizes and styles
 const CARD_STYLES = {
   GRID: {
@@ -8,6 +58,7 @@ const CARD_STYLES = {
     IMAGE_MAX_HEIGHT: 22, // Slightly higher max height to maintain aspect ratio
     INFO_SECTION_HEIGHT: 3, // Reduced info section height
     ASPECT_RATIO: 1.2, // Target aspect ratio (width/height) for image container
+    TOP_BAR_HEIGHT: 6, // Height for the top action bar to fit buttons
   },
   LIST: {
     IMAGE_CONTAINER_HEIGHT: 12,
@@ -22,8 +73,9 @@ const CARD_STYLES = {
   },
 };
 
-// Common styles
-const commonCardStyles = (theme: Theme): SxProps<Theme> => ({
+// ===== COMMON STYLES =====
+// Base styles shared between grid and list modes
+const commonCardStyles = (theme: Theme) => ({
   height: '100%',
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
@@ -32,40 +84,6 @@ const commonCardStyles = (theme: Theme): SxProps<Theme> => ({
   boxShadow: theme.shadows[1],
   transition: theme.transitions.create(['box-shadow', 'transform', 'border-color']),
   border: `1px solid ${theme.palette.divider}`,
-
-  '&.selected': {
-    border: `2px solid ${theme.palette.primary.main}`,
-    boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
-  },
-});
-
-const commonCheckboxStyles = (theme: Theme) => ({
-  backgroundColor: 'rgba(255, 255, 255, 0.7)',
-  borderRadius: '50%',
-  transition: theme.transitions.create(['transform', 'opacity', 'visibility']),
-  '&:hover': {
-    transform: 'scale(1.1)',
-  },
-  '& .MuiSvgIcon-root': {
-    zIndex: 1,
-    position: 'relative',
-  },
-  '& .PrivateSwitchBase-input': {
-    width: '100%',
-    height: '100%',
-    top: 0,
-    left: 0,
-    zIndex: 0,
-    cursor: 'pointer',
-  },
-});
-
-const commonImageContainerStyles = (theme: Theme) => ({
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  overflow: 'hidden',
-  backgroundColor: theme.palette.grey[100],
 });
 
 const commonImageStyles = {
@@ -77,20 +95,7 @@ const commonImageStyles = {
   pointerEvents: 'none',
 };
 
-// Grid-specific styles
-const gridCheckboxStyles = (theme: Theme) => ({
-  position: 'absolute',
-  top: theme.spacing(CARD_STYLES.COMMON.CHECKBOX_SIZE),
-  left: theme.spacing(CARD_STYLES.COMMON.CHECKBOX_SIZE),
-  zIndex: 1,
-  opacity: 0,
-  visibility: 'hidden',
-});
-
-const gridCheckboxAreaStyles = () => ({
-  // Grid mode doesn't need specific styles
-});
-
+// ===== GRID MODE STYLES =====
 const gridImageContainerStyles = (theme: Theme) => ({
   position: 'relative',
   flex: '1 0 auto',
@@ -98,6 +103,7 @@ const gridImageContainerStyles = (theme: Theme) => ({
   display: 'flex',
   alignItems: 'center',
   marginBottom: theme.spacing(0.5),
+  // No need for top margin since action bar is absolutely positioned
 });
 
 const gridImageStyles = (theme: Theme) => ({
@@ -106,26 +112,7 @@ const gridImageStyles = (theme: Theme) => ({
   margin: '0 auto',
 });
 
-// List-specific styles
-const listCheckboxStyles = (theme: Theme) => ({
-  position: 'static',
-  marginRight: theme.spacing(CARD_STYLES.COMMON.PADDING),
-  opacity: 1,
-  visibility: 'visible',
-});
-
-const listCheckboxAreaStyles = (theme: Theme) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexShrink: 0,
-  width: theme.spacing(CARD_STYLES.LIST.CHECKBOX_AREA_WIDTH),
-  cursor: 'pointer',
-  position: 'relative',
-  zIndex: 1,
-  height: '100%',
-});
-
+// ===== LIST MODE STYLES =====
 const listImageContainerStyles = (theme: Theme) => ({
   height: theme.spacing(CARD_STYLES.LIST.IMAGE_CONTAINER_HEIGHT),
   width: theme.spacing(CARD_STYLES.LIST.IMAGE_CONTAINER_WIDTH),
@@ -139,27 +126,26 @@ const listImageStyles = (theme: Theme) => ({
   margin: 'auto',
 });
 
-// Combined styles
+// ===== EXPORTED STYLES =====
+// Combined styles for grid mode (for use with SxProps only when needed)
 export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   ...commonCardStyles(theme),
   display: 'flex',
   flexDirection: 'column',
   cursor: 'pointer',
   paddingBottom: theme.spacing(0.75),
+  position: 'relative',
 
-  '.checkbox-area': gridCheckboxAreaStyles(),
-  '.image-checkbox': {
-    ...commonCheckboxStyles(theme),
-    ...gridCheckboxStyles(theme),
+  '&:hover .top-action-bar': {
+    opacity: 1,
   },
 
-  '&:hover .image-checkbox, & .image-checkbox.Mui-checked': {
-    opacity: 1,
-    visibility: 'visible',
+  '&.selected': {
+    border: `2px solid ${theme.palette.primary.main}`,
+    boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
   },
 
   '.image-container': {
-    ...commonImageContainerStyles(theme),
     ...gridImageContainerStyles(theme),
   },
 
@@ -178,6 +164,7 @@ export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   },
 });
 
+// Combined styles for list mode (for use with SxProps only when needed)
 export const listImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   ...commonCardStyles(theme),
   display: 'flex',
@@ -187,14 +174,13 @@ export const listImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   gap: theme.spacing(2),
   cursor: 'default',
 
-  '.checkbox-area': listCheckboxAreaStyles(theme),
-  '.image-container': {
-    ...commonImageContainerStyles(theme),
-    ...listImageContainerStyles(theme),
+  '&.selected': {
+    border: `2px solid ${theme.palette.primary.main}`,
+    boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
   },
-  '.image-checkbox': {
-    ...commonCheckboxStyles(theme),
-    ...listCheckboxStyles(theme),
+
+  '.image-container': {
+    ...listImageContainerStyles(theme),
   },
 
   img: {

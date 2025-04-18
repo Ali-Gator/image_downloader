@@ -1,12 +1,24 @@
 import { memo, MouseEvent, useCallback } from 'react';
 
-import { Box, Checkbox, useTheme } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { Box, useTheme } from '@mui/material';
 
+import { ActionButton } from '@components/Page/components/ActionButton';
+import { CheckboxButton } from '@components/Page/components/CheckboxButton';
 import { ImageCardProps, ViewMode } from '@components/Page/types';
-import { getSmartFileName } from '@utils';
+import { getSmartFileName, useTranslation } from '@utils';
+import { useImageOperations } from '@utils/imageOperations';
 
 import { ImageInfo } from '../ImageInfo';
-import { gridImageItemStyles, listImageItemStyles } from './styles';
+import { 
+  ActionButtonsContainer, 
+  StyledCheckboxArea, 
+  StyledImageContainer, 
+  StyledTopActionBar,
+  gridImageItemStyles, 
+  listImageItemStyles 
+} from './styles';
 
 /**
  * Component for displaying an image card
@@ -18,6 +30,8 @@ export const ImageCard = memo(
     const fileName = getSmartFileName(image);
     const theme = useTheme();
     const isListMode = viewMode === ViewMode.List;
+    const { t } = useTranslation();
+    const { handleCopyUrl, handleDownload } = useImageOperations(src, fileName);
 
     // Handler for clicking on the card to select the image
     const handleSelect = useCallback(
@@ -45,16 +59,42 @@ export const ImageCard = memo(
       [src, onSelect, isListMode],
     );
 
+    // Use theme-based styles but apply them via className with emotion
     const cardStyles = isListMode ? listImageItemStyles(theme) : gridImageItemStyles(theme);
-
+    
     return (
-      <Box sx={cardStyles} className={isSelected ? 'selected' : ''} onClick={handleSelect}>
-        <Box className="checkbox-area">
-          <Checkbox checked={isSelected} className="image-checkbox" readOnly />
-        </Box>
-        <Box className="image-container">
+      <Box 
+        className={isSelected ? 'selected' : ''}
+        sx={cardStyles} // Keeping sx here since it's the cleanest way to apply the dynamic styles
+        onClick={handleSelect}
+      >
+        {!isListMode && (
+          <StyledTopActionBar className="top-action-bar">
+            <CheckboxButton
+              checked={isSelected}
+              readOnly
+            />
+            <ActionButtonsContainer>
+              <ActionButton tooltip={t('copy_url_tooltip')} onClick={handleCopyUrl}>
+                <ContentCopyIcon fontSize="small" />
+              </ActionButton>
+              <ActionButton tooltip={t('download_image_tooltip')} onClick={handleDownload}>
+                <FileDownloadIcon fontSize="small" />
+              </ActionButton>
+            </ActionButtonsContainer>
+          </StyledTopActionBar>
+        )}
+        
+        {isListMode && (
+          <StyledCheckboxArea className="checkbox-area">
+            <CheckboxButton checked={isSelected} readOnly />
+          </StyledCheckboxArea>
+        )}
+        
+        <StyledImageContainer className="image-container">
           <img src={src} alt={alt || fileName} loading="lazy" />
-        </Box>
+        </StyledImageContainer>
+        
         <ImageInfo
           fileName={fileName}
           width={width}

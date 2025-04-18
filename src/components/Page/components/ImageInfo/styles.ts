@@ -152,21 +152,3 @@ export const NonClickableUrl = styled('span')(({ theme }) => ({
   color: theme.palette.text.secondary,
   fontSize: '0.75rem',
 }));
-
-export const CopyButton = styled(IconButton)(({ theme }) => ({
-  position: 'absolute',
-  top: theme.spacing(1),
-  right: theme.spacing(1),
-  opacity: 0,
-  transition: 'opacity 0.2s',
-  backgroundColor: 'rgba(255, 255, 255, 0.7)',
-  padding: theme.spacing(0.5),
-
-  '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  },
-
-  '.MuiBox-root:hover &': {
-    opacity: 1,
-  },
-}));

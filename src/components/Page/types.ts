@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { ImageData } from '@types';
 import { SizeFilter, SortOption } from '@utils';
 
@@ -62,4 +64,77 @@ export interface HeaderProps {
 export enum ViewMode {
   List = 'list',
   Grid = 'grid',
+}
+
+export interface ActionButtonProps {
+  tooltip: string;
+  onClick: (event: React.MouseEvent) => void;
+  'aria-label'?: string;
+  children: React.ReactNode;
+}
+
+export interface CheckboxButtonProps {
+  checked: boolean;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  readOnly?: boolean;
+  className?: string;
+}
+
+/**
+ * Props for the ImageThumbnail component
+ */
+export interface ImageThumbnailProps {
+  image: ImageData;
+  mode?: 'grid' | 'list';
+}
+
+/**
+ * Props for the ImageMetadata component
+ */
+export interface ImageMetadataProps {
+  image: ImageData;
+  isListMode?: boolean;
+  compact?: boolean;
+}
+
+/**
+ * Props for the MetadataBadge component
+ */
+export interface MetadataBadgeProps {
+  children: React.ReactNode;
+  emphasis?: boolean;
+}
+
+/**
+ * Props for the ImageUrl component
+ */
+export interface ImageUrlProps {
+  image: ImageData;
+}
+
+/**
+ * Props for the CopyButton component
+ */
+export interface CopyButtonProps {
+  url: string;
+  onCopyClick: (url: string) => void;
+}
+
+/**
+ * Props for the DownloadButton component
+ */
+export interface DownloadButtonProps {
+  url: string;
+  fileName: string;
+  onDownloadClick: (url: string) => void;
+}
+
+/**
+ * Props for the ImageActions component
+ */
+export interface ImageActionsProps {
+  image: ImageData;
+  orientation?: 'horizontal' | 'vertical';
+  showCopy?: boolean;
+  showDownload?: boolean;
 }

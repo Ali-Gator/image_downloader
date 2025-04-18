@@ -1,18 +1,17 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Tooltip } from '@mui/material';
-import { useSnackbar } from 'notistack';
 
 import { ImageInfoProps } from '@components/Page/types';
 import { getFileExtension, getFileSize, getFriendlyUrlDisplay, useTranslation } from '@utils';
+import { useImageOperations } from '@utils/imageOperations';
 
 import {
   ActionButton,
   ActionsContainer,
-  CopyButton,
   Dimensions,
   DimensionsContainer,
   FileExtension,
@@ -29,10 +28,10 @@ import {
  * Component for displaying information about an image (filename, dimensions)
  */
 export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: ImageInfoProps) => {
-  const { enqueueSnackbar } = useSnackbar();
   const { t } = useTranslation();
   const [fileSize, setFileSize] = useState<string | null>(null);
   const [isLoadingSize, setIsLoadingSize] = useState(false);
+  const { handleCopyUrl, handleDownload } = useImageOperations(src, fileName);
 
   useEffect(() => {
     setIsLoadingSize(true);
@@ -51,81 +50,6 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
 
     fetchFileSize();
   }, [src]);
-
-  const handleDownload = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-
-      // Use chrome.downloads API for all URL types
-      if (chrome.downloads && chrome.downloads.download) {
-        chrome.downloads.download(
-          {
-            url: src,
-            filename: fileName,
-            saveAs: false,
-          },
-          (_) => {
-            if (chrome.runtime.lastError) {
-              console.error('Download error:', chrome.runtime.lastError);
-              enqueueSnackbar(t('download_error_text'), {
-                variant: 'error',
-                autoHideDuration: 2000,
-              });
-            } else {
-              enqueueSnackbar(t('download_started_text'), {
-                variant: 'success',
-                autoHideDuration: 2000,
-              });
-            }
-          },
-        );
-      } else {
-        // Fallback for when chrome.downloads API is not available
-        try {
-          const a = document.createElement('a');
-          a.href = src;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-
-          enqueueSnackbar(t('download_started_text'), {
-            variant: 'success',
-            autoHideDuration: 2000,
-          });
-        } catch (error) {
-          console.error('Download error:', error);
-          enqueueSnackbar(t('download_error_text'), {
-            variant: 'error',
-            autoHideDuration: 2000,
-          });
-        }
-      }
-    },
-    [src, fileName, enqueueSnackbar, t],
-  );
-
-  const handleCopyUrl = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      navigator.clipboard
-        .writeText(src)
-        .then(() => {
-          enqueueSnackbar(t('url_copied_text'), {
-            variant: 'success',
-            autoHideDuration: 2000,
-          });
-        })
-        .catch((error) => {
-          console.error('Error copying URL', error);
-          enqueueSnackbar(t('url_copy_error_text'), {
-            variant: 'error',
-            autoHideDuration: 2000,
-          });
-        });
-    },
-    [src, enqueueSnackbar, t],
-  );
 
   const dimensions = width && height ? `${width} × ${height}` : '';
   const urlDisplay = getFriendlyUrlDisplay(src);
@@ -146,7 +70,7 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
         </DimensionsContainer>
       )}
 
-      {isListMode ? (
+      {isListMode && (
         <>
           <ActionsContainer className="actions-container">
             <Tooltip title={t('download_image_tooltip')}>
@@ -154,7 +78,7 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
                 <FileDownloadIcon fontSize="small" />
               </ActionButton>
             </Tooltip>
-
+            
             <Tooltip title={t('copy_url_tooltip')}>
               <ActionButton size="small" onClick={handleCopyUrl} className="action-button">
                 <ContentCopyIcon fontSize="small" />
@@ -182,12 +106,6 @@ export const ImageInfo = memo(({ fileName, width, height, src, isListMode }: Ima
             )}
           </UrlContainer>
         </>
-      ) : (
-        <Tooltip title={t('copy_url_tooltip')}>
-          <CopyButton size="small" onClick={handleCopyUrl} className="copy-button">
-            <ContentCopyIcon fontSize="small" />
-          </CopyButton>
-        </Tooltip>
       )}
     </ImageInfoContainer>
   );
