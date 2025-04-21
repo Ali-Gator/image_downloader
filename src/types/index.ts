@@ -68,15 +68,6 @@ export interface ImageThumbnailProps {
 }
 
 /**
- * Props for the ImageMetadata component
- */
-export interface ImageMetadataProps {
-  image: ImageData;
-  isListMode?: boolean;
-  compact?: boolean;
-}
-
-/**
  * Props for the MetadataBadge component
  */
 export interface MetadataBadgeProps {

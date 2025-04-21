@@ -1,6 +1,5 @@
 // Export all image-related components
 export { ImageThumbnail } from './ImageThumbnail';
-export { ImageMetadata } from './ImageMetadata';
 export { ImageUrl } from './ImageUrl';
 export { MetadataBadge } from './MetadataBadge';
 export { ImageActions } from './ImageActions';
