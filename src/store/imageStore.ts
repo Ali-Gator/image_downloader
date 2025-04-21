@@ -185,13 +185,13 @@ export const useImageStore = create<ImageState>((set, get) => ({
       filtered.sort((a, b) => {
         switch (sortOption) {
           case SortOption.NAME_ASC:
-            return a.alt.localeCompare(b.alt);
+            return a.filename.localeCompare(b.filename);
           case SortOption.NAME_DESC:
-            return b.alt.localeCompare(a.alt);
+            return b.filename.localeCompare(a.filename);
           case SortOption.SIZE_ASC:
-            return a.width * a.height - b.width * b.height;
+            return a.fileSize - b.fileSize;
           case SortOption.SIZE_DESC:
-            return b.width * b.height - a.width * a.height;
+            return b.fileSize - a.fileSize;
           default:
             return 0;
         }

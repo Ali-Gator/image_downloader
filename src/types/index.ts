@@ -8,6 +8,7 @@ export interface ImageData {
   height: number;
   aspectRatio: number;
   filename: string;
+  fileSize: number;
 }
 
 /**

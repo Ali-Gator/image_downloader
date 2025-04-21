@@ -1,11 +1,8 @@
 import { FC, SyntheticEvent, useState } from 'react';
 
-import FilterListIcon from '@mui/icons-material/FilterList';
 import GridViewIcon from '@mui/icons-material/GridView';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import SortIcon from '@mui/icons-material/Sort';
-import StraightenIcon from '@mui/icons-material/Straighten';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import {
   Button,
@@ -191,7 +188,6 @@ export const Toolbar: FC = () => {
       <LeftSection>
         <ControlsRow>
           <ControlItem>
-            <FilterListIcon />
             <TextField
               placeholder={t('filter_text')}
               variant="outlined"
@@ -202,7 +198,6 @@ export const Toolbar: FC = () => {
           </ControlItem>
 
           <ControlItem>
-            <StraightenIcon />
             <Button
               variant="outlined"
               size="medium"
@@ -336,7 +331,6 @@ export const Toolbar: FC = () => {
         </InfoContainer>
 
         <SortContainer>
-          <SortIcon />
           <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
             <InputLabel id="sort-images-label">{t('sort_text')}</InputLabel>
             <Select

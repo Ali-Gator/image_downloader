@@ -1,36 +1,17 @@
-import { memo, useEffect, useState } from 'react';
+import { memo } from 'react';
 
 import { ImageMetadataProps } from '@types';
-import { getFileExtension, getFileSize } from '@utils';
+import { formatFileSize, getFileExtension } from '@utils';
 
 import { MetadataBadge } from '../MetadataBadge';
 import { DimensionsContainer, FileName, MetadataContainer } from './styles';
 
 export const ImageMetadata = memo(({ image, isListMode = false }: ImageMetadataProps) => {
-  const { src, width, height, filename } = image;
-  const [fileSize, setFileSize] = useState<string | null>(null);
-  const [isLoadingSize, setIsLoadingSize] = useState(false);
-
-  useEffect(() => {
-    setIsLoadingSize(true);
-
-    const fetchFileSize = async () => {
-      try {
-        const size = await getFileSize(src);
-        setFileSize(size);
-      } catch (error) {
-        console.error('Error getting file size:', error);
-        setFileSize(null);
-      } finally {
-        setIsLoadingSize(false);
-      }
-    };
-
-    fetchFileSize();
-  }, [src]);
+  const { width, height, filename, fileSize } = image;
 
   const dimensions = width && height ? `${width} × ${height}` : '';
   const fileExtension = getFileExtension(filename);
+  const formattedFileSize = formatFileSize(fileSize);
 
   return (
     <MetadataContainer isListMode={isListMode}>
@@ -41,7 +22,7 @@ export const ImageMetadata = memo(({ image, isListMode = false }: ImageMetadataP
       {dimensions && (
         <DimensionsContainer isListMode={isListMode} className="dimensions-container">
           <MetadataBadge>{dimensions}</MetadataBadge>
-          {!isLoadingSize && fileSize && <MetadataBadge>{fileSize}</MetadataBadge>}
+          {formattedFileSize && <MetadataBadge>{formattedFileSize}</MetadataBadge>}
           <MetadataBadge emphasis>{fileExtension}</MetadataBadge>
         </DimensionsContainer>
       )}

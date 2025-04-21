@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from 'react';
+import { memo } from 'react';
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
@@ -7,7 +7,7 @@ import { Tooltip } from '@mui/material';
 
 import { useImageStore } from '@store';
 import { ImageInfoProps } from '@types';
-import { getFileExtension, getFileSize, getFriendlyUrlDisplay, useTranslation } from '@utils';
+import { formatFileSize, getFileExtension, getFriendlyUrlDisplay, useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
 
 import {
@@ -30,9 +30,6 @@ import {
  */
 export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   const { t } = useTranslation();
-  const [fileSize, setFileSize] = useState<string | null>(null);
-  const [isLoadingSize, setIsLoadingSize] = useState(false);
-
   const { filteredImages, isGridView } = useImageStore();
   const image = filteredImages.find((img) => img.id === imageId);
 
@@ -47,6 +44,7 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   const width = image?.width;
   const height = image?.height;
   const fileName = image ? image.filename : defaultFileName;
+  const formattedFileSize = image?.fileSize ? formatFileSize(image.fileSize) : null;
 
   // Используем хуки всегда, даже если image не найден
   const { handleCopyUrl, handleDownload } = useImageOperations(src, fileName);
@@ -56,25 +54,6 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   const urlDisplay = getFriendlyUrlDisplay(src);
   const canOpenExternally = !src.startsWith('data:') && !src.startsWith('blob:');
   const fileExtension = getFileExtension(fileName);
-
-  useEffect(() => {
-    if (!src) return;
-
-    setIsLoadingSize(true);
-    const fetchFileSize = async () => {
-      try {
-        const size = await getFileSize(src);
-        setFileSize(size);
-      } catch (error) {
-        console.error('Error getting file size:', error);
-        setFileSize(null);
-      } finally {
-        setIsLoadingSize(false);
-      }
-    };
-
-    fetchFileSize();
-  }, [src]);
 
   // Если изображение не найдено, возвращаем пустой контейнер
   if (!image) {
@@ -90,7 +69,7 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
       {dimensions && (
         <DimensionsContainer className="dimensions-container">
           <Dimensions className="dimensions">{dimensions}</Dimensions>
-          {!isLoadingSize && fileSize && <FileSize className="file-size">{fileSize}</FileSize>}
+          {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
           <FileExtension className="file-extension">{fileExtension}</FileExtension>
         </DimensionsContainer>
       )}
