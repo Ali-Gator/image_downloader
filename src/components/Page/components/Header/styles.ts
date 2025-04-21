@@ -39,9 +39,16 @@ export const SelectAllContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   color: theme.palette.common.white,
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  borderRadius: theme.spacing(0.5),
+  padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
 
   '& label': {
     marginLeft: theme.spacing(0.5),
     cursor: 'pointer',
+  },
+
+  '& .MuiCheckbox-root': {
+    padding: 0,
   },
 }));
