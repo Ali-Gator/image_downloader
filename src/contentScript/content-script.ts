@@ -56,7 +56,7 @@ const estimateImageSize = (img: HTMLImageElement): number => {
         return Math.floor((base64.length - padding) * 0.75);
       }
     }
-    
+
     // Используем информацию о загруженных ресурсах, если доступно
     if (window.performance && window.performance.getEntriesByName) {
       const entries = window.performance.getEntriesByName(img.src, 'resource');
@@ -70,14 +70,13 @@ const estimateImageSize = (img: HTMLImageElement): number => {
         }
       }
     }
-    
+
     // Используем аппроксимацию на основе разрешения и формата
     // Предполагаем 3 байта на пиксель для PNG/JPEG (среднее сжатие)
     // WebP обычно имеет лучшее сжатие - примерно 2 байта на пиксель
     const pixelCount = img.naturalWidth * img.naturalHeight;
-    const isWebP = img.src.toLowerCase().includes('webp') || 
-                  img.src.startsWith('data:image/webp');
-    
+    const isWebP = img.src.toLowerCase().includes('webp') || img.src.startsWith('data:image/webp');
+
     return isWebP ? pixelCount * 2 : pixelCount * 3;
   } catch (e) {
     // Если что-то пошло не так, возвращаем оценку на основе разрешения
@@ -119,7 +118,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
           height: img.naturalHeight,
           aspectRatio: img.naturalWidth / img.naturalHeight,
           filename: '',
-          fileSize: estimateImageSize(img)
+          fileSize: estimateImageSize(img),
         };
 
         // Генерируем умное имя файла, которое будет использоваться всеми компонентами

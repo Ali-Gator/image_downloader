@@ -13,7 +13,7 @@ export const ActionButton = ({
 }: ActionButtonProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onClick(e);
+    onClick();
   };
 
   return (

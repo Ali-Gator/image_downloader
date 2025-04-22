@@ -3,6 +3,7 @@
  */
 export enum MessageAction {
   GRAB_IMAGES = 'grabImages',
+  SET_DOWNLOAD_OPTIONS = 'setDownloadOptions',
 }
 
 /**
@@ -32,6 +33,27 @@ export enum SortOption {
   SIZE_ASC = 'size-asc',
   SIZE_DESC = 'size-desc',
 }
+
+/**
+ * Constants for notifications duration in milliseconds
+ */
+export const NOTIFICATION_DURATION = {
+  SHORT: 2000,
+  MEDIUM: 3000,
+  LONG: 4000,
+};
+
+/**
+ * Constants for downloading images
+ */
+export const DOWNLOAD_CONSTANTS = {
+  /** Maximum number of attempts to find available folder name */
+  MAX_FOLDER_ATTEMPTS: 100,
+  /** Regex for unsafe characters in filenames */
+  UNSAFE_FILENAME_CHARS_REGEX: /[\\?%*:|"<>]/g,
+  /** Time threshold in ms after which downloads are considered outdated (12 hours) */
+  DOWNLOAD_HISTORY_THRESHOLD: 12 * 60 * 60 * 1000,
+};
 
 /**
  * Common image formats and patterns to filter out in image detection

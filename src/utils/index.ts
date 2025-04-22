@@ -22,6 +22,9 @@ export * from './fileUtils';
 // Re-export image utilities
 export * from './imageUtils';
 
+// Re-export download helpers
+export * from './downloadHelpers';
+
 // Re-export general utilities
 export * from './utils';
 
