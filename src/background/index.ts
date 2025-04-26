@@ -1,29 +1,16 @@
-import { DownloadOptions } from '../types';
-import { DOWNLOAD_CONSTANTS, MessageAction } from '../utils/constants';
-import { handleError } from '../utils/errorHandlers';
+import { DownloadOptions } from '@types';
+import { DownloadConstants, handleError, MessageAction, sanitizePath } from '@utils';
 
-// Constants
-const INSTALL_URL = 'https://blockdev.app/image-downloader/installed';
-const UNINSTALL_URL = 'https://blockdev.app/image-downloader/uninstalled';
-
-// Global variable to store download options
+// Global variable for storing download options
 let downloadOptions: DownloadOptions = {};
 
 /**
- * Sanitizes a path component by removing unsafe characters
- */
-const sanitizePath = (path: string): string => {
-  return path ? path.replace(DOWNLOAD_CONSTANTS.UNSAFE_FILENAME_CHARS_REGEX, '_') : '';
-};
-
-/**
- * Message handler for setting download options
+ * Listener for setting download options via message
  */
 chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
   try {
     if (request.msg === MessageAction.SET_DOWNLOAD_OPTIONS) {
       downloadOptions = request.downloadOptions || {};
-      console.log("Background received download options:", downloadOptions);
       sendResponse({ success: true });
       return true;
     }
@@ -35,46 +22,32 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
 });
 
 /**
- * Handler for determining filename and folder during download
+ * Listener for determining filename and folder during download
  */
 chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
   try {
-    // Check if download was initiated by our extension
+    // Check if the download was initiated by our extension
     if (item.byExtensionId === chrome.runtime.id) {
-      console.log("Processing download:", item.filename);
-      console.log("Current download options:", downloadOptions);
-      
-      // Get filename and extension
-      let filename = item.filename;
-      const fileExtension = filename.split('.').pop() || '';
-      
-      // If custom filename is specified, use it
-      if (downloadOptions.filename) {
-        filename = sanitizePath(downloadOptions.filename);
-        // Add extension back
-        if (fileExtension && !filename.endsWith(`.${fileExtension}`)) {
-          filename = `${filename}.${fileExtension}`;
-        }
-        console.log("Using custom filename:", filename);
-      }
-      
-      // If folder is specified, add it to the path
+      // Use provided filename if present, otherwise fallback to Chrome's default
+      let filename = downloadOptions.filename
+        ? sanitizePath(downloadOptions.filename)
+        : item.filename;
+
+      // If folder is specified, prepend it
       if (downloadOptions.foldername) {
         const sanitizedFolder = sanitizePath(downloadOptions.foldername);
         filename = `${sanitizedFolder}/${filename}`;
-        console.log("Using folder path:", filename);
       }
-      
-      // Suggest new filename
-      console.log("Final download path:", filename);
+
+      // Suggest the new filename
       suggest({ filename: filename });
     } else {
-      // If download is not from our extension, don't change the path
+      // If the download is not from our extension, do not change the path
       suggest();
     }
   } catch (error) {
     handleError(error);
-    suggest(); // In case of error, use default behavior
+    suggest(); // Use default behavior in case of error
   }
 });
 
@@ -85,7 +58,7 @@ try {
     try {
       if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
         chrome.tabs.create({
-          url: INSTALL_URL,
+          url: DownloadConstants.INSTALL_URL,
         });
       } else if (details.reason === chrome.runtime.OnInstalledReason.UPDATE) {
         // When extension is updated
@@ -99,7 +72,7 @@ try {
     }
   });
 
-  chrome.runtime.setUninstallURL(UNINSTALL_URL);
+  chrome.runtime.setUninstallURL(DownloadConstants.UNINSTALL_URL);
 } catch (error) {
   handleError(error);
 }

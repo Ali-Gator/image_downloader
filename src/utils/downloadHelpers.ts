@@ -2,219 +2,179 @@
  * Helper functions for downloading images
  */
 
-import { DOWNLOAD_CONSTANTS } from './constants';
-import { sendDownloadOptions } from './messaging';
-import { DownloadOptions, ImageObject } from '../types';
+import { DownloadConstants } from './constants';
 
 /**
- * Sanitizes a filename or folder name by removing unsafe characters
+ * Sanitizes a path component by replacing unsafe characters with '_'.
+ * Used for full path segments (not just removing, but replacing).
  */
-export const sanitizePathPart = (part: string): string => {
-  if (!part) return '';
-  return part.replace(DOWNLOAD_CONSTANTS.UNSAFE_FILENAME_CHARS_REGEX, '_').trim();
+export const sanitizePath = (path: string): string => {
+  return path ? path.replace(DownloadConstants.UNSAFE_FILENAME_CHARS_REGEX, '_') : '';
 };
 
 /**
- * Checks folder existence and adds an index if needed
- * @param baseFolder Base folder name
- * @returns Validated folder name
+ * Checks if downloads in a folder are recent (not older than the threshold)
+ * @param downloads List of downloads
+ * @returns true if there are recent downloads, false if all downloads are outdated or none exist
  */
-export const getFolderName = (baseFolderName: string): string => {
-  if (!baseFolderName) return '';
+const hasRecentDownloads = (downloads: chrome.downloads.DownloadItem[]): boolean => {
+  if (downloads.length === 0) return false;
 
-  const sanitized = sanitizePathPart(baseFolderName);
+  const now = Date.now();
+  // Check if there are recent downloads
+  return downloads.some((download) => {
+    // If no startTime, consider the download recent (safeguard)
+    if (!download.startTime) return true;
 
-  // Check if the folder already exists in the store
-  const existingFolders = localStorage.getItem('downloadFolders');
-  const folders = existingFolders ? JSON.parse(existingFolders) : {};
+    const startTimeMs = new Date(download.startTime).getTime();
+    return now - startTimeMs < DownloadConstants.DOWNLOAD_HISTORY_THRESHOLD;
+  });
+};
 
-  // If folder exists, increment number
-  let folderName = sanitized;
-  let attempt = 1;
-
-  // Prevent infinite loops by limiting attempts
-  while (folders[folderName] && attempt <= DOWNLOAD_CONSTANTS.MAX_FOLDER_ATTEMPTS) {
-    folderName = `${sanitized} (${attempt})`;
-    attempt++;
+/**
+ * Checks if a folder exists and adds an index if necessary
+ * @param baseFolder Base folder name
+ * @returns Verified folder name
+ */
+export const getFolderName = async (baseFolder: string): Promise<string> => {
+  if (!chrome.downloads || !chrome.downloads.search) {
+    return baseFolder; // If API is unavailable, just return the original name
   }
 
-  // Add folder to the store
-  folders[folderName] = Date.now();
+  // Try to create a folder with an index (1 = no index, 2+ = with index)
+  for (let i = 0; i <= DownloadConstants.MAX_FOLDER_ATTEMPTS; i++) {
+    const folderName = i === 0 ? baseFolder : `${baseFolder} (${i})`;
 
-  // Clean up old folders (older than threshold)
-  const threshold = Date.now() - DOWNLOAD_CONSTANTS.DOWNLOAD_HISTORY_THRESHOLD;
-  Object.keys(folders).forEach((key) => {
-    if (folders[key] < threshold) {
-      delete folders[key];
+    try {
+      // Check if the folder exists by path with a trailing "/"
+      const searchPath = folderName + '/';
+
+      const downloads = await new Promise<chrome.downloads.DownloadItem[]>((resolve) => {
+        chrome.downloads.search({ query: [searchPath] }, resolve);
+      });
+
+      // If the folder has no files or no recent downloads, use it
+      if (!hasRecentDownloads(downloads)) {
+        return folderName;
+      }
+    } catch (e) {
+      return folderName; // In case of an error, just return the current name
     }
-  });
+  }
 
-  // Save updated folders
-  localStorage.setItem('downloadFolders', JSON.stringify(folders));
-
-  return folderName;
+  // If all attempts are exhausted, return the last name with an index
+  return `${baseFolder} (${DownloadConstants.MAX_FOLDER_ATTEMPTS})`;
 };
 
 /**
  * Tries to convert an image to data URL using canvas
  */
-const convertImageViaCanvas = async (
-  imageUrl: string,
-  fileName?: string,
-  folderName?: string,
-): Promise<boolean> => {
-  try {
-    return new Promise<boolean>((resolve, reject) => {
-      const imgElement = new Image();
-      imgElement.crossOrigin = 'Anonymous';
+const convertImageViaCanvas = (
+  image: { src: string; filename: string },
+  fullPath: string,
+): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    const imgElement = new Image();
+    imgElement.crossOrigin = 'Anonymous';
 
-      imgElement.onload = () => {
-        try {
-          // Create canvas and draw the image
-          const canvas = document.createElement('canvas');
-          canvas.width = imgElement.naturalWidth;
-          canvas.height = imgElement.naturalHeight;
-          canvas.getContext('2d')?.drawImage(imgElement, 0, 0);
+    imgElement.onload = () => {
+      try {
+        // Create a canvas and draw the image on it
+        const canvas = document.createElement('canvas');
+        canvas.width = imgElement.naturalWidth;
+        canvas.height = imgElement.naturalHeight;
+        canvas.getContext('2d')?.drawImage(imgElement, 0, 0);
 
-          // Convert canvas to data URL
-          const dataUrl = canvas.toDataURL('image/jpeg');
+        // Convert canvas to data URL
+        const dataUrl = canvas.toDataURL('image/jpeg');
 
-          // Create a safe filename if not provided
-          const safeFileName = fileName || `image_${Date.now()}.jpg`;
-          const fullPath = folderName ? `${folderName}/${safeFileName}` : safeFileName;
-
-          // Download data URL
-          chrome.downloads.download(
-            {
-              url: dataUrl,
-              filename: fullPath,
-              saveAs: false,
-              conflictAction: 'uniquify',
-            },
-            (_) => {
-              if (chrome.runtime.lastError) {
-                reject(new Error(chrome.runtime.lastError.message));
-              } else {
-                resolve(true);
-              }
-            },
-          );
-        } catch (canvasError) {
-          reject(canvasError);
-        }
-      };
-
-      imgElement.onerror = () => {
-        reject(new Error('Failed to load image for canvas conversion'));
-      };
-
-      imgElement.src = imageUrl;
-    });
-  } catch (error) {
-    console.error('Canvas conversion failed:', error);
-    return false;
-  }
-};
-
-/**
- * Generates a filename based on image information
- */
-export const generateFileName = (image: ImageObject): string => {
-  // Extract filename from URL if possible
-  const urlFilename = image.src.split('/').pop()?.split('?')[0] || '';
-  // Prioritize the actual filename from URL rather than alt text
-  return urlFilename || image.alt || `image_${Date.now()}.jpg`;
-};
-
-/**
- * Downloads an image. If direct download fails, falls back to canvas conversion
- */
-export const downloadImage = async (
-  image: ImageObject,
-  folderName?: string,
-  options?: DownloadOptions,
-): Promise<boolean> => {
-  try {
-    const fileName = options?.customName || generateFileName(image);
-    const fullPath = folderName ? `${folderName}/${fileName}` : fileName;
-
-    console.log("Download helper - URL:", image.src);
-    console.log("Download helper - Path:", fullPath);
-    
-    // First, send options to background script for path management
-    await sendDownloadOptions({
-      url: image.src,
-      filename: fullPath,
-      saveAs: options?.saveAs || false,
-    });
-    
-    // Then perform the download directly
-    if (chrome.downloads && chrome.downloads.download) {
-      return new Promise<boolean>((resolve) => {
+        // Download the data URL
         chrome.downloads.download(
           {
-            url: image.src,
+            url: dataUrl,
             filename: fullPath,
-            saveAs: options?.saveAs || false,
+            saveAs: false,
             conflictAction: 'uniquify',
           },
-          (downloadId) => {
+          (_) => {
             if (chrome.runtime.lastError) {
-              console.error("Direct download failed:", chrome.runtime.lastError);
-              console.error("For URL:", image.src);
-              // Fall back to canvas conversion
-              convertImageViaCanvas(image.src, fileName, folderName)
-                .then(success => resolve(success))
-                .catch((error) => {
-                  console.error("Canvas conversion also failed:", error);
-                  console.error("For URL:", image.src);
-                  resolve(false);
-                });
-            } else if (!downloadId) {
-              console.error("Download failed with no ID returned");
-              console.error("For URL:", image.src);
-              // Try canvas conversion as last resort
-              convertImageViaCanvas(image.src, fileName, folderName)
-                .then(success => resolve(success))
-                .catch(() => resolve(false));
+              reject(new Error(chrome.runtime.lastError.message));
             } else {
-              console.log("Download started with ID:", downloadId);
-              resolve(true);
+              resolve();
             }
-          }
+          },
         );
-      });
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Direct download failed:', error);
-    console.error("For URL:", image.src);
-    
-    // Try canvas conversion as fallback
-    try {
-      const generatedFileName = options?.customName || generateFileName(image);
-      return await convertImageViaCanvas(image.src, generatedFileName, folderName);
-    } catch (canvasError) {
-      console.error('Canvas fallback failed:', canvasError);
-      console.error("For URL:", image.src);
-      return false;
-    }
-  }
+      } catch (canvasError) {
+        reject(canvasError);
+      }
+    };
+
+    imgElement.onerror = () => {
+      reject(new Error('Failed to load image for canvas conversion'));
+    };
+
+    imgElement.src = image.src;
+  });
 };
 
 /**
- * Helper function to download an image and return success status
- * @param image Image object to download
- * @param folderName Optional folder name for download
- * @returns Promise<boolean> that resolves to true if download was successful, false otherwise
+ * Downloads an image with the specified filename to the specified folder
+ * @param image Image object with src and filename
+ * @param folderName Folder name for download
+ * @returns Promise that resolves when the download completes
  */
-export const downloadImageHelper = async (image: ImageObject, folderName?: string): Promise<boolean> => {
-  try {
-    await downloadImage(image, folderName);
-    return true;
-  } catch (error) {
-    console.error(`Failed to download image ${image.src}:`, error);
-    return false;
+export const downloadImage = (
+  image: { src: string; filename: string },
+  folderName: string,
+): Promise<void> => {
+  if (!image.src || !image.filename) {
+    return Promise.reject(new Error('Invalid image source or filename'));
   }
+
+  // Sanitize the folder and filename
+  const sanitizedFolder = sanitizePath(folderName);
+  const sanitizedFilename = sanitizePath(image.filename);
+
+  // Build the full path
+  const fullPath = sanitizedFolder ? `${sanitizedFolder}/${sanitizedFilename}` : sanitizedFilename;
+
+  return new Promise<void>((resolve, reject) => {
+    // Use chrome.downloads API for download
+    if (chrome.downloads && chrome.downloads.download) {
+      const downloadOptions = {
+        url: image.src,
+        filename: fullPath, // Important: this is a relative path from the downloads folder
+        saveAs: false,
+        conflictAction: 'uniquify' as chrome.downloads.FilenameConflictAction,
+      };
+
+      chrome.downloads.download(downloadOptions, (downloadId) => {
+        if (chrome.runtime.lastError) {
+          // If the error is related to an invalid URL, try to convert the image through canvas
+          if (image.src.startsWith('http')) {
+            convertImageViaCanvas(image, fullPath).then(resolve).catch(reject);
+          } else {
+            reject(new Error(chrome.runtime.lastError.message));
+          }
+        } else if (!downloadId) {
+          reject(new Error('Download failed - no ID returned'));
+        } else {
+          resolve();
+        }
+      });
+    } else {
+      // Fallback for development outside Chrome
+      try {
+        const a = document.createElement('a');
+        a.href = image.src;
+        a.download = sanitizedFilename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    }
+  });
 };

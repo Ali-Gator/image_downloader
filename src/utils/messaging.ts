@@ -1,8 +1,6 @@
 import { ImageData } from '@types';
 import { getLocalizedMessage, handleError, MessageResponse } from '@utils';
 
-import { MessageAction } from './constants';
-
 /**
  * Sends image data to an active tab and handles the response
  * @param tabId The ID of the tab to send images to
@@ -59,47 +57,4 @@ export const setupImageListener = (
   return () => {
     chrome.runtime.onMessage.removeListener(listener);
   };
-};
-
-/**
- * Sends download options to the background script
- * @param options Object with download options
- * @returns Promise that resolves when the message is sent
- */
-export const sendDownloadOptions = (options: {
-  url: string;
-  filename?: string;
-  saveAs?: boolean;
-}): Promise<void> => {
-  // Extract folder name from full path if it exists
-  let foldername: string | undefined;
-  let filename = options.filename;
-  
-  if (filename && filename.includes('/')) {
-    const parts = filename.split('/');
-    filename = parts.pop(); // Get the last part (actual filename)
-    foldername = parts.join('/'); // The rest is the folder path
-  }
-  
-  return new Promise<void>((resolve) => {
-    try {
-      chrome.runtime.sendMessage(
-        {
-          msg: MessageAction.SET_DOWNLOAD_OPTIONS,
-          downloadOptions: {
-            filename: filename,
-            foldername: foldername,
-            url: options.url,
-            saveAs: options.saveAs || false,
-          },
-        },
-        () => {
-          resolve();
-        },
-      );
-    } catch (error) {
-      handleError(error);
-      resolve(); // Always resolve promise to not block download
-    }
-  });
 };

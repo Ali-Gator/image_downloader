@@ -1,7 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { SettingsState } from '@types';
+interface SettingsState {
+  // Display settings
+  defaultGridView: boolean;
+  downloadFolderName: string;
+  showDownloadNotifications: boolean;
+
+  // Actions
+  setDefaultGridView: (isGridView: boolean) => void;
+  setDownloadFolderName: (name: string) => void;
+  setShowDownloadNotifications: (show: boolean) => void;
+}
 
 // Use persist middleware to store settings in localStorage
 export const useSettingsStore = create<SettingsState>()(

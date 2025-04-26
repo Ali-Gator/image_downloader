@@ -5,10 +5,9 @@ import { Button, Checkbox, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import { useImageStore, useSettingsStore } from '@store';
-import { NotificationType } from '@types';
-import { getFolderName, useTranslation } from '@utils';
-import { NOTIFICATION_DURATION } from '@utils/constants';
-import { downloadImage as downloadImageHelper } from '@utils/downloadHelpers';
+import { downloadImage, getFolderName, useTranslation } from '@utils';
+import { NOTIFICATION_DURATION, NotificationType } from '@utils/constants';
+import { setDownloadOptions } from '@utils/imageOperations';
 
 import {
   ControlsContainer,
@@ -51,9 +50,9 @@ export const Header: FC = () => {
     if (selectedImages.length === 0) return;
 
     try {
-      const folderName = getFolderName(downloadFolderName);
+      const folderName = await getFolderName(downloadFolderName);
 
-      // Show notification about download starting
+      // Show notification about download start
       showNotification(
         `${t('download_started_text')} (${selectedImages.length})`,
         NotificationType.INFO,
@@ -61,52 +60,26 @@ export const Header: FC = () => {
 
       // Download all selected images sequentially
       let successCount = 0;
-      const failedUrls = [];
 
-      // Process downloads in batches to prevent overwhelming the browser
-      const batchSize = 5;
-      for (let i = 0; i < selectedImages.length; i += batchSize) {
-        const batch = selectedImages.slice(i, i + batchSize);
-        const results = await Promise.allSettled(
-          batch.map((image) => downloadImageHelper(image, folderName)),
-        );
-
-        // Count successes and failures
-        results.forEach((result, index) => {
-          if (result.status === 'fulfilled' && result.value === true) {
-            successCount++;
-          } else {
-            failedUrls.push(batch[index].src);
-          }
-        });
-
-        // Show progress notification for each batch
-        if (i + batchSize < selectedImages.length) {
-          const progress = Math.min(i + batchSize, selectedImages.length);
-          showNotification(
-            `${t('downloading_progress_text')}: ${progress}/${selectedImages.length}`,
-            NotificationType.INFO,
-          );
+      for (const image of selectedImages) {
+        try {
+          await setDownloadOptions(folderName, image.filename);
+          await downloadImage(image, folderName);
+          successCount++;
+        } catch (error) {
+          // Error is already handled in downloadImage
         }
       }
 
-      // Log any failures
-      if (failedUrls.length > 0) {
-        console.error(`Failed to download ${failedUrls.length} images:`, failedUrls);
-      }
-
-      // Show notification about download completion with different text
+      // Show notification about download completion
       const message = `${t('download_complete_text')}: ${successCount}/${selectedImages.length}`;
       const variant =
         successCount === selectedImages.length
           ? NotificationType.SUCCESS
-          : successCount > 0
-            ? NotificationType.WARNING
-            : NotificationType.ERROR;
+          : NotificationType.WARNING;
 
       showNotification(message, variant, NOTIFICATION_DURATION.LONG);
     } catch (error) {
-      console.error('Download process error:', error);
       showNotification(t('download_error_text'), NotificationType.ERROR);
     }
   }, [selectedImages, downloadFolderName, showNotification, t]);

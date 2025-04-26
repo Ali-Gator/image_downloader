@@ -35,27 +35,6 @@ export enum SortOption {
 }
 
 /**
- * Constants for notifications duration in milliseconds
- */
-export const NOTIFICATION_DURATION = {
-  SHORT: 2000,
-  MEDIUM: 3000,
-  LONG: 4000,
-};
-
-/**
- * Constants for downloading images
- */
-export const DOWNLOAD_CONSTANTS = {
-  /** Maximum number of attempts to find available folder name */
-  MAX_FOLDER_ATTEMPTS: 100,
-  /** Regex for unsafe characters in filenames */
-  UNSAFE_FILENAME_CHARS_REGEX: /[\\?%*:|"<>]/g,
-  /** Time threshold in ms after which downloads are considered outdated (12 hours) */
-  DOWNLOAD_HISTORY_THRESHOLD: 12 * 60 * 60 * 1000,
-};
-
-/**
  * Common image formats and patterns to filter out in image detection
  */
 export const PlaceholderImages = {
@@ -71,4 +50,53 @@ export const PlaceholderImages = {
    * Minimum size in pixels for images to be considered valid (not icons)
    */
   MIN_SIZE_PX: 10,
+};
+
+/**
+ * Download related constants
+ */
+export const DownloadConstants = {
+  /**
+   * Maximum number of attempts to find an available folder name
+   */
+  MAX_FOLDER_ATTEMPTS: 100,
+
+  /**
+   * Regex to remove unsafe characters from filenames
+   */
+  UNSAFE_FILENAME_CHARS_REGEX: /[\\?%*:|"<>]/g,
+
+  /**
+   * Time threshold in milliseconds (12 hours) after which downloads are considered outdated
+   */
+  DOWNLOAD_HISTORY_THRESHOLD: 12 * 60 * 60 * 1000,
+
+  /**
+   * URL to open on install
+   */
+  INSTALL_URL: 'https://blockdev.app/image-downloader/installed',
+
+  /**
+   * URL to open on uninstall
+   */
+  UNINSTALL_URL: 'https://blockdev.app/image-downloader/uninstalled',
+};
+
+/**
+ * Notification types for snackbars and user feedback
+ */
+export enum NotificationType {
+  SUCCESS = 'success',
+  ERROR = 'error',
+  WARNING = 'warning',
+  INFO = 'info',
+}
+
+/**
+ * Notification durations in milliseconds
+ */
+export const NOTIFICATION_DURATION = {
+  SHORT: 2000,
+  MEDIUM: 3000,
+  LONG: 4000,
 };

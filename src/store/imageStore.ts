@@ -1,7 +1,40 @@
 import { create } from 'zustand';
 
-import { ImageState } from '@types';
+import { CustomSizeFilter, ImageData } from '@types';
 import { SizeFilter, SortOption } from '@utils';
+
+interface ImageState {
+  // Image collections
+  images: ImageData[];
+  filteredImages: ImageData[];
+  selectedImages: ImageData[];
+
+  // UI state
+  isLoading: boolean;
+  isGridView: boolean;
+
+  // Filter state
+  filterText: string;
+  sizeFilters: SizeFilter[];
+  customSizeFilter: CustomSizeFilter;
+  sortOption: SortOption;
+
+  // Actions
+  setImages: (images: ImageData[]) => void;
+  setFilteredImages: (images: ImageData[]) => void;
+  setSelectedImages: (images: ImageData[]) => void;
+  toggleSelectImage: (image: ImageData) => void;
+  selectAll: () => void;
+  deselectAll: () => void;
+  setIsLoading: (isLoading: boolean) => void;
+  setIsGridView: (isGridView: boolean) => void;
+  setFilterText: (text: string) => void;
+  setSizeFilters: (filters: SizeFilter[]) => void;
+  toggleSizeFilter: (filter: SizeFilter) => void;
+  setCustomSizeFilter: (filter: CustomSizeFilter) => void;
+  setSortOption: (option: SortOption) => void;
+  applyFilters: () => void;
+}
 
 export const useImageStore = create<ImageState>((set, get) => ({
   // Initial state

@@ -1,16 +1,4 @@
-import React, { ReactNode } from 'react';
-
-import { SizeFilter, SortOption } from '@utils';
-
-/**
- * Notification types for UI display and status notifications
- */
-export enum NotificationType {
-  SUCCESS = 'success',
-  ERROR = 'error',
-  WARNING = 'warning',
-  INFO = 'info'
-}
+import React from 'react';
 
 export interface ImageData {
   id: string;
@@ -149,95 +137,19 @@ export interface HelpTextProps {
   text: string;
 }
 
-/**
- * ImageObject interface for image downloads
- */
-export interface ImageObject {
-  src: string;
-  alt?: string;
-}
-
-/**
- * DownloadOptions interface for configuring downloads
- */
+// Download options for background script
 export interface DownloadOptions {
-  customName?: string;
-  saveAs?: boolean;
   filename?: string;
   foldername?: string;
-  url?: string;
 }
 
-/**
- * Store interfaces
- */
-
-/**
- * Image store state interface
- */
-export interface ImageState {
-  // Image collections
-  images: ImageData[];
-  filteredImages: ImageData[];
-  selectedImages: ImageData[];
-
-  // UI state
-  isLoading: boolean;
-  isGridView: boolean;
-
-  // Filter state
-  filterText: string;
-  sizeFilters: SizeFilter[];
-  customSizeFilter: CustomSizeFilter;
-  sortOption: SortOption;
-
-  // Actions
-  setImages: (images: ImageData[]) => void;
-  setFilteredImages: (images: ImageData[]) => void;
-  setSelectedImages: (images: ImageData[]) => void;
-  toggleSelectImage: (image: ImageData) => void;
-  selectAll: () => void;
-  deselectAll: () => void;
-  setIsLoading: (isLoading: boolean) => void;
-  setIsGridView: (isGridView: boolean) => void;
-  setFilterText: (text: string) => void;
-  setSizeFilters: (filters: SizeFilter[]) => void;
-  toggleSizeFilter: (filter: SizeFilter) => void;
-  setCustomSizeFilter: (filter: CustomSizeFilter) => void;
-  setSortOption: (option: SortOption) => void;
-  applyFilters: () => void;
-}
-
-/**
- * Settings store state interface
- */
-export interface SettingsState {
-  // Display settings
-  defaultGridView: boolean;
-  downloadFolderName: string;
-  showDownloadNotifications: boolean;
-
-  // Actions
-  setDefaultGridView: (isGridView: boolean) => void;
-  setDownloadFolderName: (name: string) => void;
-  setShowDownloadNotifications: (show: boolean) => void;
-}
-
-/**
- * Component interfaces
- */
-
-/**
- * ErrorBoundary props interface
- */
+// Props for the ErrorBoundary component
 export interface ErrorBoundaryProps {
-  children: ReactNode;
-  fallback?: ReactNode;
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
 }
 
-/**
- * ErrorBoundary state interface
- */
+// State for the ErrorBoundary component
 export interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
