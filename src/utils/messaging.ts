@@ -1,6 +1,8 @@
 import { ImageData } from '@types';
 import { getLocalizedMessage, handleError, MessageResponse } from '@utils';
 
+import { MessageAction } from './constants';
+
 /**
  * Sends image data to an active tab and handles the response
  * @param tabId The ID of the tab to send images to
@@ -58,3 +60,24 @@ export const setupImageListener = (
     chrome.runtime.onMessage.removeListener(listener);
   };
 };
+
+/**
+ * Sets download options in the background script
+ * Always sends both foldername and filename as strings
+ */
+export async function setDownloadOptions(folderName: string, filename: string): Promise<void> {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage(
+      {
+        msg: MessageAction.SET_DOWNLOAD_OPTIONS,
+        downloadOptions: {
+          foldername: folderName || '',
+          filename: filename || '',
+        },
+      },
+      () => {
+        resolve();
+      },
+    );
+  });
+}

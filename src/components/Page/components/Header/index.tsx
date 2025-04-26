@@ -7,7 +7,7 @@ import { useSnackbar } from 'notistack';
 import { useImageStore, useSettingsStore } from '@store';
 import { downloadImage, getFolderName, useTranslation } from '@utils';
 import { NOTIFICATION_DURATION, NotificationType } from '@utils/constants';
-import { setDownloadOptions } from '@utils/imageOperations';
+import { setDownloadOptions } from '@utils/messaging';
 
 import {
   ControlsContainer,

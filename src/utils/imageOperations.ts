@@ -5,7 +5,8 @@ import { useSnackbar } from 'notistack';
 import { useSettingsStore } from '@store';
 import { downloadImage, getFolderName, useTranslation } from '@utils';
 
-import { MessageAction, NOTIFICATION_DURATION, NotificationType } from './constants';
+import { NOTIFICATION_DURATION, NotificationType } from './constants';
+import { setDownloadOptions } from './messaging';
 
 /**
  * Hook for common image operations - copying URLs and downloading images
@@ -83,24 +84,3 @@ export const useImageOperations = (src: string, fileName: string) => {
 
   return { handleCopyUrl, handleDownload };
 };
-
-/**
- * Sets download options in the background script
- * Always sends both foldername and filename as strings
- */
-export async function setDownloadOptions(folderName: string, filename: string): Promise<void> {
-  return new Promise((resolve) => {
-    chrome.runtime.sendMessage(
-      {
-        msg: MessageAction.SET_DOWNLOAD_OPTIONS,
-        downloadOptions: {
-          foldername: folderName || '',
-          filename: filename || '',
-        },
-      },
-      () => {
-        resolve();
-      },
-    );
-  });
-}
