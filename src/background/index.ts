@@ -1,6 +1,8 @@
-import { DownloadOptions } from '@types';
-import { DownloadConstants, handleError, MessageAction, sanitizePath } from '@utils';
-
+// don't change paths to aliases
+import { DownloadOptions } from '../types';
+import { DownloadConstants, MessageAction } from '../utils/constants';
+import { sanitizePath } from '../utils/downloadHelpers';
+import { handleError } from '../utils/errorHandlers';
 // Global variable for storing download options
 let downloadOptions: DownloadOptions = {};
 
