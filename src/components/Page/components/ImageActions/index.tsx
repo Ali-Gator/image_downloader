@@ -1,8 +1,10 @@
-import { ImageActionsProps } from '@types';
-import { useImageOperations } from '@utils/imageOperations';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DownloadIcon from '@mui/icons-material/Download';
 
-import { CopyButton } from '../CopyButton';
-import { DownloadButton } from '../DownloadButton';
+import { ImageActionsProps } from '@types';
+import { useImageOperations, useTranslation } from '@utils';
+
+import { ActionButton } from '../ActionButton';
 import { ActionsContainer } from './styles';
 
 /**
@@ -16,11 +18,28 @@ export const ImageActions = ({
 }: ImageActionsProps) => {
   const { src, filename } = image;
   const { handleCopyUrl, handleDownload } = useImageOperations(src, filename);
+  const { t } = useTranslation();
 
   return (
     <ActionsContainer orientation={orientation} className="actions-container">
-      {showCopy && <CopyButton url={src} onCopyClick={handleCopyUrl} />}
-      {showDownload && <DownloadButton url={src} onDownloadClick={handleDownload} />}
+      {showCopy && (
+        <ActionButton
+          tooltip={t('copy_url_tooltip')}
+          onClick={handleCopyUrl}
+          aria-label={t('copy_url_tooltip')}
+        >
+          <ContentCopyIcon fontSize="small" />
+        </ActionButton>
+      )}
+      {showDownload && (
+        <ActionButton
+          tooltip={t('download_image_tooltip')}
+          onClick={handleDownload}
+          aria-label={t('download_image_tooltip')}
+        >
+          <DownloadIcon fontSize="small" />
+        </ActionButton>
+      )}
     </ActionsContainer>
   );
 };

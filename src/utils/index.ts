@@ -28,5 +28,7 @@ export * from './downloadHelpers';
 // Re-export general utilities
 export * from './utils';
 
+export * from './imageOperations';
+
 // Note: zip.js is not exported as it doesn't contain exports
 // It's a script that runs gulp tasks directly

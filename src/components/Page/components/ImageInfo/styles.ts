@@ -1,4 +1,4 @@
-import { Box, IconButton, Link, Theme, Typography } from '@mui/material';
+import { Box, Link, Theme, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const ImageInfoContainer = styled(Box)(({ theme }) => ({
@@ -86,17 +86,6 @@ export const ActionsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(0.5),
-}));
-
-export const ActionButton = styled(IconButton)(({ theme }) => ({
-  cursor: 'pointer',
-  padding: theme.spacing(0.5),
-  minWidth: 'auto',
-  flexShrink: 0,
-
-  '&:hover': {
-    color: theme.palette.primary.main,
-  },
 }));
 
 export const UrlContainer = styled(Box)(() => ({

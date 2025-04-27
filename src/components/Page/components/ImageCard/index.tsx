@@ -80,10 +80,18 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
           </TopBarLeftSection>
           <TopBarRightSection>
             <ActionButtonsContainer>
-              <ActionButton tooltip={t('copy_url_tooltip')} onClick={handleCopyUrl}>
+              <ActionButton
+                tooltip={t('copy_url_tooltip')}
+                onClick={handleCopyUrl}
+                aria-label={t('copy_url_tooltip')}
+              >
                 <ContentCopyIcon fontSize="small" />
               </ActionButton>
-              <ActionButton tooltip={t('download_image_tooltip')} onClick={handleDownload}>
+              <ActionButton
+                tooltip={t('download_image_tooltip')}
+                onClick={handleDownload}
+                aria-label={t('download_image_tooltip')}
+              >
                 <FileDownloadIcon fontSize="small" />
               </ActionButton>
             </ActionButtonsContainer>

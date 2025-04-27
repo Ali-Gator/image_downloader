@@ -5,13 +5,13 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Tooltip } from '@mui/material';
 
+import { ActionButton } from '@components/Page/components/ActionButton';
 import { useImageStore } from '@store';
 import { ImageInfoProps } from '@types';
 import { formatFileSize, getFileExtension, getFriendlyUrlDisplay, useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
 
 import {
-  ActionButton,
   ActionsContainer,
   Dimensions,
   DimensionsContainer,
@@ -77,17 +77,20 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
       {isListMode && (
         <>
           <ActionsContainer className="actions-container">
-            <Tooltip title={t('download_image_tooltip')}>
-              <ActionButton size="small" onClick={handleDownload} className="action-button">
-                <FileDownloadIcon fontSize="small" />
-              </ActionButton>
-            </Tooltip>
-
-            <Tooltip title={t('copy_url_tooltip')}>
-              <ActionButton size="small" onClick={handleCopyUrl} className="action-button">
-                <ContentCopyIcon fontSize="small" />
-              </ActionButton>
-            </Tooltip>
+            <ActionButton
+              tooltip={t('download_image_tooltip')}
+              onClick={handleDownload}
+              aria-label={t('download_image_tooltip')}
+            >
+              <FileDownloadIcon fontSize="small" />
+            </ActionButton>
+            <ActionButton
+              tooltip={t('copy_url_tooltip')}
+              onClick={handleCopyUrl}
+              aria-label={t('copy_url_tooltip')}
+            >
+              <ContentCopyIcon fontSize="small" />
+            </ActionButton>
           </ActionsContainer>
 
           <UrlContainer className="url-container">

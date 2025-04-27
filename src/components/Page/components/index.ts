@@ -3,8 +3,6 @@ export { ImageThumbnail } from './ImageThumbnail';
 export { ImageUrl } from './ImageUrl';
 export { MetadataBadge } from './MetadataBadge';
 export { ImageActions } from './ImageActions';
-export { CopyButton } from './CopyButton';
-export { DownloadButton } from './DownloadButton';
 
 // Export other components
 export { ActionButton } from './ActionButton';
