@@ -36,6 +36,7 @@
       "@theme/*": ["src/theme/*"]
     }
   },
-  "include": ["src", "vite.config.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["src/manifest.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
