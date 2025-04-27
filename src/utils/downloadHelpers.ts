@@ -17,19 +17,19 @@ export const sanitizePath = (path: string): string => {
  * @param downloads List of downloads
  * @returns true if there are recent downloads, false if all downloads are outdated or none exist
  */
-const hasRecentDownloads = (downloads: chrome.downloads.DownloadItem[]): boolean => {
-  if (downloads.length === 0) return false;
-
-  const now = Date.now();
-  // Check if there are recent downloads
-  return downloads.some((download) => {
-    // If no startTime, consider the download recent (safeguard)
-    if (!download.startTime) return true;
-
-    const startTimeMs = new Date(download.startTime).getTime();
-    return now - startTimeMs < DownloadConstants.DOWNLOAD_HISTORY_THRESHOLD;
-  });
-};
+// const hasRecentDownloads = (downloads: chrome.downloads.DownloadItem[]): boolean => {
+//   if (downloads.length === 0) return false;
+//
+//   const now = Date.now();
+//   // Check if there are recent downloads
+//   return downloads.some((download) => {
+//     // If no startTime, consider the download recent (safeguard)
+//     if (!download.startTime) return true;
+//
+//     const startTimeMs = new Date(download.startTime).getTime();
+//     return now - startTimeMs < DownloadConstants.DOWNLOAD_HISTORY_THRESHOLD;
+//   });
+// };
 
 /**
  * Checks if a folder exists and adds an index if necessary
@@ -37,33 +37,33 @@ const hasRecentDownloads = (downloads: chrome.downloads.DownloadItem[]): boolean
  * @returns Verified folder name
  */
 export const getFolderName = async (baseFolder: string): Promise<string> => {
-  if (!chrome.downloads || !chrome.downloads.search) {
-    return baseFolder; // If API is unavailable, just return the original name
-  }
-
-  // Try to create a folder with an index (1 = no index, 2+ = with index)
-  for (let i = 0; i <= DownloadConstants.MAX_FOLDER_ATTEMPTS; i++) {
-    const folderName = i === 0 ? baseFolder : `${baseFolder} (${i})`;
-
-    try {
-      // Check if the folder exists by path with a trailing "/"
-      const searchPath = folderName + '/';
-
-      const downloads = await new Promise<chrome.downloads.DownloadItem[]>((resolve) => {
-        chrome.downloads.search({ query: [searchPath] }, resolve);
-      });
-
-      // If the folder has no files or no recent downloads, use it
-      if (!hasRecentDownloads(downloads)) {
-        return folderName;
-      }
-    } catch (e) {
-      return folderName; // In case of an error, just return the current name
-    }
-  }
-
-  // If all attempts are exhausted, return the last name with an index
-  return `${baseFolder} (${DownloadConstants.MAX_FOLDER_ATTEMPTS})`;
+  // if (!chrome.downloads || !chrome.downloads.search) {
+  return baseFolder; // If API is unavailable, just return the original name
+  // }
+  //
+  // // Try to create a folder with an index (1 = no index, 2+ = with index)
+  // for (let i = 0; i <= DownloadConstants.MAX_FOLDER_ATTEMPTS; i++) {
+  //   const folderName = i === 0 ? baseFolder : `${baseFolder} (${i})`;
+  //
+  //   try {
+  //     // Check if the folder exists by path with a trailing "/"
+  //     const searchPath = folderName + '/';
+  //
+  //     const downloads = await new Promise<chrome.downloads.DownloadItem[]>((resolve) => {
+  //       chrome.downloads.search({ query: [searchPath] }, resolve);
+  //     });
+  //
+  //     // If the folder has no files or no recent downloads, use it
+  //     if (!hasRecentDownloads(downloads)) {
+  //       return folderName;
+  //     }
+  //   } catch (e) {
+  //     return folderName; // In case of an error, just return the current name
+  //   }
+  // }
+  //
+  // // If all attempts are exhausted, return the last name with an index
+  // return `${baseFolder} (${DownloadConstants.MAX_FOLDER_ATTEMPTS})`;
 };
 
 /**
