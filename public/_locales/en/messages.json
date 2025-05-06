@@ -167,6 +167,9 @@
   "url_copy_error_text": {
     "message": "Error copying URL"
   },
+  "report_bug_text": {
+    "message": "Report a bug"
+  },
   "download_image_tooltip": {
     "message": "Download image"
   },

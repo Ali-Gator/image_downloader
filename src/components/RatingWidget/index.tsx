@@ -2,20 +2,14 @@ import React, { useEffect, useState } from 'react';
 
 import { createTheme, Rating, Stack, ThemeProvider, Typography } from '@mui/material';
 
-import { storageGet, storageSet, useTranslation } from '@utils';
-
-export const RATING_KEY = 'app_rating_score';
-
-const FEEDBACK_FORM_LINK = 'https://forms.gle/9N1Z4ZTPWoS2r7356';
-const GOOD_REVIEW_LINK =
-  'https://chromewebstore.google.com/detail/image-downloader/hohnpmioogigogdedhigjpjjjonkojbk/reviews';
+import { ApplicationLinks, StorageKeys, storageGet, storageSet, useTranslation } from '@utils';
 
 function RatingWidget() {
   const [value, setValue] = useState<number | null>(0);
   const { t } = useTranslation();
 
   useEffect(() => {
-    storageGet(RATING_KEY, (val) => {
+    storageGet(StorageKeys.RATING_SCORE, (val) => {
       if (val) {
         setValue(+val);
       }
@@ -26,12 +20,12 @@ function RatingWidget() {
     setValue(newValue);
 
     if (newValue && newValue > 3) {
-      window.open(GOOD_REVIEW_LINK, '_blank', 'noreferrer');
+      window.open(ApplicationLinks.GOOD_REVIEW, '_blank', 'noreferrer');
     } else {
-      window.open(FEEDBACK_FORM_LINK, '_blank', 'noreferrer');
+      window.open(ApplicationLinks.FEEDBACK_FORM, '_blank', 'noreferrer');
     }
 
-    storageSet(RATING_KEY, newValue ?? '');
+    storageSet(StorageKeys.RATING_SCORE, newValue ?? '');
   };
 
   const themeRating = createTheme({

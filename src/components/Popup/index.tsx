@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 
-import { DownloadButton, Header, HelpText } from '@components/Popup/components';
-import { ContentContainer, PopupContainer } from '@components/Popup/styles';
+import { DownloadButton, Header, HelpText, ReportBugLink } from '@components/Popup/components';
 import RatingWidget from '@components/RatingWidget';
 import { useImageStore } from '@store';
 import { ImageData } from '@types';
@@ -12,6 +11,8 @@ import {
   useTranslation,
   withErrorHandling,
 } from '@utils';
+
+import { ContentContainer, FeedbackRow, PopupContainer } from './styles';
 
 export const Popup: React.FC = () => {
   const { isLoading, setIsLoading } = useImageStore();
@@ -94,7 +95,10 @@ export const Popup: React.FC = () => {
       <ContentContainer>
         <DownloadButton onClick={handleGrabImages} isLoading={isLoading} />
         <HelpText text={t('help_text')} />
-        <RatingWidget />
+        <FeedbackRow>
+          <RatingWidget />
+          <ReportBugLink />
+        </FeedbackRow>
       </ContentContainer>
     </PopupContainer>
   );

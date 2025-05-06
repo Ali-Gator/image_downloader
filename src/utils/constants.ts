@@ -70,14 +70,47 @@ export const DownloadConstants = {
    * Time threshold in milliseconds (12 hours) after which downloads are considered outdated
    */
   DOWNLOAD_HISTORY_THRESHOLD: 12 * 60 * 60 * 1000,
+};
+
+/**
+ * Storage keys for persistent data
+ */
+export const StorageKeys = {
+  /**
+   * Key for storing user's rating score
+   */
+  RATING_SCORE: 'app_rating_score',
+};
+
+/**
+ * Application links for user feedback and bug reports
+ */
+export const ApplicationLinks = {
+  /**
+   * Link to the bug report form
+   */
+  BUG_REPORT_FORM:
+    'https://docs.google.com/forms/d/e/1FAIpQLSfyYcMDHEErXKvqA4xl6ymsC3Ovqdoy8Qzmq27UNYyDtEuXsw/viewform',
 
   /**
-   * URL to open on install
+   * Link to the feedback form for ratings below 4 stars
+   */
+  FEEDBACK_FORM:
+    'https://docs.google.com/forms/d/e/1FAIpQLSddP70MjDfrfa4N6B8RHf-InYNWMatUfx3Wwy8EC9HZFMv1xg/viewform',
+
+  /**
+   * Link to the Chrome Web Store review page
+   */
+  GOOD_REVIEW:
+    'https://chromewebstore.google.com/detail/image-downloader/hohnpmioogigogdedhigjpjjjonkojbk/reviews',
+
+  /**
+   * URL to open on extension install
    */
   INSTALL_URL: 'https://blockdev.app/image-downloader/installed',
 
   /**
-   * URL to open on uninstall
+   * URL to open on extension uninstall
    */
   UNINSTALL_URL: 'https://blockdev.app/image-downloader/uninstalled',
 };

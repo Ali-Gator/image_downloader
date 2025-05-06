@@ -1,6 +1,6 @@
 // don't change paths to aliases
 import { DownloadOptions } from '../types';
-import { DownloadConstants, MessageAction } from '../utils/constants';
+import { ApplicationLinks, MessageAction } from '../utils/constants';
 import { sanitizePath } from '../utils/downloadHelpers';
 import { handleError } from '../utils/errorHandlers';
 // Global variable for storing download options
@@ -60,7 +60,7 @@ try {
     try {
       if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
         chrome.tabs.create({
-          url: DownloadConstants.INSTALL_URL,
+          url: ApplicationLinks.INSTALL_URL,
         });
       } else if (details.reason === chrome.runtime.OnInstalledReason.UPDATE) {
         // When extension is updated
@@ -74,7 +74,7 @@ try {
     }
   });
 
-  chrome.runtime.setUninstallURL(DownloadConstants.UNINSTALL_URL);
+  chrome.runtime.setUninstallURL(ApplicationLinks.UNINSTALL_URL);
 } catch (error) {
   handleError(error);
 }

@@ -15,3 +15,10 @@ export const ContentContainer = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(2),
 }));
+
+export const FeedbackRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  width: '100%',
+  marginTop: theme.spacing(1),
+}));
