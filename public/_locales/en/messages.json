@@ -187,5 +187,8 @@
   },
   "no_response_from_script": {
     "message": "No response from content script"
+  },
+  "settings_btn_tooltip": {
+    "message": "Extension settings"
   }
 }

@@ -16,6 +16,7 @@ import {
   SelectAllContainer,
   TitleContainer,
 } from './styles';
+import { SettingsButton } from '../SettingsButton';
 
 export const Header: FC = () => {
   const { t } = useTranslation();
@@ -116,6 +117,8 @@ export const Header: FC = () => {
         >
           {t('download_btn')}
         </Button>
+
+        <SettingsButton />
       </ControlsContainer>
     </HeaderContainer>
   );

@@ -1,4 +1,4 @@
-import { captureMessage } from '../utils/sentryCapturer';
+import { captureMessage } from '@utils';
 
 export const chromeStorage = {
   getItem: (name: string): Promise<string | null> =>
@@ -27,4 +27,4 @@ export const chromeStorage = {
       }
       chrome.storage.local.remove([name], () => resolve());
     }),
-}; 
+};
