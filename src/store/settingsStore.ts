@@ -1,40 +1,10 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { DEFAULT_DOWNLOAD_OPTIONS } from '@utils/constants';
+
 import { fallbackStorage } from './fallbackStorage';
-
-// Default values for download options
-const DEFAULT_DOWNLOAD_OPTIONS = {
-  subfolderName: '',
-  renamePattern: '',
-  convertFrom: 'all',
-  convertTo: 'jpeg',
-};
-
-interface SettingsState {
-  // Display settings
-  defaultGridView: boolean;
-  downloadFolderName: string;
-  showDownloadNotifications: boolean;
-
-  // Download options
-  subfolderName: string;
-  renamePattern: string;
-  convertFrom: string;
-  convertTo: string;
-
-  // Actions
-  setDefaultGridView: (isGridView: boolean) => void;
-  setDownloadFolderName: (name: string) => void;
-  setShowDownloadNotifications: (show: boolean) => void;
-
-  // Download options actions
-  setSubfolderName: (name: string) => void;
-  setRenamePattern: (pattern: string) => void;
-  setConvertFrom: (option: string) => void;
-  setConvertTo: (format: string) => void;
-  resetDownloadOptions: () => void;
-}
+import { SettingsState } from './types';
 
 // Use persist middleware to store settings in chrome.storage.local or localStorage
 export const useSettingsStore = create<SettingsState>()(

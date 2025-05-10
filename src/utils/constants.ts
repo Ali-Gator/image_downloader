@@ -73,6 +73,16 @@ export const DownloadConstants = {
 };
 
 /**
+ * Default values for download options in settings
+ */
+export const DEFAULT_DOWNLOAD_OPTIONS = {
+  subfolderName: '',
+  renamePattern: '',
+  convertFrom: 'all',
+  convertTo: 'jpeg',
+};
+
+/**
  * Storage keys for persistent data
  */
 export const StorageKeys = {
