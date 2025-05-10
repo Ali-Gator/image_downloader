@@ -13,6 +13,7 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
   try {
     if (request.msg === MessageAction.SET_DOWNLOAD_OPTIONS) {
       downloadOptions = request.downloadOptions || {};
+      //TODO: should properly process response
       sendResponse({ success: true });
       return true;
     }

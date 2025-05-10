@@ -74,6 +74,7 @@ export const useImageOperations = (src: string, fileName: string) => {
       showNotification(NotificationType.INFO);
 
       // Set download options before starting the download
+      // TODO: now it's possible to refactor on using global state
       await setDownloadOptions(folderName, fileName);
       await downloadImage({ src, filename: fileName }, folderName);
       showNotification(NotificationType.SUCCESS);
