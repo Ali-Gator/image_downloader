@@ -19,4 +19,4 @@ export const fallbackStorage = isChromeStorageAvailable
         localStorage.removeItem(name);
         return Promise.resolve();
       },
-    }; 
+    };

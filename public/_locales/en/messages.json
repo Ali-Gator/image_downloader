@@ -190,5 +190,8 @@
   },
   "settings_btn_tooltip": {
     "message": "Extension settings"
+  },
+  "options_title": {
+    "message": "Extension Options"
   }
 }

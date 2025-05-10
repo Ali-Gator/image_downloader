@@ -1,29 +1,33 @@
 import { styled } from '@mui/material/styles';
 
-export const StyledSettingsButton = styled('button')(({ theme }) => ({
-  minWidth: 0,
-  width: 40,
-  height: 40,
-  padding: 0,
-  marginLeft: theme.spacing(1),
-  color: theme.palette.primary.contrastText,
-  background: theme.palette.primary.dark,
-  border: `2px solid ${theme.palette.primary.light}`,
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-  transition: 'background 0.2s, border 0.2s',
+interface StyledSettingsButtonProps {
+  isHovered?: boolean;
+}
 
-  '&:hover, &:focus': {
-    background: theme.palette.primary.light,
-    color: theme.palette.primary.main,
-    borderColor: theme.palette.primary.main,
-    outline: 'none',
-  },
+export const StyledSettingsButton = styled('button')<StyledSettingsButtonProps>(
+  ({ theme, isHovered }) => ({
+    minWidth: 0,
+    width: 40,
+    height: 40,
+    padding: 0,
+    marginLeft: theme.spacing(1),
+    color: isHovered ? theme.palette.primary.main : theme.palette.primary.contrastText,
+    background: isHovered ? theme.palette.primary.light : theme.palette.primary.dark,
+    border: `2px solid ${isHovered ? theme.palette.primary.main : theme.palette.primary.light}`,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'background 0.2s, border 0.2s, color 0.2s, box-shadow 0.2s',
 
-  '& svg': {
-    fontSize: 24,
-  },
-}));
+    '&:focus': {
+      outline: 'none',
+      boxShadow: `0 0 0 2px ${theme.palette.primary.main}`,
+    },
+
+    '& svg': {
+      fontSize: 24,
+    },
+  }),
+);
