@@ -16,7 +16,7 @@ interface SettingsState {
   defaultGridView: boolean;
   downloadFolderName: string;
   showDownloadNotifications: boolean;
-  
+
   // Download options
   subfolderName: string;
   renamePattern: string;
@@ -27,7 +27,7 @@ interface SettingsState {
   setDefaultGridView: (isGridView: boolean) => void;
   setDownloadFolderName: (name: string) => void;
   setShowDownloadNotifications: (show: boolean) => void;
-  
+
   // Download options actions
   setSubfolderName: (name: string) => void;
   setRenamePattern: (pattern: string) => void;
@@ -44,7 +44,7 @@ export const useSettingsStore = create<SettingsState>()(
       defaultGridView: true,
       downloadFolderName: 'images',
       showDownloadNotifications: true,
-      
+
       // Initial download options
       ...DEFAULT_DOWNLOAD_OPTIONS,
 
@@ -53,8 +53,8 @@ export const useSettingsStore = create<SettingsState>()(
       setDownloadFolderName: (downloadFolderName) => set({ downloadFolderName }),
       setShowDownloadNotifications: (showDownloadNotifications) =>
         set({ showDownloadNotifications }),
-        
-      // Download options actions  
+
+      // Download options actions
       setSubfolderName: (subfolderName) => set({ subfolderName }),
       setRenamePattern: (renamePattern) => set({ renamePattern }),
       setConvertFrom: (convertFrom) => set({ convertFrom }),

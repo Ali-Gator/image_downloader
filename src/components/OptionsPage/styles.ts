@@ -20,4 +20,4 @@ export const StyledTitle = styled(Typography)<TypographyProps>(({ theme }) => ({
 
 export const ContentBox = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(4),
-})); 
+}));

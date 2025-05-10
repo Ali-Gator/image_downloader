@@ -10,9 +10,7 @@ export const OptionsPage: FC = () => {
 
   return (
     <StyledContainer>
-      <StyledTitle component="h1">
-        {t('options_title')}
-      </StyledTitle>
+      <StyledTitle component="h1">{t('options_title')}</StyledTitle>
 
       <ContentBox>
         <DownloadOptions />

@@ -212,6 +212,9 @@
   "all_images": {
     "message": "All images"
   },
+  "webp_only": {
+    "message": "WebP only"
+  },
   "browser_save_setting_message": {
     "message": "Make sure that \"Ask where to save each file before downloading\" is unchecked in Browser Settings"
   }
