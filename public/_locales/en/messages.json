@@ -193,5 +193,26 @@
   },
   "options_title": {
     "message": "Extension Options"
+  },
+  "download_options": {
+    "message": "Download Options"
+  },
+  "subfolder_name": {
+    "message": "Subfolder Name"
+  },
+  "rename_files": {
+    "message": "Rename Files"
+  },
+  "convert": {
+    "message": "Convert"
+  },
+  "to": {
+    "message": "to"
+  },
+  "all_images": {
+    "message": "All images"
+  },
+  "browser_save_setting_message": {
+    "message": "Make sure that \"Ask where to save each file before downloading\" is unchecked in Browser Settings"
   }
 }
