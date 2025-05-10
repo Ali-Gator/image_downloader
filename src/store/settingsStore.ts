@@ -1,5 +1,7 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
+
+import { fallbackStorage } from './fallbackStorage';
 
 interface SettingsState {
   // Display settings
@@ -13,7 +15,7 @@ interface SettingsState {
   setShowDownloadNotifications: (show: boolean) => void;
 }
 
-// Use persist middleware to store settings in localStorage
+// Use persist middleware to store settings in chrome.storage.local or localStorage
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
@@ -30,6 +32,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'image-downloader-settings',
+      storage: createJSONStorage(() => fallbackStorage),
       partialize: (state) => ({
         defaultGridView: state.defaultGridView,
         downloadFolderName: state.downloadFolderName,
