@@ -3,6 +3,7 @@
  */
 
 import { DownloadConstants } from './constants';
+import { getFileExtension } from './imageUtils';
 
 /**
  * Sanitizes a path component by replacing unsafe characters with '_'.
@@ -13,57 +14,52 @@ export const sanitizePath = (path: string): string => {
 };
 
 /**
- * Checks if downloads in a folder are recent (not older than the threshold)
- * @param downloads List of downloads
- * @returns true if there are recent downloads, false if all downloads are outdated or none exist
+ * Applies the rename pattern to a filename
+ * @param originalName Original filename
+ * @param pattern Rename pattern
+ * @returns Renamed filename
  */
-// const hasRecentDownloads = (downloads: chrome.downloads.DownloadItem[]): boolean => {
-//   if (downloads.length === 0) return false;
-//
-//   const now = Date.now();
-//   // Check if there are recent downloads
-//   return downloads.some((download) => {
-//     // If no startTime, consider the download recent (safeguard)
-//     if (!download.startTime) return true;
-//
-//     const startTimeMs = new Date(download.startTime).getTime();
-//     return now - startTimeMs < DownloadConstants.DOWNLOAD_HISTORY_THRESHOLD;
-//   });
-// };
+export const applyRenamePattern = (originalName: string, pattern: string): string => {
+  if (!pattern) return originalName;
+
+  const extension = getFileExtension(originalName);
+  const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
+
+  // Replace placeholders in pattern
+  let result = pattern.replace('{name}', nameWithoutExt).replace('{ext}', extension);
+
+  // Add extension if not included in pattern
+  if (!result.includes('.')) {
+    result += `.${extension}`;
+  }
+
+  return result;
+};
 
 /**
- * Checks if a folder exists and adds an index if necessary
- * @param baseFolder Base folder name
- * @returns Verified folder name
+ * Builds the full path for a file download based on settings
+ * @param filename Original filename
+ * @param options Download options from settings
+ * @returns Full path including folders and renamed file
  */
-export const getFolderName = async (baseFolder: string): Promise<string> => {
-  // if (!chrome.downloads || !chrome.downloads.search) {
-  return baseFolder; // If API is unavailable, just return the original name
-  // }
-  //
-  // // Try to create a folder with an index (1 = no index, 2+ = with index)
-  // for (let i = 0; i <= DownloadConstants.MAX_FOLDER_ATTEMPTS; i++) {
-  //   const folderName = i === 0 ? baseFolder : `${baseFolder} (${i})`;
-  //
-  //   try {
-  //     // Check if the folder exists by path with a trailing "/"
-  //     const searchPath = folderName + '/';
-  //
-  //     const downloads = await new Promise<chrome.downloads.DownloadItem[]>((resolve) => {
-  //       chrome.downloads.search({ query: [searchPath] }, resolve);
-  //     });
-  //
-  //     // If the folder has no files or no recent downloads, use it
-  //     if (!hasRecentDownloads(downloads)) {
-  //       return folderName;
-  //     }
-  //   } catch (e) {
-  //     return folderName; // In case of an error, just return the current name
-  //   }
-  // }
-  //
-  // // If all attempts are exhausted, return the last name with an index
-  // return `${baseFolder} (${DownloadConstants.MAX_FOLDER_ATTEMPTS})`;
+export const buildDownloadPath = (
+  filename: string,
+  options: {
+    folderName: string;
+    renamePattern: string;
+  },
+): string => {
+  const { folderName, renamePattern } = options;
+
+  // Apply rename pattern if specified
+  const finalFilename = renamePattern ? applyRenamePattern(filename, renamePattern) : filename;
+
+  // Sanitize all path components
+  const sanitizedFolder = sanitizePath(folderName);
+  const sanitizedFilename = sanitizePath(finalFilename);
+
+  // Build the full path
+  return `${sanitizedFolder}/${sanitizedFilename}`;
 };
 
 /**
@@ -120,23 +116,22 @@ const convertImageViaCanvas = (
 /**
  * Downloads an image with the specified filename to the specified folder
  * @param image Image object with src and filename
- * @param folderName Folder name for download
+ * @param options Download options from settings
  * @returns Promise that resolves when the download completes
  */
 export const downloadImage = (
   image: { src: string; filename: string },
-  folderName: string,
+  options: {
+    folderName: string;
+    renamePattern: string;
+  },
 ): Promise<void> => {
   if (!image.src || !image.filename) {
     return Promise.reject(new Error('Invalid image source or filename'));
   }
 
-  // Sanitize the folder and filename
-  const sanitizedFolder = sanitizePath(folderName);
-  const sanitizedFilename = sanitizePath(image.filename);
-
-  // Build the full path
-  const fullPath = sanitizedFolder ? `${sanitizedFolder}/${sanitizedFilename}` : sanitizedFilename;
+  // Get the full path based on settings
+  const fullPath = buildDownloadPath(image.filename, options);
 
   return new Promise<void>((resolve, reject) => {
     // Use chrome.downloads API for download
@@ -167,7 +162,7 @@ export const downloadImage = (
       try {
         const a = document.createElement('a');
         a.href = image.src;
-        a.download = sanitizedFilename;
+        a.download = image.filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

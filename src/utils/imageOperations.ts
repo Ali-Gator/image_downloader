@@ -3,10 +3,9 @@ import { useCallback } from 'react';
 import { useSnackbar } from 'notistack';
 
 import { useSettingsStore } from '@store';
-import { downloadImage, getFolderName, useTranslation } from '@utils';
 
+import { downloadImage, useTranslation } from '../utils';
 import { NOTIFICATION_DURATION, NotificationType } from './constants';
-import { setDownloadOptions } from './messaging';
 
 /**
  * Hook for common image operations - copying URLs and downloading images
@@ -14,7 +13,7 @@ import { setDownloadOptions } from './messaging';
 export const useImageOperations = (src: string, fileName: string) => {
   const { enqueueSnackbar } = useSnackbar();
   const { t } = useTranslation();
-  const { downloadFolderName } = useSettingsStore();
+  const { folderName, renamePattern } = useSettingsStore();
 
   /**
    * Shows notification for different download states
@@ -67,21 +66,16 @@ export const useImageOperations = (src: string, fileName: string) => {
    */
   const handleDownload = useCallback(async () => {
     try {
-      // Get the folder name for download
-      const folderName = await getFolderName(downloadFolderName);
-
       // Show notification about download start
       showNotification(NotificationType.INFO);
 
-      // Set download options before starting the download
-      // TODO: now it's possible to refactor on using global state
-      await setDownloadOptions(folderName, fileName);
-      await downloadImage({ src, filename: fileName }, folderName);
+      // Download the image using settings from the store
+      await downloadImage({ src, filename: fileName }, { folderName, renamePattern });
       showNotification(NotificationType.SUCCESS);
     } catch (error) {
       showNotification(NotificationType.ERROR);
     }
-  }, [src, fileName, downloadFolderName, showNotification]);
+  }, [src, fileName, folderName, renamePattern, showNotification]);
 
   return { handleCopyUrl, handleDownload };
 };

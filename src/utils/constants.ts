@@ -76,7 +76,7 @@ export const DownloadConstants = {
  * Default values for download options in settings
  */
 export const DEFAULT_DOWNLOAD_OPTIONS = {
-  subfolderName: '',
+  folderName: 'images',
   renamePattern: '',
   convertFrom: 'all',
   convertTo: 'jpeg',

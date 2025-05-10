@@ -197,8 +197,8 @@
   "download_options": {
     "message": "Download Options"
   },
-  "subfolder_name": {
-    "message": "Subfolder Name"
+  "folder_name": {
+    "message": "Download Folder"
   },
   "rename_files": {
     "message": "Rename Files"

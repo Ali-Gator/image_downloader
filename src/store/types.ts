@@ -1,5 +1,5 @@
-import { CustomSizeFilter, ImageData } from '@types';
-import { SizeFilter, SortOption } from '@utils';
+import { CustomSizeFilter, ImageData } from '../types';
+import { SizeFilter, SortOption } from '../utils';
 
 /**
  * State for settings store - manages user preferences and download options
@@ -7,22 +7,20 @@ import { SizeFilter, SortOption } from '@utils';
 export interface SettingsState {
   // Display settings
   defaultGridView: boolean;
-  downloadFolderName: string;
   showDownloadNotifications: boolean;
 
   // Download options
-  subfolderName: string;
+  folderName: string;
   renamePattern: string;
   convertFrom: string;
   convertTo: string;
 
   // Actions
   setDefaultGridView: (isGridView: boolean) => void;
-  setDownloadFolderName: (name: string) => void;
   setShowDownloadNotifications: (show: boolean) => void;
 
   // Download options actions
-  setSubfolderName: (name: string) => void;
+  setFolderName: (name: string) => void;
   setRenamePattern: (pattern: string) => void;
   setConvertFrom: (option: string) => void;
   setConvertTo: (format: string) => void;

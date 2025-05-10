@@ -12,20 +12,18 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       // Initial settings
       defaultGridView: true,
-      downloadFolderName: 'images',
       showDownloadNotifications: true,
 
-      // Initial download options
+      // Initialize all download options from constants
       ...DEFAULT_DOWNLOAD_OPTIONS,
 
       // Settings actions
       setDefaultGridView: (defaultGridView) => set({ defaultGridView }),
-      setDownloadFolderName: (downloadFolderName) => set({ downloadFolderName }),
       setShowDownloadNotifications: (showDownloadNotifications) =>
         set({ showDownloadNotifications }),
 
       // Download options actions
-      setSubfolderName: (subfolderName) => set({ subfolderName }),
+      setFolderName: (folderName) => set({ folderName }),
       setRenamePattern: (renamePattern) => set({ renamePattern }),
       setConvertFrom: (convertFrom) => set({ convertFrom }),
       setConvertTo: (convertTo) => set({ convertTo }),
@@ -36,9 +34,10 @@ export const useSettingsStore = create<SettingsState>()(
       storage: createJSONStorage(() => fallbackStorage),
       partialize: (state) => ({
         defaultGridView: state.defaultGridView,
-        downloadFolderName: state.downloadFolderName,
         showDownloadNotifications: state.showDownloadNotifications,
-        subfolderName: state.subfolderName,
+
+        // All download options
+        folderName: state.folderName,
         renamePattern: state.renamePattern,
         convertFrom: state.convertFrom,
         convertTo: state.convertTo,

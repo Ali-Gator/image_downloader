@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 
-import { SizeFilter, SortOption } from '@utils';
-
+import { SizeFilter, SortOption } from '../utils';
 import { ImageState } from './types';
 
 export const useImageStore = create<ImageState>((set, get) => ({

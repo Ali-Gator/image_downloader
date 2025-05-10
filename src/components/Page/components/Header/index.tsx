@@ -5,9 +5,6 @@ import { Button, Checkbox, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import { useImageStore, useSettingsStore } from '@store';
-import { downloadImage, getFolderName, useTranslation } from '@utils';
-import { NOTIFICATION_DURATION, NotificationType } from '@utils/constants';
-import { setDownloadOptions } from '@utils/messaging';
 
 import {
   ControlsContainer,
@@ -16,12 +13,14 @@ import {
   SelectAllContainer,
   TitleContainer,
 } from './styles';
+import { downloadImage, useTranslation } from '../../../../utils';
+import { NOTIFICATION_DURATION, NotificationType } from '../../../../utils/constants';
 import { SettingsButton } from '../SettingsButton';
 
 export const Header: FC = () => {
   const { t } = useTranslation();
   const { filteredImages, selectedImages, selectAll, deselectAll } = useImageStore();
-  const { downloadFolderName, showDownloadNotifications } = useSettingsStore();
+  const { showDownloadNotifications, folderName, renamePattern } = useSettingsStore();
   const { enqueueSnackbar } = useSnackbar();
 
   const handleSelectAllChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -51,8 +50,6 @@ export const Header: FC = () => {
     if (selectedImages.length === 0) return;
 
     try {
-      const folderName = await getFolderName(downloadFolderName);
-
       // Show notification about download start
       showNotification(
         `${t('download_started_text')} (${selectedImages.length})`,
@@ -64,8 +61,7 @@ export const Header: FC = () => {
 
       for (const image of selectedImages) {
         try {
-          await setDownloadOptions(folderName, image.filename);
-          await downloadImage(image, folderName);
+          await downloadImage(image, { folderName, renamePattern });
           successCount++;
         } catch (error) {
           // Error is already handled in downloadImage
@@ -83,7 +79,7 @@ export const Header: FC = () => {
     } catch (error) {
       showNotification(t('download_error_text'), NotificationType.ERROR);
     }
-  }, [selectedImages, downloadFolderName, showNotification, t]);
+  }, [selectedImages, folderName, renamePattern, showNotification, t]);
 
   const selectedCount = selectedImages.length;
   const totalCount = filteredImages.length;
