@@ -4,6 +4,14 @@
 export enum MessageAction {
   GRAB_IMAGES = 'grabImages',
   SET_DOWNLOAD_OPTIONS = 'setDownloadOptions',
+  FETCH_IMAGE = 'fetchImage',
+}
+
+/**
+ * Connection names for runtime communication
+ */
+export enum ConnectionName {
+  POPUP = 'popup',
 }
 
 /**
@@ -142,4 +150,57 @@ export const NOTIFICATION_DURATION = {
   SHORT: 2000,
   MEDIUM: 3000,
   LONG: 4000,
+};
+
+/**
+ * Configuration for sites that need special handling due to CORS restrictions
+ * Each site has:
+ * - patterns: URL patterns to match
+ * - referrer: Which referrer to use when fetching
+ * - origin: Which origin to set in requests
+ */
+export const CORS_SITE_CONFIG: {
+  [key: string]: {
+    patterns: string[];
+    referrer: string;
+    origin: string;
+    userAgent?: string;
+  };
+} = {
+  instagram: {
+    patterns: ['instagram.', '.fbcdn.net', 'cdninstagram', 'fbinstagram'],
+    referrer: 'https://www.instagram.com',
+    origin: 'https://www.instagram.com',
+  },
+  pinterest: {
+    patterns: ['pinimg.com', 'pinterest.com'],
+    referrer: 'https://www.pinterest.com',
+    origin: 'https://www.pinterest.com',
+  },
+  twitter: {
+    patterns: ['twimg.com', 'twitter.com', 'x.com'],
+    referrer: 'https://twitter.com',
+    origin: 'https://twitter.com',
+  },
+  facebook: {
+    patterns: ['facebook.com', 'fbcdn.net'],
+    referrer: 'https://www.facebook.com',
+    origin: 'https://www.facebook.com',
+  },
+  reddit: {
+    patterns: ['redd.it', 'reddit.com'],
+    referrer: 'https://www.reddit.com',
+    origin: 'https://www.reddit.com',
+  },
+  tumblr: {
+    patterns: ['tumblr.com'],
+    referrer: 'https://www.tumblr.com',
+    origin: 'https://www.tumblr.com',
+  },
+  tiktok: {
+    patterns: ['tiktok.com', 'tiktokcdn.com'],
+    referrer: 'https://www.tiktok.com',
+    origin: 'https://www.tiktok.com',
+  },
+  // Можно добавить другие сайты по мере необходимости
 };

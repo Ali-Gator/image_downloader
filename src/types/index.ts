@@ -60,14 +60,6 @@ export interface CheckboxButtonProps {
 }
 
 /**
- * Props for the ImageThumbnail component
- */
-export interface ImageThumbnailProps {
-  image: ImageData;
-  mode?: 'grid' | 'list';
-}
-
-/**
  * Props for the MetadataBadge component
  */
 export interface MetadataBadgeProps {
@@ -153,4 +145,12 @@ export interface ErrorBoundaryProps {
 export interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
+}
+
+// Конфигурация для сайтов с CORS-защитой
+export interface CorsSiteConfig {
+  patterns: string[];
+  referrer: string;
+  origin: string;
+  userAgent?: string;
 }
