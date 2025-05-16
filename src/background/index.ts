@@ -43,7 +43,7 @@ async function addReferrerRules(origin?: string) {
       await chrome.declarativeNetRequest.updateSessionRules({
         addRules: [
           {
-            id: 123454321,
+            id: 987654321,
             priority: 1,
             action: {
               type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
@@ -82,7 +82,7 @@ async function addReferrerRules(origin?: string) {
 async function removeReferrerRules() {
   try {
     await chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: [123454321],
+      removeRuleIds: [987654321],
     });
   } catch (error) {
     handleError(error);

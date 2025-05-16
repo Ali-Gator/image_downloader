@@ -60,14 +60,6 @@ export interface CheckboxButtonProps {
 }
 
 /**
- * Props for the ImageThumbnail component
- */
-export interface ImageThumbnailProps {
-  image: ImageData;
-  mode?: 'grid' | 'list';
-}
-
-/**
  * Props for the MetadataBadge component
  */
 export interface MetadataBadgeProps {
