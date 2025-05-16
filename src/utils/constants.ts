@@ -8,6 +8,13 @@ export enum MessageAction {
 }
 
 /**
+ * Connection names for runtime communication
+ */
+export enum ConnectionName {
+  POPUP = 'popup',
+}
+
+/**
  * Standard responses for inter-component communication
  */
 export enum MessageResponse {
@@ -148,7 +155,7 @@ export const CORS_SITE_CONFIG: {
     referrer: string;
     origin: string;
     userAgent?: string;
-  }
+  };
 } = {
   instagram: {
     patterns: ['instagram.', '.fbcdn.net', 'cdninstagram', 'fbinstagram'],

@@ -1,12 +1,20 @@
 // don't change paths to aliases
 import { CorsSiteConfig, DownloadOptions } from '../types';
-import { ApplicationLinks, CORS_SITE_CONFIG, MessageAction } from '../utils/constants';
+import {
+  ApplicationLinks,
+  ConnectionName,
+  CORS_SITE_CONFIG,
+  MessageAction,
+} from '../utils/constants';
 import { sanitizePath } from '../utils/downloadHelpers';
 import { handleError } from '../utils/errorHandlers';
 
 // Global variable for storing download options
 let downloadOptions: DownloadOptions = {};
 let activeTabOrigin = '';
+
+// Clean up any existing rules when extension loads
+removeReferrerRules().catch(handleError);
 
 /**
  * Identifies which site config should be used for the given URL
@@ -150,8 +158,10 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
       const siteInfo = identifySiteConfig(request.url);
 
       // Set the referrer to the original site for this request
+      let appliedRules = false;
       if (siteInfo) {
         addReferrerRules(siteInfo.config.referrer);
+        appliedRules = true;
       }
 
       // Use XMLHttpRequest which handles some CORS cases better than fetch
@@ -183,11 +193,19 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
         xhr.setRequestHeader('user-agent', navigator.userAgent);
       }
 
+      // Clean up function to remove rules after request is done
+      const cleanupRules = () => {
+        if (appliedRules) {
+          removeReferrerRules().catch(handleError);
+        }
+      };
+
       xhr.onload = function () {
         if (xhr.status === 200) {
           const reader = new FileReader();
           reader.onloadend = function () {
             sendResponse({ dataUrl: reader.result });
+            cleanupRules();
           };
           reader.readAsDataURL(xhr.response);
         } else {
@@ -198,6 +216,7 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
             } else {
               sendResponse({ error: true });
             }
+            cleanupRules();
           });
         }
       };
@@ -210,11 +229,13 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
           } else {
             sendResponse({ error: true });
           }
+          cleanupRules();
         });
       };
 
       xhr.ontimeout = function () {
         sendResponse({ error: true });
+        cleanupRules();
       };
 
       xhr.send();
@@ -263,13 +284,8 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const url = new URL(tabs[0].url);
     activeTabOrigin = url.origin;
 
-    // Check if we're on a known site
-    if (tabs[0].url) {
-      const siteInfo = identifySiteConfig(tabs[0].url);
-      if (siteInfo) {
-        addReferrerRules(siteInfo.config.referrer);
-      }
-    }
+    // Remove automatic rule application on tab initialization
+    // We'll only apply rules when the extension is actively used
   }
 });
 
@@ -289,9 +305,28 @@ try {
       } else if (details.reason === chrome.runtime.OnInstalledReason.SHARED_MODULE_UPDATE) {
         // When a shared module is updated
       }
+
+      // Clean up any existing rules on install/update
+      removeReferrerRules().catch(handleError);
     } catch (error) {
       handleError(error);
     }
+  });
+
+  // Clean up CORS rules when popup is closed to avoid interference with normal browsing
+  chrome.runtime.onConnect.addListener((port) => {
+    if (port.name === ConnectionName.POPUP) {
+      port.onDisconnect.addListener(() => {
+        // Remove CORS rules when popup is closed
+        removeReferrerRules().catch(handleError);
+      });
+    }
+  });
+
+  // Clean up rules when tab changes
+  chrome.tabs.onActivated.addListener(() => {
+    // When user switches tabs, remove any active rules
+    removeReferrerRules().catch(handleError);
   });
 
   chrome.runtime.setUninstallURL(ApplicationLinks.UNINSTALL_URL);

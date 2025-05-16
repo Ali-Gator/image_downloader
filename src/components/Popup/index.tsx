@@ -1,10 +1,11 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 import { DownloadButton, Header, HelpText, ReportBugLink } from '@components/Popup/components';
 import RatingWidget from '@components/RatingWidget';
 import { useImageStore } from '@store';
 import { ImageData } from '@types';
 import {
+  ConnectionName,
   handleError,
   MessageAction,
   sendImagesToTab,
@@ -17,6 +18,21 @@ import { ContentContainer, FeedbackRow, PopupContainer } from './styles';
 export const Popup: React.FC = () => {
   const { isLoading, setIsLoading } = useImageStore();
   const { t } = useTranslation();
+  const portRef = useRef<chrome.runtime.Port | null>(null);
+
+  // Establish connection with background script when popup opens
+  // This helps background script track when popup is closed
+  useEffect(() => {
+    // Connect to background script
+    portRef.current = chrome.runtime.connect({ name: ConnectionName.POPUP });
+
+    // Clean up connection when popup is closed
+    return () => {
+      if (portRef.current) {
+        portRef.current.disconnect();
+      }
+    };
+  }, []);
 
   const openImagesPage = useCallback(
     async (images: ImageData[]) => {
