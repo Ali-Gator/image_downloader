@@ -24,10 +24,10 @@ export const StyledImageContainer = styled(Box, {
   alignItems: 'center',
   overflow: 'hidden',
   backgroundColor: theme.palette.grey[100],
+  position: 'relative',
 
   ...(mode === 'grid'
     ? {
-        position: 'relative',
         flex: '1 0 auto',
         minHeight: theme.spacing(SIZES.GRID.IMAGE_CONTAINER_MIN_HEIGHT),
         marginBottom: theme.spacing(0.5),
@@ -59,5 +59,62 @@ export const StyledImageContainer = styled(Box, {
     height: 'auto',
     backgroundColor: 'transparent',
     pointerEvents: 'none',
+    
+    '&.loading': {
+      opacity: 0.7,
+    },
   },
+}));
+
+// Error container for failed images
+export const StyledErrorContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: '100%',
+  height: '100%',
+  padding: theme.spacing(1),
+  backgroundColor: theme.palette.grey[200],
+  color: theme.palette.error.main,
+  textAlign: 'center',
+  fontSize: '0.75rem',
+  cursor: 'pointer',
+  
+  '& span:first-of-type': {
+    fontSize: '1.5rem',
+    marginBottom: theme.spacing(0.5),
+  },
+  
+  '& button': {
+    marginTop: theme.spacing(1),
+    padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    border: 'none',
+    borderRadius: theme.shape.borderRadius,
+    cursor: 'pointer',
+    fontSize: '0.75rem',
+    
+    '&:hover': {
+      backgroundColor: theme.palette.primary.dark,
+    }
+  }
+}));
+
+// Loading overlay for images that are being fetched via background
+export const StyledLoadingOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  color: theme.palette.common.white,
+  fontSize: '0.8rem',
+  fontWeight: 500,
+  zIndex: 2,
 }));

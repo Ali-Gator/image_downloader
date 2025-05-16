@@ -1,10 +1,136 @@
 // don't change paths to aliases
-import { DownloadOptions } from '../types';
-import { ApplicationLinks, MessageAction } from '../utils/constants';
+import { CorsSiteConfig, DownloadOptions } from '../types';
+import { ApplicationLinks, CORS_SITE_CONFIG, MessageAction } from '../utils/constants';
 import { sanitizePath } from '../utils/downloadHelpers';
 import { handleError } from '../utils/errorHandlers';
+
 // Global variable for storing download options
 let downloadOptions: DownloadOptions = {};
+let activeTabOrigin = '';
+
+/**
+ * Identifies which site config should be used for the given URL
+ * @param url The URL to check against site patterns
+ * @returns The site key and config, or null if no match
+ */
+function identifySiteConfig(url: string): { key: string; config: CorsSiteConfig } | null {
+  if (!url) return null;
+
+  for (const [key, config] of Object.entries(CORS_SITE_CONFIG)) {
+    for (const pattern of config.patterns) {
+      if (url.includes(pattern)) {
+        return { key, config };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Adds referrer rules for cross-origin image requests
+ * This helps bypass CORS restrictions for certain image hosts
+ */
+async function addReferrerRules(origin?: string) {
+  try {
+    // First remove existing rules
+    await removeReferrerRules();
+
+    // If origin is provided, add a rule to set referrer header
+    if (origin) {
+      activeTabOrigin = origin;
+
+      await chrome.declarativeNetRequest.updateSessionRules({
+        addRules: [
+          {
+            id: 123454321,
+            priority: 1,
+            action: {
+              type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+              requestHeaders: [
+                {
+                  header: 'Referer',
+                  operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                  value: origin,
+                },
+                {
+                  header: 'Origin',
+                  operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                  value: origin,
+                },
+              ],
+            },
+            condition: {
+              urlFilter: '*',
+              resourceTypes: [
+                chrome.declarativeNetRequest.ResourceType.IMAGE,
+                chrome.declarativeNetRequest.ResourceType.MEDIA,
+              ],
+            },
+          },
+        ],
+      });
+    }
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+/**
+ * Removes any existing referrer rules
+ */
+async function removeReferrerRules() {
+  try {
+    await chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: [123454321],
+    });
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+/**
+ * Fetches an image using the fetch API as a fallback method
+ */
+async function fetchImageWithFetch(
+  url: string,
+  siteConfig?: CorsSiteConfig,
+): Promise<string | null> {
+  try {
+    const headers: Record<string, string> = {
+      Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'user-agent': navigator.userAgent,
+    };
+
+    // Add site-specific headers if available
+    if (siteConfig) {
+      headers['Referer'] = siteConfig.referrer;
+      headers['Origin'] = siteConfig.origin;
+      if (siteConfig.userAgent) {
+        headers['user-agent'] = siteConfig.userAgent;
+      }
+    }
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+      credentials: 'omit',
+      mode: 'no-cors',
+    });
+
+    // Note: With mode: 'no-cors', the response type will be 'opaque' and body may not be readable directly
+    // We can try to convert it anyway
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    return null;
+  }
+}
 
 /**
  * Listener for setting download options via message
@@ -16,6 +142,83 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
       //TODO: should properly process response
       sendResponse({ success: true });
       return true;
+    }
+
+    // Handle image fetch request - proxy image data through background script to bypass CORS
+    if (request.msg === MessageAction.FETCH_IMAGE) {
+      // Identify the site for appropriate headers
+      const siteInfo = identifySiteConfig(request.url);
+
+      // Set the referrer to the original site for this request
+      if (siteInfo) {
+        addReferrerRules(siteInfo.config.referrer);
+      }
+
+      // Use XMLHttpRequest which handles some CORS cases better than fetch
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', request.url, true);
+      xhr.responseType = 'blob';
+      xhr.timeout = 30000; // 30 second timeout
+
+      // Set basic headers
+      xhr.setRequestHeader('Accept', 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8');
+      xhr.setRequestHeader('Accept-Language', 'en-US,en;q=0.9');
+      xhr.setRequestHeader('sec-fetch-dest', 'image');
+      xhr.setRequestHeader('sec-fetch-mode', 'no-cors');
+      xhr.setRequestHeader('sec-fetch-site', 'cross-site');
+
+      // Set site-specific headers if available
+      if (siteInfo) {
+        xhr.setRequestHeader('Referer', siteInfo.config.referrer);
+        xhr.setRequestHeader('Origin', siteInfo.config.origin);
+        if (siteInfo.config.userAgent) {
+          xhr.setRequestHeader('user-agent', siteInfo.config.userAgent);
+        } else {
+          xhr.setRequestHeader('user-agent', navigator.userAgent);
+        }
+      } else {
+        // Default headers using active tab origin
+        xhr.setRequestHeader('Referer', activeTabOrigin || request.referrer || '');
+        xhr.setRequestHeader('Origin', activeTabOrigin || request.referrer || '');
+        xhr.setRequestHeader('user-agent', navigator.userAgent);
+      }
+
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          const reader = new FileReader();
+          reader.onloadend = function () {
+            sendResponse({ dataUrl: reader.result });
+          };
+          reader.readAsDataURL(xhr.response);
+        } else {
+          // Try fallback method
+          fetchImageWithFetch(request.url, siteInfo?.config).then((dataUrl) => {
+            if (dataUrl) {
+              sendResponse({ dataUrl });
+            } else {
+              sendResponse({ error: true });
+            }
+          });
+        }
+      };
+
+      xhr.onerror = function () {
+        // Try fallback method
+        fetchImageWithFetch(request.url, siteInfo?.config).then((dataUrl) => {
+          if (dataUrl) {
+            sendResponse({ dataUrl });
+          } else {
+            sendResponse({ error: true });
+          }
+        });
+      };
+
+      xhr.ontimeout = function () {
+        sendResponse({ error: true });
+      };
+
+      xhr.send();
+      return true; // Required for async response
     }
   } catch (error) {
     handleError(error);
@@ -51,6 +254,22 @@ chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
   } catch (error) {
     handleError(error);
     suggest(); // Use default behavior in case of error
+  }
+});
+
+// Initialize tab origin tracking
+chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  if (tabs[0]?.url) {
+    const url = new URL(tabs[0].url);
+    activeTabOrigin = url.origin;
+
+    // Check if we're on a known site
+    if (tabs[0].url) {
+      const siteInfo = identifySiteConfig(tabs[0].url);
+      if (siteInfo) {
+        addReferrerRules(siteInfo.config.referrer);
+      }
+    }
   }
 });
 

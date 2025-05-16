@@ -25,7 +25,8 @@ const manifest: ManifestV3Export = {
     service_worker: 'src/background/index.ts',
     type: 'module',
   },
-  permissions: ['activeTab', 'storage', 'downloads'],
+  permissions: ['activeTab', 'storage', 'downloads', 'webRequest', 'declarativeNetRequest'],
+  host_permissions: ['<all_urls>'],
   content_scripts: [
     {
       matches: ['http://*/*', 'https://*/*'],
@@ -49,7 +50,6 @@ const manifest: ManifestV3Export = {
       matches: ['<all_urls>'],
     },
   ],
-  host_permissions: ['<all_urls>'],
 };
 
 export default manifest;

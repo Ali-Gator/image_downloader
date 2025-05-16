@@ -154,3 +154,11 @@ export interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
 }
+
+// Конфигурация для сайтов с CORS-защитой
+export interface CorsSiteConfig {
+  patterns: string[];
+  referrer: string;
+  origin: string;
+  userAgent?: string;
+}
