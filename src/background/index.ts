@@ -143,7 +143,6 @@ async function fetchImageWithFetch(
   }
 }
 
-
 // Initialize downloads API listeners
 if (typeof chrome !== 'undefined' && chrome.downloads) {
   // Handle filename determination
@@ -313,36 +312,6 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
     sendResponse({ success: false, error: String(error) });
   }
   return false;
-});
-
-/**
- * Listener for determining filename and folder during download
- */
-chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
-  try {
-    // Check if the download was initiated by our extension
-    if (item.byExtensionId === chrome.runtime.id) {
-      // Use provided filename if present, otherwise fallback to Chrome's default
-      let filename = downloadOptions.filename
-        ? sanitizePath(downloadOptions.filename)
-        : item.filename;
-
-      // If folder is specified, prepend it
-      if (downloadOptions.foldername) {
-        const sanitizedFolder = sanitizePath(downloadOptions.foldername);
-        filename = `${sanitizedFolder}/${filename}`;
-      }
-
-      // Suggest the new filename
-      suggest({ filename: filename });
-    } else {
-      // If the download is not from our extension, do not change the path
-      suggest();
-    }
-  } catch (error) {
-    handleError(error);
-    suggest(); // Use default behavior in case of error
-  }
 });
 
 // Initialize tab origin tracking
