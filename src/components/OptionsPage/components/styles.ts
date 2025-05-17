@@ -7,8 +7,9 @@ export const FieldContainer = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(2),
   gap: theme.spacing(2),
 
-  '& p': {
+  '& .MuiTypography-root': {
     width: '180px',
+    minWidth: '180px',
     flexShrink: 0,
   },
 

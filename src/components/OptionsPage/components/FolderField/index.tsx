@@ -1,8 +1,11 @@
 import { ChangeEvent, FC } from 'react';
 
+import { InputAdornment } from '@mui/material';
+
 import { useSettingsStore } from '@store';
 import { useTranslation } from '@utils';
 
+import { InfoTooltip } from '../InfoIcon';
 import { FieldContainer } from '../styles';
 import { StyledTextField, StyledTypography } from './styles';
 
@@ -24,6 +27,13 @@ export const FolderField: FC = () => {
         value={folderName}
         placeholder="eg. images"
         onChange={handleChange}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <InfoTooltip title={t('folder_name_info')} />
+            </InputAdornment>
+          ),
+        }}
       />
     </FieldContainer>
   );

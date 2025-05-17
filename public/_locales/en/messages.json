@@ -200,11 +200,23 @@
   "folder_name": {
     "message": "Download Folder"
   },
+  "folder_name_info": {
+    "message": "Specify a subfolder path where images will be saved (e.g. 'downloads/images')"
+  },
   "rename_files": {
     "message": "Rename Files"
   },
+  "rename_pattern_info": {
+    "message": "Use patterns to rename files: {name} - original filename, {ext} - file extension"
+  },
+  "rename_pattern_example": {
+    "message": "Example: photo_{name}.{ext}"
+  },
   "convert": {
     "message": "Convert"
+  },
+  "convert_info": {
+    "message": "Convert images to a different format when downloading"
   },
   "to": {
     "message": "to"
