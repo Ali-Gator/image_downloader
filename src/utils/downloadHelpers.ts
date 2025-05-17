@@ -2,7 +2,7 @@
  * Helper functions for downloading images
  */
 
-import { DownloadConstants, MessageAction } from './constants';
+import { DownloadConstants } from './constants';
 import { getFileExtension } from './imageUtils';
 
 /**
@@ -157,65 +157,27 @@ export const downloadImage = (
       return;
     }
 
-    // Notify background script about download options
-    const sendOptionsToBackground = () => {
-      return new Promise<void>((resolveMsg, rejectMsg) => {
-        try {
-          chrome.runtime.sendMessage(
-            {
-              msg: MessageAction.SET_DOWNLOAD_OPTIONS,
-              downloadOptions: {
-                foldername: options.folderName || '',
-                filename: finalFilename,
-              },
-            },
-            (_) => {
-              if (chrome.runtime.lastError) {
-                rejectMsg(chrome.runtime.lastError);
-                return;
-              }
-
-              // Brief delay to ensure background has processed the setting
-              setTimeout(() => resolveMsg(), 50);
-            },
-          );
-        } catch (error) {
-          rejectMsg(error);
-        }
-      });
-    };
-
     // Start download with Chrome API
-    const startDownload = () => {
-      chrome.downloads.download(
-        {
-          url: image.src,
-          filename: finalFilename,
-          conflictAction: 'uniquify' as chrome.downloads.FilenameConflictAction,
-          saveAs: false,
-        },
-        (downloadId) => {
-          if (chrome.runtime.lastError) {
-            reject(new Error(`Download failed: ${chrome.runtime.lastError.message}`));
-            return;
-          }
+    chrome.downloads.download(
+      {
+        url: image.src,
+        filename: finalFilename,
+        conflictAction: 'uniquify' as chrome.downloads.FilenameConflictAction,
+        saveAs: false,
+      },
+      (downloadId) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(`Download failed: ${chrome.runtime.lastError.message}`));
+          return;
+        }
 
-          if (!downloadId) {
-            reject(new Error('Download failed - no ID returned'));
-            return;
-          }
+        if (!downloadId) {
+          reject(new Error('Download failed - no ID returned'));
+          return;
+        }
 
-          resolve();
-        },
-      );
-    };
-
-    // Execute the download process
-    sendOptionsToBackground()
-      .then(startDownload)
-      .catch(() => {
-        // Even if message fails, try to download
-        startDownload();
-      });
+        resolve();
+      },
+    );
   });
 };

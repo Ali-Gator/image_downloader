@@ -75,22 +75,6 @@ export interface ImageUrlProps {
 }
 
 /**
- * Props for the CopyButton component
- */
-export interface CopyButtonProps {
-  url: string;
-  onCopyClick: () => void;
-}
-
-/**
- * Props for the DownloadButton component
- */
-export interface DownloadButtonProps {
-  url: string;
-  onDownloadClick: () => void;
-}
-
-/**
  * Props for the ImageActions component
  */
 export interface ImageActionsProps {
@@ -131,8 +115,11 @@ export interface HelpTextProps {
 
 // Download options for background script
 export interface DownloadOptions {
-  filename?: string;
-  foldername?: string;
+  fileName: string;
+  folderName: string;
+  renamePattern: string;
+  convertFrom: string;
+  convertTo: string;
 }
 
 // Props for the ErrorBoundary component

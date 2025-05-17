@@ -34,75 +34,68 @@ export const Popup: React.FC = () => {
     };
   }, []);
 
-  const openImagesPage = useCallback(
-    async (images: ImageData[]) => {
-      const tab = await chrome.tabs.create({
-        url: 'page.html',
-        active: false,
-      });
+  const openImagesPage = useCallback(async (images: ImageData[]) => {
+    const tab = await chrome.tabs.create({
+      url: 'page.html',
+      active: false,
+    });
 
-      setTimeout(async () => {
-        if (tab.id) {
-          const success = await sendImagesToTab(tab.id, images);
-          if (!success) {
-            handleError(new Error('Failed to send images to tab'), true, t('error_text'));
-          }
-        } else {
-          handleError(new Error('Invalid tab ID'), true, t('error_text'));
+    setTimeout(async () => {
+      if (tab.id) {
+        const success = await sendImagesToTab(tab.id, images);
+        if (!success) {
+          handleError(new Error('Failed to send images to tab. Retry one more time'), true);
         }
-      }, 500);
-    },
-    [t],
-  );
+      } else {
+        handleError(new Error('Invalid tab ID. Retry one more time'), true);
+      }
+    }, 500);
+  }, []);
 
   const handleGrabImages = useCallback(async () => {
-    await withErrorHandling(
-      async () => {
-        const [tab] = await chrome.tabs.query({
-          active: true,
-          currentWindow: true,
+    await withErrorHandling(async () => {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
+      if (!tab) {
+        throw new Error(t('no_active_tabs'));
+      }
+
+      if (!tab.id) {
+        throw new Error(t('cannot_access_tab'));
+      }
+
+      // Создаем Promise для коллбек-стиля chrome API
+      return new Promise<void>((resolve, reject) => {
+        // Отправляем сообщение в content-script
+        chrome.tabs.sendMessage(tab.id!, { action: MessageAction.GRAB_IMAGES }, (response) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message || t('content_script_failed')));
+            return;
+          }
+
+          if (!response) {
+            reject(new Error(t('no_response_from_script')));
+            return;
+          }
+
+          if (response.error) {
+            reject(new Error(response.details || response.error));
+            return;
+          }
+
+          if (!response.images || !response.images.length) {
+            reject(new Error(t('no_images_found')));
+            return;
+          }
+
+          openImagesPage(response.images);
+          resolve();
         });
-
-        if (!tab) {
-          throw new Error(t('no_active_tabs'));
-        }
-
-        if (!tab.id) {
-          throw new Error(t('cannot_access_tab'));
-        }
-
-        // Создаем Promise для коллбек-стиля chrome API
-        return new Promise<void>((resolve, reject) => {
-          // Отправляем сообщение в content-script
-          chrome.tabs.sendMessage(tab.id!, { action: MessageAction.GRAB_IMAGES }, (response) => {
-            if (chrome.runtime.lastError) {
-              reject(new Error(chrome.runtime.lastError.message || t('content_script_failed')));
-              return;
-            }
-
-            if (!response) {
-              reject(new Error(t('no_response_from_script')));
-              return;
-            }
-
-            if (response.error) {
-              reject(new Error(response.details || response.error));
-              return;
-            }
-
-            if (!response.images || !response.images.length) {
-              reject(new Error(t('no_images_found')));
-              return;
-            }
-
-            openImagesPage(response.images);
-            resolve();
-          });
-        });
-      },
-      setIsLoading,
-      t('error_text'),
-    );
+      });
+    }, setIsLoading);
   }, [openImagesPage, t, setIsLoading]);
 
   return (

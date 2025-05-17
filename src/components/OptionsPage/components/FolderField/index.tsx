@@ -22,7 +22,7 @@ export const FolderField: FC = () => {
         size="small"
         variant="outlined"
         value={folderName}
-        placeholder="images"
+        placeholder="eg. images"
         onChange={handleChange}
       />
     </FieldContainer>

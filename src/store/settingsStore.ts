@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { DEFAULT_DOWNLOAD_OPTIONS } from '@utils/constants';
+import { DEFAULT_DOWNLOAD_OPTIONS, StorageKeys } from '@utils/constants';
 
 import { fallbackStorage } from './fallbackStorage';
 import { SettingsState } from './types';
@@ -30,7 +30,7 @@ export const useSettingsStore = create<SettingsState>()(
       resetDownloadOptions: () => set(DEFAULT_DOWNLOAD_OPTIONS),
     }),
     {
-      name: 'image-downloader-settings',
+      name: StorageKeys.SETTINGS_STORE_KEY,
       storage: createJSONStorage(() => fallbackStorage),
       partialize: (state) => ({
         defaultGridView: state.defaultGridView,

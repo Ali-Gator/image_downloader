@@ -1,9 +1,10 @@
+import { DownloadOptions } from '@types';
+
 /**
  * Message Actions used for communication between components and content scripts
  */
 export enum MessageAction {
   GRAB_IMAGES = 'grabImages',
-  SET_DOWNLOAD_OPTIONS = 'setDownloadOptions',
   FETCH_IMAGE = 'fetchImage',
 }
 
@@ -83,8 +84,9 @@ export const DownloadConstants = {
 /**
  * Default values for download options in settings
  */
-export const DEFAULT_DOWNLOAD_OPTIONS = {
+export const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = {
   folderName: 'images',
+  fileName: '',
   renamePattern: '',
   convertFrom: 'all',
   convertTo: 'jpeg',
@@ -98,6 +100,7 @@ export const StorageKeys = {
    * Key for storing user's rating score
    */
   RATING_SCORE: 'app_rating_score',
+  SETTINGS_STORE_KEY: 'image-downloader-settings',
 };
 
 /**

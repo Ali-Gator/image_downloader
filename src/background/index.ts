@@ -1,18 +1,19 @@
 // don't change paths to aliases
+
 import { CorsSiteConfig, DownloadOptions } from '../types';
 import {
   ApplicationLinks,
   ConnectionName,
   CORS_SITE_CONFIG,
+  DEFAULT_DOWNLOAD_OPTIONS,
   MessageAction,
+  StorageKeys,
 } from '../utils/constants';
 import { sanitizePath } from '../utils/downloadHelpers';
 import { handleError } from '../utils/errorHandlers';
 
 // Global variable for storing download options
-let downloadOptions: DownloadOptions = {};
 let activeTabOrigin = '';
-let lastUsedFolder = '';
 const pendingFilenames: string[] = [];
 const downloadFilenames: Record<number, string> = {};
 
@@ -143,55 +144,80 @@ async function fetchImageWithFetch(
   }
 }
 
+export async function getSettings(): Promise<DownloadOptions> {
+  return new Promise((resolve) => {
+    const storageKey = StorageKeys.SETTINGS_STORE_KEY;
+    chrome.storage.local.get([storageKey], (result) => {
+      try {
+        if (result[storageKey]) {
+          const parsedData = JSON.parse(result[storageKey]);
+          // Zustand с persist middleware хранит данные в поле state
+          if (parsedData && parsedData.state) {
+            return resolve(parsedData.state);
+          }
+        }
+        // Если данных нет или ошибка, возвращаем пустые настройки
+        resolve(DEFAULT_DOWNLOAD_OPTIONS);
+      } catch (error) {
+        handleError(error);
+        resolve(DEFAULT_DOWNLOAD_OPTIONS);
+      }
+    });
+  });
+}
+
 // Initialize downloads API listeners
 if (typeof chrome !== 'undefined' && chrome.downloads) {
   // Handle filename determination
   chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
-    // If this is from our extension, apply folder and filename settings
-    if (item.byExtensionId === chrome.runtime.id) {
-      // Get folder from options or use last known folder
-      const folderName = (downloadOptions && downloadOptions.foldername) || lastUsedFolder;
-
-      // Handle default filenames like "download.ext" or "unnamed.ext"
-      let finalFilename = item.filename;
-      const isDefaultFilename = item.filename.match(/^(download|unnamed)\.[a-z0-9]+$/i);
-
-      if (isDefaultFilename) {
-        // Try to find a better filename from our stored options
-        if (item.id && downloadFilenames[item.id]) {
-          finalFilename = downloadFilenames[item.id];
-        } else if (downloadOptions.filename) {
-          finalFilename = downloadOptions.filename;
-          downloadOptions.filename = undefined;
-        } else if (pendingFilenames.length > 0) {
-          finalFilename = pendingFilenames.shift() || finalFilename;
-        }
-      }
-
-      // Apply folder to filename if needed
-      if (folderName) {
-        const sanitizedFolder = sanitizePath(folderName);
-        const newFilename = `${sanitizedFolder}/${finalFilename}`;
-        suggest({ filename: newFilename });
-      } else {
-        suggest({ filename: finalFilename });
-      }
-    } else {
-      // Not from our extension, don't modify
+    if (item.byExtensionId !== chrome.runtime.id) {
       suggest();
+      return false;
     }
 
-    return false; // Handle synchronously
-  });
+    // Use a promise to ensure suggest is only called once
+    const processSuggestion = async () => {
+      try {
+        const downloadOptions = await getSettings();
+        const folderName = downloadOptions && downloadOptions.folderName;
 
-  // Track download creation
-  chrome.downloads.onCreated.addListener((downloadItem) => {
-    if (downloadItem.byExtensionId === chrome.runtime.id) {
-      if (downloadOptions.filename) {
-        downloadFilenames[downloadItem.id] = downloadOptions.filename;
-        downloadOptions.filename = undefined;
+        // Handle default filenames like "download.ext" or "unnamed.ext"
+        let finalFilename = item.filename;
+        const isDefaultFilename = item.filename.match(/^(download|unnamed)\.[a-z0-9]+$/i);
+
+        if (isDefaultFilename) {
+          // Try to find a better filename from our stored options
+          if (item.id && downloadFilenames[item.id]) {
+            finalFilename = downloadFilenames[item.id];
+          } else if (downloadOptions.fileName) {
+            finalFilename = downloadOptions.fileName;
+          } else if (pendingFilenames.length > 0) {
+            finalFilename = pendingFilenames.shift() || finalFilename;
+          }
+        }
+
+        // Apply folder to filename if needed
+        if (folderName) {
+          const sanitizedFolder = sanitizePath(folderName);
+          return `${sanitizedFolder}/${finalFilename}`;
+        } else {
+          return finalFilename;
+        }
+      } catch (error) {
+        handleError(error);
+        return item.filename;
       }
-    }
+    };
+
+    // Process the suggestion and call suggest exactly once with the result
+    processSuggestion()
+      .then((filename) => suggest({ filename }))
+      .catch((error) => {
+        handleError(error);
+        suggest({ filename: item.filename });
+      });
+
+    return true; // Indicate we'll call suggest asynchronously
   });
 }
 
@@ -200,23 +226,6 @@ if (typeof chrome !== 'undefined' && chrome.downloads) {
  */
 chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
   try {
-    if (request.msg === MessageAction.SET_DOWNLOAD_OPTIONS) {
-      downloadOptions = request.downloadOptions || {};
-
-      // Store folder name for future use
-      if (downloadOptions.foldername) {
-        lastUsedFolder = downloadOptions.foldername;
-      }
-
-      // Store filename in queue for future downloads
-      if (downloadOptions.filename) {
-        pendingFilenames.push(downloadOptions.filename);
-      }
-
-      sendResponse({ success: true });
-      return true;
-    }
-
     // Handle image fetch request - proxy image data through background script to bypass CORS
     if (request.msg === MessageAction.FETCH_IMAGE) {
       // Identify the site for appropriate headers

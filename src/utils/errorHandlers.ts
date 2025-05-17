@@ -36,7 +36,7 @@ export function handleError(error: unknown, showAlert = false, customMessage?: s
 export async function withErrorHandling<T>(
   action: () => Promise<T>,
   setLoading: (isLoading: boolean) => void,
-  errorMessage = 'Something went wrong',
+  errorMessage = 'Something went wrong. Try again',
 ): Promise<T | undefined> {
   setLoading(true);
   try {
