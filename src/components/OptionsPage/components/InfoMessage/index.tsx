@@ -1,6 +1,6 @@
 import { FC } from 'react';
 
-import { Alert } from '@mui/material';
+import { Alert, Stack } from '@mui/material';
 
 import { useTranslation } from '@utils';
 
@@ -11,7 +11,10 @@ export const InfoMessage: FC = () => {
 
   return (
     <AlertBox>
-      <Alert severity="info">{t('browser_save_setting_message')}</Alert>
+      <Stack spacing={1}>
+        <Alert severity="info">{t('browser_save_setting_message')}</Alert>
+        <Alert severity="success">{t('options_auto_apply_message')}</Alert>
+      </Stack>
     </AlertBox>
   );
 };

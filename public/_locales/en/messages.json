@@ -217,5 +217,8 @@
   },
   "browser_save_setting_message": {
     "message": "Make sure that \"Ask where to save each file before downloading\" is unchecked in Browser Settings"
+  },
+  "options_auto_apply_message": {
+    "message": "Options are applied automatically"
   }
 }
