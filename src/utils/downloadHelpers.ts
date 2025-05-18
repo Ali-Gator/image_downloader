@@ -2,8 +2,10 @@
  * Helper functions for downloading images
  */
 
+import { handleError } from '@utils/errorHandlers';
+
 import { MessageActionType } from '../types';
-import { DownloadConstants } from './constants';
+import { DEFAULT_DOWNLOAD_OPTIONS, DownloadConstants } from './constants';
 
 /**
  * Sanitizes a filename by replacing unsafe characters with underscores and handling special cases
@@ -23,14 +25,14 @@ export const sanitizeFileName = (filename: string, maxLength = 150): string => {
 
   // Use the centralized regex from constants
   sanitized = sanitized.replace(DownloadConstants.UNSAFE_FILENAME_CHARS_REGEX, '_');
-  
+
   // Remove or replace emojis - they can cause issues with some filesystems
   // This uses ranges that cover most emoji code points
   sanitized = sanitized.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F000}-\u{1FFFF}]/gu, '_');
 
   // Replace multiple consecutive underscores with a single one
   sanitized = sanitized.replace(/_+/g, '_');
-  
+
   // Replace multiple consecutive spaces with a single one
   sanitized = sanitized.replace(/\s+/g, ' ');
 
@@ -43,7 +45,16 @@ export const sanitizeFileName = (filename: string, maxLength = 150): string => {
 
   // Replace invalid Unicode characters (including broken emoji)
   sanitized = sanitized.replace(/\uFFFD/g, '_');
-  
+
+  // Handle consecutive dots, which can cause issues on some systems
+  // Keep the last dot for the extension, replace others with underscore
+  if (sanitized.includes('.')) {
+    const lastDotIndex = sanitized.lastIndexOf('.');
+    const nameWithoutExt = sanitized.substring(0, lastDotIndex).replace(/\.+/g, '_');
+    const extension = sanitized.substring(lastDotIndex);
+    sanitized = nameWithoutExt + extension;
+  }
+
   // If after sanitization nothing useful is left, use a timestamp
   if (!sanitized || sanitized.trim() === '' || sanitized === '.') {
     return `image_${Date.now()}`;
@@ -161,6 +172,27 @@ export const ensureValidExtension = (filename: string, imageUrl: string): string
 };
 
 /**
+ * Creates a fallback filename for cases when original download fails
+ * @param originalFilename The original filename that failed
+ * @param imageUrl The image URL for extension extraction
+ * @returns A generic fallback filename
+ */
+const createFallbackFilename = (originalFilename: string, imageUrl: string): string => {
+  // Get the folder path if present in the original filename
+  const folderPath = originalFilename.includes('/')
+    ? originalFilename.substring(0, originalFilename.lastIndexOf('/') + 1)
+    : DEFAULT_DOWNLOAD_OPTIONS.folderName + '/';
+
+  // Get extension from original file or URL
+  const extension = originalFilename.includes('.')
+    ? originalFilename.substring(originalFilename.lastIndexOf('.'))
+    : `.${getExtensionFromUrl(imageUrl)}`;
+
+  // Create a generic timestamp-based filename, preserving the folder structure
+  return `${folderPath}image_${Date.now()}${extension}`;
+};
+
+/**
  * Downloads an image with the specified filename
  * @param image Image object with src and filename
  * @returns Promise that resolves when the download completes
@@ -173,63 +205,87 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
   // Sanitize the filename to ensure it's properly formatted
   const originalFilename = sanitizeFileName(image.filename);
 
-  return new Promise<void>((resolve, reject) => {
-    // Check Chrome availability
-    if (typeof chrome === 'undefined' || !chrome.downloads || !chrome.downloads.download) {
-      // Fallback for non-Chrome browsers or environments
-      try {
-        const a = document.createElement('a');
-        a.href = image.src;
-        a.download = originalFilename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        resolve();
-      } catch (error) {
-        reject(error);
-      }
-      return;
-    }
-
-    // Let Chrome extension API handle the download
-    chrome.downloads.download(
-      {
-        url: image.src,
-        filename: originalFilename,
-        conflictAction: 'uniquify' as chrome.downloads.FilenameConflictAction,
-        saveAs: false,
-      },
-      (downloadId) => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(`Download failed: ${chrome.runtime.lastError.message}`));
-          return;
-        }
-
-        if (!downloadId) {
-          reject(new Error('Download failed - no ID returned'));
-          return;
-        }
-
-        // Register the mapping between download ID and original filename
+  // Function to attempt download with a specific filename
+  const attemptDownload = (filename: string, isRetry = false): Promise<void> => {
+    return new Promise<void>((resolve, reject) => {
+      // Check Chrome availability
+      if (typeof chrome === 'undefined' || !chrome.downloads || !chrome.downloads.download) {
+        // Fallback for non-Chrome browsers or environments
         try {
-          chrome.runtime.sendMessage(
-            {
-              action: MessageActionType.REGISTER_FILENAME,
-              downloadId,
-              filename: originalFilename,
-            },
-            () => {
-              if (chrome.runtime.lastError) {
-                // Continue even if registration fails
-              }
-            },
-          );
+          const a = document.createElement('a');
+          a.href = image.src;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          resolve();
         } catch (error) {
-          // Continue with download even if registration fails
+          reject(error);
         }
+        return;
+      }
 
-        resolve();
-      },
-    );
-  });
+      // Let Chrome extension API handle the download
+      chrome.downloads.download(
+        {
+          url: image.src,
+          filename: filename,
+          conflictAction: 'uniquify' as chrome.downloads.FilenameConflictAction,
+          saveAs: false,
+        },
+        (downloadId) => {
+          if (chrome.runtime.lastError) {
+            if (!isRetry) {
+              // If this is the first attempt and it failed, try with a generic name
+              handleError(
+                `Download failed with original name: ${chrome.runtime.lastError.message}. Trying with generic name.`,
+              );
+
+              // Create and use fallback filename
+              const fallbackFilename = createFallbackFilename(originalFilename, image.src);
+              attemptDownload(fallbackFilename, true).then(resolve).catch(reject);
+            } else {
+              // If this is already a retry, then give up
+              reject(new Error(`Download failed: ${chrome.runtime.lastError.message}`));
+            }
+            return;
+          }
+
+          if (!downloadId) {
+            if (!isRetry) {
+              // Try with generic name if first attempt failed
+              const fallbackFilename = createFallbackFilename(originalFilename, image.src);
+              attemptDownload(fallbackFilename, true).then(resolve).catch(reject);
+            } else {
+              reject(new Error('Download failed - no ID returned'));
+            }
+            return;
+          }
+
+          // Register the mapping between download ID and original filename
+          try {
+            chrome.runtime.sendMessage(
+              {
+                action: MessageActionType.REGISTER_FILENAME,
+                downloadId,
+                filename: filename,
+              },
+              () => {
+                if (chrome.runtime.lastError) {
+                  // Continue even if registration fails
+                }
+              },
+            );
+          } catch (error) {
+            // Continue with download even if registration fails
+          }
+
+          resolve();
+        },
+      );
+    });
+  };
+
+  // Start with original filename
+  return attemptDownload(originalFilename);
 };
