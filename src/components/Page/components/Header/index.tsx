@@ -20,7 +20,7 @@ import { SettingsButton } from '../SettingsButton';
 export const Header: FC = () => {
   const { t } = useTranslation();
   const { filteredImages, selectedImages, selectAll, deselectAll } = useImageStore();
-  const { showDownloadNotifications, folderName, renamePattern } = useSettingsStore();
+  const { showDownloadNotifications } = useSettingsStore();
   const { enqueueSnackbar } = useSnackbar();
 
   const handleSelectAllChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +61,7 @@ export const Header: FC = () => {
 
       for (const image of selectedImages) {
         try {
-          await downloadImage(image, { folderName, renamePattern });
+          await downloadImage(image);
           successCount++;
         } catch (error) {
           // Error is already handled in downloadImage
@@ -79,7 +79,7 @@ export const Header: FC = () => {
     } catch (error) {
       showNotification(t('download_error_text'), NotificationType.ERROR);
     }
-  }, [selectedImages, folderName, renamePattern, showNotification, t]);
+  }, [selectedImages, showNotification, t]);
 
   const selectedCount = selectedImages.length;
   const totalCount = filteredImages.length;

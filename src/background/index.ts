@@ -9,7 +9,12 @@ import {
   MessageAction,
   StorageKeys,
 } from '../utils/constants';
-import { sanitizePath } from '../utils/downloadHelpers';
+import {
+  applyRenamePattern,
+  getCleanFilename,
+  getExtensionFromUrl,
+  sanitizePath,
+} from '../utils/downloadHelpers';
 import { handleError } from '../utils/errorHandlers';
 
 // Global variable for storing download options
@@ -179,13 +184,17 @@ if (typeof chrome !== 'undefined' && chrome.downloads) {
     const processSuggestion = async () => {
       try {
         const downloadOptions = await getSettings();
-        const folderName = downloadOptions && downloadOptions.folderName;
+        const folderName = downloadOptions?.folderName;
+        const renamePattern = downloadOptions?.renamePattern;
 
-        // Handle default filenames like "download.ext" or "unnamed.ext"
+        // Process the filename
         let finalFilename = item.filename;
-        const isDefaultFilename = item.filename.match(/^(download|unnamed)\.[a-z0-9]+$/i);
 
-        if (isDefaultFilename) {
+        // Handle default filenames or clean URLs/data URIs
+        const isDefaultFilename = finalFilename.match(/^(download|unnamed)\.[a-z0-9]+$/i);
+        const needsCleaning = finalFilename.startsWith('http') || finalFilename.startsWith('data:');
+
+        if (isDefaultFilename || needsCleaning) {
           // Try to find a better filename from our stored options
           if (item.id && downloadFilenames[item.id]) {
             finalFilename = downloadFilenames[item.id];
@@ -193,8 +202,25 @@ if (typeof chrome !== 'undefined' && chrome.downloads) {
             finalFilename = downloadOptions.fileName;
           } else if (pendingFilenames.length > 0) {
             finalFilename = pendingFilenames.shift() || finalFilename;
+          } else if (needsCleaning) {
+            // Clean up URL or data URI to get a better filename
+            finalFilename = getCleanFilename(finalFilename, item.url);
           }
         }
+
+        // Apply rename pattern if specified
+        if (renamePattern) {
+          finalFilename = applyRenamePattern(finalFilename, renamePattern);
+        }
+
+        // Make sure the filename has an extension
+        if (!finalFilename.includes('.')) {
+          const extension = getExtensionFromUrl(item.url);
+          finalFilename = `${finalFilename}.${extension}`;
+        }
+
+        // Sanitize filename to remove invalid characters
+        finalFilename = sanitizePath(finalFilename);
 
         // Apply folder to filename if needed
         if (folderName) {

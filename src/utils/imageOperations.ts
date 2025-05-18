@@ -2,8 +2,6 @@ import { useCallback } from 'react';
 
 import { useSnackbar } from 'notistack';
 
-import { useSettingsStore } from '@store';
-
 import { downloadImage, useTranslation } from '../utils';
 import { NOTIFICATION_DURATION, NotificationType } from './constants';
 
@@ -13,7 +11,6 @@ import { NOTIFICATION_DURATION, NotificationType } from './constants';
 export const useImageOperations = (src: string, fileName: string) => {
   const { enqueueSnackbar } = useSnackbar();
   const { t } = useTranslation();
-  const { folderName, renamePattern } = useSettingsStore();
 
   /**
    * Shows notification for different download states
@@ -70,12 +67,12 @@ export const useImageOperations = (src: string, fileName: string) => {
       showNotification(NotificationType.INFO);
 
       // Download the image using settings from the store
-      await downloadImage({ src, filename: fileName }, { folderName, renamePattern });
+      await downloadImage({ src, filename: fileName });
       showNotification(NotificationType.SUCCESS);
     } catch (error) {
       showNotification(NotificationType.ERROR);
     }
-  }, [src, fileName, folderName, renamePattern, showNotification]);
+  }, [src, fileName, showNotification]);
 
   return { handleCopyUrl, handleDownload };
 };

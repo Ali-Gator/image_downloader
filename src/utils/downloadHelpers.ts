@@ -3,7 +3,6 @@
  */
 
 import { DownloadConstants } from './constants';
-import { getFileExtension } from './imageUtils';
 
 /**
  * Sanitizes a path component by replacing unsafe characters with '_'.
@@ -21,24 +20,24 @@ export const sanitizePath = (path: string): string => {
 export const applyRenamePattern = (originalName: string, pattern: string): string => {
   if (!pattern) return originalName;
 
-  // Get extension, handle cases where originalName might not have one
+  // Get extension to preserve it
+  let extension = '';
+  let nameWithoutExt = originalName;
+
   if (originalName.includes('.')) {
-    const extension = getFileExtension(originalName);
-    const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
-
-    // Replace placeholders in pattern
-    let result = pattern.replace('{name}', nameWithoutExt).replace('{ext}', extension);
-
-    // Add extension if not included in pattern
-    if (!result.includes('.')) {
-      result += `.${extension}`;
-    }
-
-    return result;
-  } else {
-    // No extension in original name, just use the whole name
-    return pattern.replace('{name}', originalName).replace('{ext}', '');
+    extension = originalName.substring(originalName.lastIndexOf('.'));
+    nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
   }
+
+  // Replace name placeholder only
+  let result = pattern.replace('{name}', nameWithoutExt);
+
+  // Always preserve the original extension
+  if (!result.includes('.')) {
+    result += extension;
+  }
+
+  return result;
 };
 
 /**
@@ -82,7 +81,7 @@ export const getExtensionFromUrl = (url: string): string => {
  * @param imageUrl URL of the image for fallback
  * @returns Clean filename
  */
-const getCleanFilename = (filename: string, imageUrl: string): string => {
+export const getCleanFilename = (filename: string, imageUrl: string): string => {
   // If filename looks like a URL or data URI, extract a better name
   if (filename.startsWith('http') || filename.startsWith('data:')) {
     try {
@@ -106,47 +105,27 @@ const getCleanFilename = (filename: string, imageUrl: string): string => {
 };
 
 /**
- * Downloads an image with the specified filename to the specified folder
+ * Downloads an image with the specified filename
  * @param image Image object with src and filename
- * @param options Download options from settings
  * @returns Promise that resolves when the download completes
  */
-export const downloadImage = (
-  image: { src: string; filename: string },
-  options: {
-    folderName: string;
-    renamePattern: string;
-  },
-): Promise<void> => {
+export const downloadImage = (image: { src: string; filename: string }): Promise<void> => {
   if (!image.src || !image.filename) {
     return Promise.reject(new Error('Invalid image source or filename'));
   }
 
-  // Get clean filename
-  let finalFilename = getCleanFilename(image.filename, image.src);
-
-  // Apply rename pattern if needed
-  if (options.renamePattern) {
-    finalFilename = applyRenamePattern(finalFilename, options.renamePattern);
-  }
-
-  // Sanitize filename
-  finalFilename = sanitizePath(finalFilename);
-
-  // Add extension if missing
-  if (!finalFilename.includes('.')) {
-    const extension = getExtensionFromUrl(image.src);
-    finalFilename += `.${extension}`;
-  }
+  // We do minimal processing here - just get a basic filename
+  // All actual filename processing (renaming, folder paths) happens in the background script
+  const originalFilename = image.filename;
 
   return new Promise<void>((resolve, reject) => {
     // Check Chrome availability
     if (typeof chrome === 'undefined' || !chrome.downloads || !chrome.downloads.download) {
-      // Fallback to standard download
+      // Fallback for non-Chrome browsers or environments
       try {
         const a = document.createElement('a');
         a.href = image.src;
-        a.download = finalFilename;
+        a.download = originalFilename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -157,11 +136,12 @@ export const downloadImage = (
       return;
     }
 
-    // Start download with Chrome API
+    // Let Chrome extension API handle the download
+    // The background script will handle renaming and folder paths via onDeterminingFilename
     chrome.downloads.download(
       {
         url: image.src,
-        filename: finalFilename,
+        filename: originalFilename, // This will be processed by onDeterminingFilename
         conflictAction: 'uniquify' as chrome.downloads.FilenameConflictAction,
         saveAs: false,
       },

@@ -207,10 +207,10 @@
     "message": "Rename Files"
   },
   "rename_pattern_info": {
-    "message": "Use patterns to rename files: {name} - original filename, {ext} - file extension"
+    "message": "Use pattern to rename files: {name} - original filename without extension"
   },
   "rename_pattern_example": {
-    "message": "Example: photo_{name}.{ext}"
+    "message": "Example: photo_{name}"
   },
   "convert": {
     "message": "Convert"
