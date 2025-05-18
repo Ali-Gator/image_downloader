@@ -171,9 +171,19 @@ export const CORS_SITE_CONFIG: {
   };
 } = {
   instagram: {
-    patterns: ['instagram.', '.fbcdn.net', 'cdninstagram', 'fbinstagram'],
+    patterns: [
+      'instagram.',
+      '.fbcdn.net',
+      'cdninstagram',
+      'fbinstagram',
+      'instagram.fsof',
+      't51.2885-15',
+      't51.29350-15',
+      'ig_cache_key',
+    ],
     referrer: 'https://www.instagram.com',
     origin: 'https://www.instagram.com',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
   },
   pinterest: {
     patterns: ['pinimg.com', 'pinterest.com'],
