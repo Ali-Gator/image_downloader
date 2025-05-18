@@ -9,18 +9,15 @@ import {
   MessageAction,
   StorageKeys,
 } from '../utils/constants';
-import {
-  applyRenamePattern,
-  getCleanFilename,
-  getExtensionFromUrl,
-  sanitizePath,
-} from '../utils/downloadHelpers';
+import { applyRenamePattern, ensureValidExtension, sanitizePath } from '../utils/downloadHelpers';
 import { handleError } from '../utils/errorHandlers';
 
 // Global variable for storing download options
 let activeTabOrigin = '';
-const pendingFilenames: string[] = [];
-const downloadFilenames: Record<number, string> = {};
+
+// Словарь для хранения соответствий между ID загрузки и именами файлов
+// Это позволит сохранить исходное имя при переименовании
+const downloadFilenamesMap: Record<number, string> = {};
 
 // Clean up any existing rules when extension loads
 removeReferrerRules().catch(handleError);
@@ -171,6 +168,19 @@ export async function getSettings(): Promise<DownloadOptions> {
   });
 }
 
+// Слушаем сообщения для получения имени файла
+chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
+  if (message.action === 'registerFilename' && message.downloadId && message.filename) {
+    // Store the filename in our map for later use
+    downloadFilenamesMap[message.downloadId] = message.filename;
+
+    // Send success response back to content script
+    sendResponse({ success: true });
+    return true;
+  }
+  return false;
+});
+
 // Initialize downloads API listeners
 if (typeof chrome !== 'undefined' && chrome.downloads) {
   // Handle filename determination
@@ -184,47 +194,47 @@ if (typeof chrome !== 'undefined' && chrome.downloads) {
     const processSuggestion = async () => {
       try {
         const downloadOptions = await getSettings();
+
         const folderName = downloadOptions?.folderName;
         const renamePattern = downloadOptions?.renamePattern;
 
-        // Process the filename
+        // Check if we have a saved filename for this download ID
         let finalFilename = item.filename;
+        if (item.id && downloadFilenamesMap[item.id]) {
+          finalFilename = downloadFilenamesMap[item.id];
 
-        // Handle default filenames or clean URLs/data URIs
-        const isDefaultFilename = finalFilename.match(/^(download|unnamed)\.[a-z0-9]+$/i);
-        const needsCleaning = finalFilename.startsWith('http') || finalFilename.startsWith('data:');
+          // Clean up the mapping to prevent memory leaks
+          setTimeout(() => {
+            delete downloadFilenamesMap[item.id];
+          }, 5000);
+        }
 
-        if (isDefaultFilename || needsCleaning) {
-          // Try to find a better filename from our stored options
-          if (item.id && downloadFilenames[item.id]) {
-            finalFilename = downloadFilenames[item.id];
-          } else if (downloadOptions.fileName) {
-            finalFilename = downloadOptions.fileName;
-          } else if (pendingFilenames.length > 0) {
-            finalFilename = pendingFilenames.shift() || finalFilename;
-          } else if (needsCleaning) {
-            // Clean up URL or data URI to get a better filename
-            finalFilename = getCleanFilename(finalFilename, item.url);
+        // Make sure it has a valid extension
+        if (typeof ensureValidExtension !== 'function') {
+          // Fallback
+          if (!finalFilename.includes('.')) {
+            finalFilename = `${finalFilename}.jpg`;
           }
+        } else {
+          finalFilename = ensureValidExtension(finalFilename, item.url);
         }
 
         // Apply rename pattern if specified
         if (renamePattern) {
-          finalFilename = applyRenamePattern(finalFilename, renamePattern);
-        }
-
-        // Make sure the filename has an extension
-        if (!finalFilename.includes('.')) {
-          const extension = getExtensionFromUrl(item.url);
-          finalFilename = `${finalFilename}.${extension}`;
+          if (typeof applyRenamePattern === 'function') {
+            finalFilename = applyRenamePattern(finalFilename, renamePattern);
+          }
         }
 
         // Sanitize filename to remove invalid characters
-        finalFilename = sanitizePath(finalFilename);
+        if (typeof sanitizePath === 'function') {
+          finalFilename = sanitizePath(finalFilename);
+        }
 
         // Apply folder to filename if needed
         if (folderName) {
-          const sanitizedFolder = sanitizePath(folderName);
+          const sanitizedFolder =
+            typeof sanitizePath === 'function' ? sanitizePath(folderName) : folderName;
           return `${sanitizedFolder}/${finalFilename}`;
         } else {
           return finalFilename;
@@ -237,7 +247,9 @@ if (typeof chrome !== 'undefined' && chrome.downloads) {
 
     // Process the suggestion and call suggest exactly once with the result
     processSuggestion()
-      .then((filename) => suggest({ filename }))
+      .then((filename) => {
+        suggest({ filename });
+      })
       .catch((error) => {
         handleError(error);
         suggest({ filename: item.filename });

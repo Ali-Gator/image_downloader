@@ -71,9 +71,14 @@ export const DownloadConstants = {
   MAX_FOLDER_ATTEMPTS: 100,
 
   /**
-   * Regex to remove unsafe characters from filenames
+   * Comprehensive regex to remove or replace unsafe characters from filenames
+   * Includes:
+   * - Standard illegal filename chars (\ / : * ? " < > | )
+   * - Angle quotes (« »)
+   * - Apostrophes and other punctuation
+   * - Control characters
    */
-  UNSAFE_FILENAME_CHARS_REGEX: /[\\?%*:|"<>]/g,
+  UNSAFE_FILENAME_CHARS_REGEX: /[\\/:*?"<>|«»'`~!@#$%^&=;,{}[\]]/g,
 
   /**
    * Time threshold in milliseconds (12 hours) after which downloads are considered outdated

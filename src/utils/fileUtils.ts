@@ -1,5 +1,6 @@
 import { ImageData } from '@types';
 
+import { DownloadConstants } from './constants';
 import { handleError } from './errorHandlers';
 import { getFileExtension } from './imageUtils';
 
@@ -41,12 +42,16 @@ export const getFileNameFromUrl = (url: string): string => {
     // Return the filename if it exists, or a fallback
     if (lastSegment && lastSegment.length > 0) {
       // Decode URI components to handle encoded characters
+      let decodedSegment;
       try {
-        return decodeURIComponent(lastSegment);
+        decodedSegment = decodeURIComponent(lastSegment);
       } catch (e) {
         // If decoding fails, use as is
-        return lastSegment;
+        decodedSegment = lastSegment;
       }
+
+      // Remove any problematic characters that could affect filenames
+      return decodedSegment.replace(DownloadConstants.UNSAFE_FILENAME_CHARS_REGEX, '_');
     }
 
     // If no filename found, generate a name based on hostname
@@ -67,24 +72,30 @@ export const getFileNameFromUrl = (url: string): string => {
 const processSafeAltText = (alt: string): string => {
   // Alt text is already verified to be non-empty by the caller
   let processed = alt.trim();
-  
-  // Keep only safe characters for filenames (alphanumeric, spaces, some punctuation)
-  // Convert spaces to underscores
+
+  // Use the centralized regex from constants
   processed = processed
-    .replace(/[\\/:"*?<>|]/g, '') // Remove Windows/Unix illegal filename chars
+    .replace(DownloadConstants.UNSAFE_FILENAME_CHARS_REGEX, '_') // Replace unsafe chars with underscore
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '_') // Control characters
+    .replace(/\uFFFD/g, '_') // Replace broken/invalid Unicode chars
     .replace(/\s+/g, '_') // Replace spaces with underscores
-    .substring(0, 50); // Limit length to 50 chars
-  
+    .replace(/_+/g, '_') // Replace multiple underscores with a single one
+    .replace(/^_+|_+$/g, ''); // Trim leading/trailing underscores
+
+  // Limit length to be safe for most filesystems
+  processed = processed.substring(0, 50);
+
   // Make sure we have at least one valid character after processing
   if (!processed || processed.length === 0) {
     return 'image';
   }
-  
+
   // Ensure it doesn't start with a dot (which could make the file hidden)
   if (processed.startsWith('.')) {
     processed = 'img_' + processed;
   }
-  
+
   return processed;
 };
 
@@ -97,10 +108,10 @@ const processSafeAltText = (alt: string): string => {
  */
 export const getSmartFileName = (image: ImageData): string => {
   const { src, alt } = image;
-  
+
   // Get base filename from URL
   const defaultName = getFileNameFromUrl(src);
-  
+
   // Determine extension based on image source
   const extension = `.${getFileExtension(src).toLowerCase()}`;
 
@@ -108,7 +119,7 @@ export const getSmartFileName = (image: ImageData): string => {
   if (alt && alt.trim() && !src.includes(alt)) {
     // Process alt text to create a valid filename
     const safeAlt = processSafeAltText(alt);
-    
+
     if (safeAlt) {
       return `${safeAlt}${extension}`;
     }
