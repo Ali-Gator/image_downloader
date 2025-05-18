@@ -1,14 +1,6 @@
 import { DownloadOptions } from '@types';
 
 /**
- * Message Actions used for communication between components and content scripts
- */
-export enum MessageAction {
-  GRAB_IMAGES = 'grabImages',
-  FETCH_IMAGE = 'fetchImage',
-}
-
-/**
  * Connection names for runtime communication
  */
 export enum ConnectionName {

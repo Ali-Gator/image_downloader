@@ -1,5 +1,42 @@
 import React from 'react';
 
+// Message action types
+export enum MessageActionType {
+  REGISTER_FILENAME = 'registerFilename',
+  FETCH_IMAGE = 'fetchImage',
+  GRAB_IMAGES = 'grabImages',
+}
+
+/**
+ * Interface for the registerFilename message
+ * Used for communication between content script and background script
+ * to maintain the original filename for downloads
+ */
+export interface RegisterFilenameMessage {
+  action: MessageActionType.REGISTER_FILENAME;
+  downloadId: number;
+  filename: string;
+}
+
+/**
+ * Interface for the fetchImage message
+ * Used for proxying image data through the background script
+ * to bypass CORS restrictions
+ */
+export interface FetchImageMessage {
+  msg: MessageActionType.FETCH_IMAGE;
+  url: string;
+  referrer?: string;
+}
+
+/**
+ * Interface for the grabImages message
+ * Used to request content script to collect images from the page
+ */
+export interface GrabImagesMessage {
+  action: MessageActionType.GRAB_IMAGES;
+}
+
 export interface ImageData {
   id: string;
   src: string;

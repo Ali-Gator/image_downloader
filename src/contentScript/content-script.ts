@@ -1,5 +1,5 @@
-import { ImageData } from '@types';
-import { handleError, MessageAction, PlaceholderImages } from '@utils';
+import { ImageData, MessageActionType } from '@types';
+import { handleError, PlaceholderImages } from '@utils';
 import { getSmartFileName } from '@utils/fileUtils';
 
 /**
@@ -87,7 +87,7 @@ const estimateImageSize = (img: HTMLImageElement): number => {
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   try {
-    if (message.action === MessageAction.GRAB_IMAGES) {
+    if (message.action === MessageActionType.GRAB_IMAGES) {
       const allImgElements = Array.from(document.getElementsByTagName('img'));
 
       // Сразу отфильтровываем и создаем объекты с нужными свойствами

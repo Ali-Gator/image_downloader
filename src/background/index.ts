@@ -1,12 +1,11 @@
 // don't change paths to aliases
 
-import { CorsSiteConfig, DownloadOptions } from '../types';
+import { CorsSiteConfig, DownloadOptions, FetchImageMessage, MessageActionType, RegisterFilenameMessage } from '../types';
 import {
   ApplicationLinks,
   ConnectionName,
   CORS_SITE_CONFIG,
   DEFAULT_DOWNLOAD_OPTIONS,
-  MessageAction,
   StorageKeys,
 } from '../utils/constants';
 import { applyRenamePattern, ensureValidExtension, sanitizePath } from '../utils/downloadHelpers';
@@ -169,11 +168,11 @@ export async function getSettings(): Promise<DownloadOptions> {
 }
 
 // Слушаем сообщения для получения имени файла
-chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
-  if (message.action === 'registerFilename' && message.downloadId && message.filename) {
+chrome.runtime.onMessage.addListener((message: RegisterFilenameMessage, _, sendResponse) => {
+  if (message.action === MessageActionType.REGISTER_FILENAME && message.downloadId && message.filename) {
     // Store the filename in our map for later use
     downloadFilenamesMap[message.downloadId] = message.filename;
-
+    
     // Send success response back to content script
     sendResponse({ success: true });
     return true;
@@ -262,10 +261,10 @@ if (typeof chrome !== 'undefined' && chrome.downloads) {
 /**
  * Listener for setting download options via message
  */
-chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
+chrome.runtime.onMessage.addListener((request: FetchImageMessage, _, sendResponse) => {
   try {
     // Handle image fetch request - proxy image data through background script to bypass CORS
-    if (request.msg === MessageAction.FETCH_IMAGE) {
+    if (request.msg === MessageActionType.FETCH_IMAGE) {
       // Identify the site for appropriate headers
       const siteInfo = identifySiteConfig(request.url);
 

@@ -2,6 +2,7 @@
  * Helper functions for downloading images
  */
 
+import { MessageActionType } from '../types';
 import { DownloadConstants } from './constants';
 
 /**
@@ -195,7 +196,7 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
       }
       return;
     }
-
+    
     // Let Chrome extension API handle the download
     chrome.downloads.download(
       {
@@ -214,13 +215,13 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
           reject(new Error('Download failed - no ID returned'));
           return;
         }
-
+        
         // Register the mapping between download ID and original filename
         try {
           chrome.runtime.sendMessage(
-            {
-              action: 'registerFilename',
-              downloadId,
+            { 
+              action: MessageActionType.REGISTER_FILENAME, 
+              downloadId, 
               filename: originalFilename,
             },
             () => {
@@ -232,7 +233,7 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
         } catch (error) {
           // Continue with download even if registration fails
         }
-
+        
         resolve();
       },
     );

@@ -3,11 +3,10 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { DownloadButton, Header, HelpText, ReportBugLink } from '@components/Popup/components';
 import RatingWidget from '@components/RatingWidget';
 import { useImageStore } from '@store';
-import { ImageData } from '@types';
+import { ImageData, MessageActionType } from '@types';
 import {
   ConnectionName,
   handleError,
-  MessageAction,
   sendImagesToTab,
   useTranslation,
   withErrorHandling,
@@ -70,7 +69,7 @@ export const Popup: React.FC = () => {
       // Создаем Promise для коллбек-стиля chrome API
       return new Promise<void>((resolve, reject) => {
         // Отправляем сообщение в content-script
-        chrome.tabs.sendMessage(tab.id!, { action: MessageAction.GRAB_IMAGES }, (response) => {
+        chrome.tabs.sendMessage(tab.id!, { action: MessageActionType.GRAB_IMAGES }, (response) => {
           if (chrome.runtime.lastError) {
             reject(new Error(chrome.runtime.lastError.message || t('content_script_failed')));
             return;
