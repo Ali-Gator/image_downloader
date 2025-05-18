@@ -69,8 +69,11 @@ export const DownloadConstants = {
    * - Angle quotes (« »)
    * - Apostrophes and other punctuation
    * - Control characters
+   * - Trademark and copyright symbols
+   * - Parentheses and brackets
+   * - Special Unicode characters
    */
-  UNSAFE_FILENAME_CHARS_REGEX: /[\\/:*?"<>|«»'`~!@#$%^&=;,{}[\]]/g,
+  UNSAFE_FILENAME_CHARS_REGEX: /[\\/:*?"<>|«»'`~!@#$%^&=;,{}[\]()™©®°±§]/g,
 
   /**
    * Time threshold in milliseconds (12 hours) after which downloads are considered outdated

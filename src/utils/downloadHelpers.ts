@@ -14,21 +14,40 @@ import { DownloadConstants } from './constants';
 export const sanitizeFileName = (filename: string, maxLength = 150): string => {
   if (!filename) return '';
 
+  // First, remove invisible and formatting characters
+  let sanitized = filename
+    // Remove zero-width joiners, zero-width spaces, and other invisible formatting chars
+    .replace(/[\u200B-\u200F\u2028-\u202E\u2060-\u2064\u200C-\u200D\uFEFF]/g, '')
+    // Remove variation selectors used with emojis (VS15, VS16)
+    .replace(/[\uFE00-\uFE0F]/g, '');
+
   // Use the centralized regex from constants
-  let sanitized = filename.replace(DownloadConstants.UNSAFE_FILENAME_CHARS_REGEX, '_');
+  sanitized = sanitized.replace(DownloadConstants.UNSAFE_FILENAME_CHARS_REGEX, '_');
+  
+  // Remove or replace emojis - they can cause issues with some filesystems
+  // This uses ranges that cover most emoji code points
+  sanitized = sanitized.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F000}-\u{1FFFF}]/gu, '_');
 
   // Replace multiple consecutive underscores with a single one
   sanitized = sanitized.replace(/_+/g, '_');
+  
+  // Replace multiple consecutive spaces with a single one
+  sanitized = sanitized.replace(/\s+/g, ' ');
 
-  // Trim leading/trailing underscores
-  sanitized = sanitized.replace(/^_+|_+$/g, '');
+  // Trim leading/trailing spaces and underscores
+  sanitized = sanitized.trim().replace(/^_+|_+$/g, '');
 
   // Replace control characters
   // eslint-disable-next-line no-control-regex
-  sanitized = sanitized.replace(/[\u0000-\u001F\u007F-\u009F]/g, '_');
+  sanitized = sanitized.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
 
   // Replace invalid Unicode characters (including broken emoji)
   sanitized = sanitized.replace(/\uFFFD/g, '_');
+  
+  // If after sanitization nothing useful is left, use a timestamp
+  if (!sanitized || sanitized.trim() === '' || sanitized === '.') {
+    return `image_${Date.now()}`;
+  }
 
   // Limit filename length, being careful with emoji (which can be multi-byte)
   if (sanitized.length > maxLength) {
@@ -46,6 +65,11 @@ export const sanitizeFileName = (filename: string, maxLength = 150): string => {
       // Fallback for very problematic characters
       sanitized = `image_${Date.now()}${extension}`;
     }
+  }
+
+  // Make sure it doesn't start with a dot (which could make files hidden)
+  if (sanitized.startsWith('.')) {
+    sanitized = `img_${sanitized}`;
   }
 
   return sanitized;
