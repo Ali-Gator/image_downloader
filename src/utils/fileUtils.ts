@@ -10,7 +10,7 @@ import { getFileExtension } from './imageUtils';
  */
 export const getFileNameFromUrl = (url: string): string => {
   try {
-    // Для data:URL используем generic имя
+    // For data:URL use generic name
     if (url.startsWith('data:')) {
       return 'image';
     }
@@ -21,19 +21,19 @@ export const getFileNameFromUrl = (url: string): string => {
     // Get the pathname
     const pathname = urlObj.pathname;
 
-    // Удаляем параметры запроса, если они есть
+    // Remove query parameters if present
     const pathWithoutQuery = pathname.split('?')[0];
 
     // Extract the filename from the path
     const segments = pathWithoutQuery.split('/');
     let lastSegment = segments[segments.length - 1];
 
-    // Если последний сегмент пустой, используем предпоследний (для URL с / в конце)
+    // If the last segment is empty, use the second-to-last (for URLs ending with /)
     if (!lastSegment && segments.length > 1) {
       lastSegment = segments[segments.length - 2];
     }
 
-    // Удаляем параметры после имени файла (если есть = в имени)
+    // Remove parameters after the filename (if there's an = in the name)
     if (lastSegment.includes('=')) {
       lastSegment = lastSegment.split('=')[0];
     }
@@ -44,7 +44,7 @@ export const getFileNameFromUrl = (url: string): string => {
       try {
         return decodeURIComponent(lastSegment);
       } catch (e) {
-        // Если декодирование не удалось, используем как есть
+        // If decoding fails, use as is
         return lastSegment;
       }
     }
@@ -52,11 +52,40 @@ export const getFileNameFromUrl = (url: string): string => {
     // If no filename found, generate a name based on hostname
     return `image_from_${urlObj.hostname.replace(/\./g, '_')}`;
   } catch (e) {
-    // Тихая обработка ошибки - без уведомления пользователя
+    // Silent error handling - without notifying the user
     handleError(e);
     // If the URL is invalid, return a generic name
     return 'image';
   }
+};
+
+/**
+ * Safely processes the alt text to create a valid filename
+ * @param alt Alt text to process
+ * @returns Safe filename string
+ */
+const processSafeAltText = (alt: string): string => {
+  // Alt text is already verified to be non-empty by the caller
+  let processed = alt.trim();
+  
+  // Keep only safe characters for filenames (alphanumeric, spaces, some punctuation)
+  // Convert spaces to underscores
+  processed = processed
+    .replace(/[\\/:"*?<>|]/g, '') // Remove Windows/Unix illegal filename chars
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .substring(0, 50); // Limit length to 50 chars
+  
+  // Make sure we have at least one valid character after processing
+  if (!processed || processed.length === 0) {
+    return 'image';
+  }
+  
+  // Ensure it doesn't start with a dot (which could make the file hidden)
+  if (processed.startsWith('.')) {
+    processed = 'img_' + processed;
+  }
+  
+  return processed;
 };
 
 /**
@@ -68,54 +97,52 @@ export const getFileNameFromUrl = (url: string): string => {
  */
 export const getSmartFileName = (image: ImageData): string => {
   const { src, alt } = image;
-
-  // Получаем базовое имя файла из URL
+  
+  // Get base filename from URL
   const defaultName = getFileNameFromUrl(src);
-
-  // Определяем расширение на основе источника изображения
+  
+  // Determine extension based on image source
   const extension = `.${getFileExtension(src).toLowerCase()}`;
 
-  // Если alt текст содержит значимую информацию, используем его
-  if (
-    alt &&
-    alt.trim() &&
-    !src.includes(alt) &&
-    !['image', 'picture', 'photo'].includes(alt.toLowerCase())
-  ) {
-    // Обрабатываем alt текст для создания валидного имени файла
-    const sanitizedAlt = alt
-      .trim()
-      .replace(/[^\w\s.-]/g, '')
-      .replace(/\s+/g, '_')
-      .substring(0, 30); // Ограничиваем длину
-
-    return `${sanitizedAlt}${extension}`;
+  // If alt text contains meaningful information, use it
+  if (alt && alt.trim() && !src.includes(alt)) {
+    // Process alt text to create a valid filename
+    const safeAlt = processSafeAltText(alt);
+    
+    if (safeAlt) {
+      return `${safeAlt}${extension}`;
+    }
   }
 
-  // Проверяем, содержит ли имя файла уже расширение
+  // Check if the filename already contains an extension
   if (defaultName.includes('.')) {
     const dotIndex = defaultName.lastIndexOf('.');
     if (dotIndex > 0) {
       const nameWithoutExt = defaultName.substring(0, dotIndex);
       const currentExt = defaultName.substring(dotIndex).toLowerCase();
 
-      // Проверяем, является ли текущее расширение валидным
+      // Check if the current extension is valid
       if (/^\.[a-z0-9]+$/i.test(currentExt)) {
-        // Если расширение в имени совпадает с определенным из URL/content-type, используем его
+        // If the extension in the name matches the one determined from URL/content-type, use it
         if (currentExt === extension) {
           return defaultName;
         }
 
-        // Если они отличаются, заменяем расширение на правильное
+        // If they differ, replace with the correct extension
         return nameWithoutExt + extension;
       }
 
-      // Если текущее расширение невалидное, добавляем правильное
+      // If the current extension is invalid, add the correct one
       return defaultName + extension;
     }
   }
 
-  // Если имя файла не содержит расширение, добавляем его
+  // If no good name found yet, use a timestamp-based name
+  if (!defaultName || defaultName === 'image' || defaultName.length < 3) {
+    return `image_${Date.now()}${extension}`;
+  }
+
+  // If the filename doesn't contain an extension, add it
   return defaultName + extension;
 };
 
