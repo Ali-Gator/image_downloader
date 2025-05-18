@@ -1,6 +1,12 @@
 // don't change paths to aliases
 
-import { CorsSiteConfig, DownloadOptions, FetchImageMessage, MessageActionType, RegisterFilenameMessage } from '../types';
+import {
+  CorsSiteConfig,
+  DownloadOptions,
+  FetchImageMessage,
+  MessageActionType,
+  RegisterFilenameMessage,
+} from '../types';
 import {
   ApplicationLinks,
   ConnectionName,
@@ -8,7 +14,11 @@ import {
   DEFAULT_DOWNLOAD_OPTIONS,
   StorageKeys,
 } from '../utils/constants';
-import { applyRenamePattern, ensureValidExtension, sanitizePath } from '../utils/downloadHelpers';
+import {
+  applyRenamePattern,
+  ensureValidExtension,
+  sanitizeFileName,
+} from '../utils/downloadHelpers';
 import { handleError } from '../utils/errorHandlers';
 
 // Global variable for storing download options
@@ -169,10 +179,14 @@ export async function getSettings(): Promise<DownloadOptions> {
 
 // Слушаем сообщения для получения имени файла
 chrome.runtime.onMessage.addListener((message: RegisterFilenameMessage, _, sendResponse) => {
-  if (message.action === MessageActionType.REGISTER_FILENAME && message.downloadId && message.filename) {
+  if (
+    message.action === MessageActionType.REGISTER_FILENAME &&
+    message.downloadId &&
+    message.filename
+  ) {
     // Store the filename in our map for later use
     downloadFilenamesMap[message.downloadId] = message.filename;
-    
+
     // Send success response back to content script
     sendResponse({ success: true });
     return true;
@@ -222,18 +236,14 @@ if (typeof chrome !== 'undefined' && chrome.downloads) {
         if (renamePattern) {
           if (typeof applyRenamePattern === 'function') {
             finalFilename = applyRenamePattern(finalFilename, renamePattern);
+            // Note: We need to sanitize after applying rename pattern as it could introduce invalid characters
+            finalFilename = sanitizeFileName(finalFilename);
           }
-        }
-
-        // Sanitize filename to remove invalid characters
-        if (typeof sanitizePath === 'function') {
-          finalFilename = sanitizePath(finalFilename);
         }
 
         // Apply folder to filename if needed
         if (folderName) {
-          const sanitizedFolder =
-            typeof sanitizePath === 'function' ? sanitizePath(folderName) : folderName;
+          const sanitizedFolder = sanitizeFileName(folderName);
           return `${sanitizedFolder}/${finalFilename}`;
         } else {
           return finalFilename;

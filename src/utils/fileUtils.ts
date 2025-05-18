@@ -1,6 +1,6 @@
 import { ImageData } from '@types';
 
-import { DownloadConstants } from './constants';
+import { sanitizeFileName } from './downloadHelpers';
 import { handleError } from './errorHandlers';
 import { getFileExtension } from './imageUtils';
 
@@ -50,8 +50,8 @@ export const getFileNameFromUrl = (url: string): string => {
         decodedSegment = lastSegment;
       }
 
-      // Remove any problematic characters that could affect filenames
-      return decodedSegment.replace(DownloadConstants.UNSAFE_FILENAME_CHARS_REGEX, '_');
+      // Apply sanitization to handle special characters
+      return sanitizeFileName(decodedSegment, 100);
     }
 
     // If no filename found, generate a name based on hostname
@@ -73,18 +73,8 @@ const processSafeAltText = (alt: string): string => {
   // Alt text is already verified to be non-empty by the caller
   let processed = alt.trim();
 
-  // Use the centralized regex from constants
-  processed = processed
-    .replace(DownloadConstants.UNSAFE_FILENAME_CHARS_REGEX, '_') // Replace unsafe chars with underscore
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '_') // Control characters
-    .replace(/\uFFFD/g, '_') // Replace broken/invalid Unicode chars
-    .replace(/\s+/g, '_') // Replace spaces with underscores
-    .replace(/_+/g, '_') // Replace multiple underscores with a single one
-    .replace(/^_+|_+$/g, ''); // Trim leading/trailing underscores
-
-  // Limit length to be safe for most filesystems
-  processed = processed.substring(0, 50);
+  // Use shared sanitization function with a max length of 50 for alt text
+  processed = sanitizeFileName(processed, 50);
 
   // Make sure we have at least one valid character after processing
   if (!processed || processed.length === 0) {

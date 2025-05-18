@@ -6,14 +6,16 @@ import { MessageActionType } from '../types';
 import { DownloadConstants } from './constants';
 
 /**
- * Sanitizes a path component by replacing unsafe characters with '_'.
- * Handles quotes, tildes, colons, apostrophes, emojis and other special characters
+ * Sanitizes a filename by replacing unsafe characters with underscores and handling special cases
+ * @param filename The filename to sanitize
+ * @param maxLength Optional maximum length (defaults to 150)
+ * @returns Sanitized filename
  */
-export const sanitizePath = (path: string): string => {
-  if (!path) return '';
+export const sanitizeFileName = (filename: string, maxLength = 150): string => {
+  if (!filename) return '';
 
   // Use the centralized regex from constants
-  let sanitized = path.replace(DownloadConstants.UNSAFE_FILENAME_CHARS_REGEX, '_');
+  let sanitized = filename.replace(DownloadConstants.UNSAFE_FILENAME_CHARS_REGEX, '_');
 
   // Replace multiple consecutive underscores with a single one
   sanitized = sanitized.replace(/_+/g, '_');
@@ -21,11 +23,15 @@ export const sanitizePath = (path: string): string => {
   // Trim leading/trailing underscores
   sanitized = sanitized.replace(/^_+|_+$/g, '');
 
+  // Replace control characters
+  // eslint-disable-next-line no-control-regex
+  sanitized = sanitized.replace(/[\u0000-\u001F\u007F-\u009F]/g, '_');
+
   // Replace invalid Unicode characters (including broken emoji)
   sanitized = sanitized.replace(/\uFFFD/g, '_');
 
   // Limit filename length, being careful with emoji (which can be multi-byte)
-  if (sanitized.length > 150) {
+  if (sanitized.length > maxLength) {
     const extension = sanitized.includes('.')
       ? sanitized.substring(sanitized.lastIndexOf('.'))
       : '';
@@ -35,7 +41,7 @@ export const sanitizePath = (path: string): string => {
 
     // UTF-8 aware substring to better handle emojis
     try {
-      sanitized = basename.substring(0, 145) + extension;
+      sanitized = basename.substring(0, maxLength - extension.length) + extension;
     } catch (e) {
       // Fallback for very problematic characters
       sanitized = `image_${Date.now()}${extension}`;
@@ -118,8 +124,8 @@ export const getExtensionFromUrl = (url: string): string => {
 export const ensureValidExtension = (filename: string, imageUrl: string): string => {
   if (!filename) return `image_${Date.now()}.${getExtensionFromUrl(imageUrl)}`;
 
-  // Сначала санитизируем имя файла
-  const sanitizedName = sanitizePath(filename);
+  // Sanitize the filename first
+  const sanitizedName = sanitizeFileName(filename);
 
   // If filename doesn't have an extension, add one based on the URL
   if (!sanitizedName.includes('.')) {
@@ -128,42 +134,6 @@ export const ensureValidExtension = (filename: string, imageUrl: string): string
   }
 
   return sanitizedName;
-};
-
-/**
- * Get a clean filename from a URL or data URI
- * @param filename Original filename
- * @param imageUrl URL of the image for fallback
- * @returns Clean filename
- */
-export const getCleanFilename = (filename: string, imageUrl: string): string => {
-  // This function is only used as a fallback when no clean filename is available
-  // Most filenames should be handled by getSmartFileName in fileUtils.ts
-
-  // If filename is already valid (not a URL or data URI), just ensure it has an extension
-  if (filename && !filename.startsWith('http') && !filename.startsWith('data:')) {
-    return ensureValidExtension(filename, imageUrl);
-  }
-
-  // If filename is a URL, try to extract a meaningful name from it
-  if (filename.startsWith('http')) {
-    try {
-      const url = new URL(filename);
-      const pathSegments = url.pathname.split('/').filter(Boolean);
-      if (pathSegments.length > 0) {
-        const lastSegment = pathSegments[pathSegments.length - 1];
-        // Clean up any query parameters
-        const cleanSegment = lastSegment.split('?')[0];
-        return ensureValidExtension(cleanSegment, imageUrl);
-      }
-    } catch (e) {
-      /* ignore */
-    }
-  }
-
-  // Generate a generic timestamp-based filename as last resort
-  const extension = getExtensionFromUrl(imageUrl);
-  return `image_${Date.now()}.${extension}`;
 };
 
 /**
@@ -176,8 +146,8 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
     return Promise.reject(new Error('Invalid image source or filename'));
   }
 
-  // Use sanitizePath to ensure filename is properly formatted
-  const originalFilename = sanitizePath(image.filename);
+  // Sanitize the filename to ensure it's properly formatted
+  const originalFilename = sanitizeFileName(image.filename);
 
   return new Promise<void>((resolve, reject) => {
     // Check Chrome availability
@@ -196,7 +166,7 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
       }
       return;
     }
-    
+
     // Let Chrome extension API handle the download
     chrome.downloads.download(
       {
@@ -215,13 +185,13 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
           reject(new Error('Download failed - no ID returned'));
           return;
         }
-        
+
         // Register the mapping between download ID and original filename
         try {
           chrome.runtime.sendMessage(
-            { 
-              action: MessageActionType.REGISTER_FILENAME, 
-              downloadId, 
+            {
+              action: MessageActionType.REGISTER_FILENAME,
+              downloadId,
               filename: originalFilename,
             },
             () => {
@@ -233,7 +203,7 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
         } catch (error) {
           // Continue with download even if registration fails
         }
-        
+
         resolve();
       },
     );
