@@ -1,7 +1,6 @@
 // don't change paths to aliases
 
 import {
-  CorsSiteConfig,
   DownloadOptions,
   FetchImageMessage,
   MessageActionType,
@@ -10,9 +9,9 @@ import {
 import {
   ApplicationLinks,
   ConnectionName,
-  CORS_SITE_CONFIG,
   DEFAULT_DOWNLOAD_OPTIONS,
   StorageKeys,
+  IMAGE_FETCH_TIMEOUTS,
 } from '../utils/constants';
 import {
   applyRenamePattern,
@@ -20,9 +19,11 @@ import {
   sanitizeFileName,
 } from '../utils/downloadHelpers';
 import { handleError } from '../utils/errorHandlers';
+import { blobToDataUrl } from '../utils/imageUtils';
 
 // Global variable for storing download options
 let activeTabOrigin = '';
+let currentOriginWithRules = '';
 
 // Словарь для хранения соответствий между ID загрузки и именами файлов
 // Это позволит сохранить исходное имя при переименовании
@@ -32,36 +33,23 @@ const downloadFilenamesMap: Record<number, string> = {};
 removeReferrerRules().catch(handleError);
 
 /**
- * Identifies which site config should be used for the given URL
- * @param url The URL to check against site patterns
- * @returns The site key and config, or null if no match
- */
-function identifySiteConfig(url: string): { key: string; config: CorsSiteConfig } | null {
-  if (!url) return null;
-
-  for (const [key, config] of Object.entries(CORS_SITE_CONFIG)) {
-    for (const pattern of config.patterns) {
-      if (url.includes(pattern)) {
-        return { key, config };
-      }
-    }
-  }
-
-  return null;
-}
-
-/**
  * Adds referrer rules for cross-origin image requests
  * This helps bypass CORS restrictions for certain image hosts
  */
 async function addReferrerRules(origin?: string) {
   try {
+    // Skip if we already have rules for this origin
+    if (origin && origin === currentOriginWithRules) {
+      return;
+    }
+
     // First remove existing rules
     await removeReferrerRules();
 
-    // If origin is provided, add a rule to set referrer header
+    // If origin is provided, add rules to set referrer header
     if (origin) {
       activeTabOrigin = origin;
+      currentOriginWithRules = origin;
 
       await chrome.declarativeNetRequest.updateSessionRules({
         addRules: [
@@ -81,6 +69,16 @@ async function addReferrerRules(origin?: string) {
                   operation: chrome.declarativeNetRequest.HeaderOperation.SET,
                   value: origin,
                 },
+                {
+                  header: 'Sec-Fetch-Site',
+                  operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                  value: 'same-origin',
+                },
+                {
+                  header: 'Sec-Fetch-Mode',
+                  operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                  value: 'cors',
+                },
               ],
             },
             condition: {
@@ -88,6 +86,10 @@ async function addReferrerRules(origin?: string) {
               resourceTypes: [
                 chrome.declarativeNetRequest.ResourceType.IMAGE,
                 chrome.declarativeNetRequest.ResourceType.MEDIA,
+                chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST,
+                chrome.declarativeNetRequest.ResourceType.OTHER,
+                chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
+                chrome.declarativeNetRequest.ResourceType.SUB_FRAME,
               ],
             },
           },
@@ -104,54 +106,20 @@ async function addReferrerRules(origin?: string) {
  */
 async function removeReferrerRules() {
   try {
-    await chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: [987654321],
-    });
-  } catch (error) {
-    handleError(error);
-  }
-}
+    // Remove all session rules to avoid conflicts
+    const existingRules = await chrome.declarativeNetRequest.getSessionRules();
+    const idsToRemove = existingRules.map((rule) => rule.id);
 
-/**
- * Fetches an image using the fetch API as a fallback method
- */
-async function fetchImageWithFetch(
-  url: string,
-  siteConfig?: CorsSiteConfig,
-): Promise<string | null> {
-  try {
-    const headers: Record<string, string> = {
-      Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'user-agent': navigator.userAgent,
-    };
-
-    // Add site-specific headers if available
-    if (siteConfig) {
-      headers['Referer'] = siteConfig.referrer;
-      headers['Origin'] = siteConfig.origin;
-      if (siteConfig.userAgent) {
-        headers['user-agent'] = siteConfig.userAgent;
-      }
+    if (idsToRemove.length > 0) {
+      await chrome.declarativeNetRequest.updateSessionRules({
+        removeRuleIds: idsToRemove,
+      });
     }
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers,
-      credentials: 'omit',
-      mode: 'no-cors',
-    });
-
-    // Note: With mode: 'no-cors', the response type will be 'opaque' and body may not be readable directly
-    // We can try to convert it anyway
-    const blob = await response.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(blob);
-    });
+    // Reset the current origin with rules
+    currentOriginWithRules = '';
   } catch (error) {
-    return null;
+    // Ignore errors when removing rules
   }
 }
 
@@ -272,101 +240,159 @@ if (typeof chrome !== 'undefined' && chrome.downloads) {
  * Listener for setting download options via message
  */
 chrome.runtime.onMessage.addListener((request: FetchImageMessage, _, sendResponse) => {
-  try {
-    // Handle image fetch request - proxy image data through background script to bypass CORS
-    if (request.msg === MessageActionType.FETCH_IMAGE) {
-      // Identify the site for appropriate headers
-      const siteInfo = identifySiteConfig(request.url);
-
-      // Set the referrer to the original site for this request
-      let appliedRules = false;
-      if (siteInfo) {
-        addReferrerRules(siteInfo.config.referrer);
-        appliedRules = true;
-      }
-
-      // Use XMLHttpRequest which handles some CORS cases better than fetch
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', request.url, true);
-      xhr.responseType = 'blob';
-      xhr.timeout = 30000; // 30 second timeout
-
-      // Set basic headers
-      xhr.setRequestHeader('Accept', 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8');
-      xhr.setRequestHeader('Accept-Language', 'en-US,en;q=0.9');
-      xhr.setRequestHeader('sec-fetch-dest', 'image');
-      xhr.setRequestHeader('sec-fetch-mode', 'no-cors');
-      xhr.setRequestHeader('sec-fetch-site', 'cross-site');
-
-      // Set site-specific headers if available
-      if (siteInfo) {
-        xhr.setRequestHeader('Referer', siteInfo.config.referrer);
-        xhr.setRequestHeader('Origin', siteInfo.config.origin);
-        if (siteInfo.config.userAgent) {
-          xhr.setRequestHeader('user-agent', siteInfo.config.userAgent);
-        } else {
-          xhr.setRequestHeader('user-agent', navigator.userAgent);
-        }
-      } else {
-        // Default headers using active tab origin
-        xhr.setRequestHeader('Referer', activeTabOrigin || request.referrer || '');
-        xhr.setRequestHeader('Origin', activeTabOrigin || request.referrer || '');
-        xhr.setRequestHeader('user-agent', navigator.userAgent);
-      }
-
-      // Clean up function to remove rules after request is done
-      const cleanupRules = () => {
-        if (appliedRules) {
-          removeReferrerRules().catch(handleError);
-        }
-      };
-
-      xhr.onload = function () {
-        if (xhr.status === 200) {
-          const reader = new FileReader();
-          reader.onloadend = function () {
-            sendResponse({ dataUrl: reader.result });
-            cleanupRules();
-          };
-          reader.readAsDataURL(xhr.response);
-        } else {
-          // Try fallback method
-          fetchImageWithFetch(request.url, siteInfo?.config).then((dataUrl) => {
-            if (dataUrl) {
-              sendResponse({ dataUrl });
-            } else {
-              sendResponse({ error: true });
-            }
-            cleanupRules();
-          });
-        }
-      };
-
-      xhr.onerror = function () {
-        // Try fallback method
-        fetchImageWithFetch(request.url, siteInfo?.config).then((dataUrl) => {
-          if (dataUrl) {
-            sendResponse({ dataUrl });
-          } else {
-            sendResponse({ error: true });
+  // Handle image fetch request - proxy image data through background script to bypass CORS
+  if (request.msg === MessageActionType.FETCH_IMAGE) {
+    // Use async IIFE to handle async operations
+    (async () => {
+      try {
+        // Get current active tab to use as referrer (but exclude extension URLs)
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        let tabOrigin = '';
+        if (activeTab?.url && !activeTab.url.startsWith('chrome-extension://')) {
+          try {
+            tabOrigin = new URL(activeTab.url).origin;
+          } catch (e) {
+            // Invalid URL, ignore
           }
-          cleanupRules();
+        }
+
+        // If no valid tab origin, try to extract from the image URL
+        if (!tabOrigin) {
+          try {
+            const imageUrl = new URL(request.url);
+            tabOrigin = imageUrl.origin;
+          } catch (e) {
+            // Invalid URL, ignore
+          }
+        }
+
+        // Set the referrer rules using the detected tab origin
+        let appliedRules = false;
+        const referrerOrigin = tabOrigin;
+
+        if (referrerOrigin) {
+          await addReferrerRules(referrerOrigin);
+          appliedRules = currentOriginWithRules === referrerOrigin;
+          // Wait a bit for rules to be applied (only if they were actually added)
+          if (appliedRules) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+          }
+        }
+
+        // Use fetch API which is available in service workers
+        const headers = new Headers({
+          Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+          'sec-fetch-dest': 'image',
+          'sec-fetch-mode': 'cors',
+          'sec-fetch-site': 'same-origin',
+          'sec-ch-ua': '"Google Chrome";v="121", "Not A(Brand";v="99", "Chromium";v="121"',
+          'sec-ch-ua-mobile': '?0',
+          'sec-ch-ua-platform': '"macOS"',
+          'sec-ch-ua-platform-version': '"14.0.0"',
+          'upgrade-insecure-requests': '1',
+          dnt: '1',
+          connection: 'keep-alive',
         });
-      };
 
-      xhr.ontimeout = function () {
-        sendResponse({ error: true });
-        cleanupRules();
-      };
+        // Set headers using detected tab origin with fallbacks
+        const referrerHeader = tabOrigin || activeTabOrigin || request.referrer || '';
+        const originHeader = tabOrigin || activeTabOrigin || request.referrer || '';
 
-      xhr.send();
-      return true; // Required for async response
-    }
-    sendResponse({ success: false, error: 'Unknown message type' });
-  } catch (error) {
-    handleError(error);
-    sendResponse({ success: false, error: String(error) });
+        if (referrerHeader) {
+          headers.set('Referer', referrerHeader);
+        }
+        if (originHeader) {
+          headers.set('Origin', originHeader);
+        }
+
+        // Set user agent
+        headers.set('user-agent', navigator.userAgent);
+
+        // Clean up function to remove rules after request is done
+        const cleanupRules = () => {
+          if (appliedRules) {
+            removeReferrerRules().catch(handleError);
+          }
+        };
+
+        // Create AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(
+          () => controller.abort(),
+          IMAGE_FETCH_TIMEOUTS.BACKGROUND_FETCH,
+        );
+
+        try {
+          // First try with CORS mode
+          const response = await fetch(request.url, {
+            method: 'GET',
+            headers,
+            signal: controller.signal,
+            credentials: 'omit',
+            mode: 'cors',
+          });
+
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const blob = await response.blob();
+            const dataUrl = await blobToDataUrl(blob);
+            sendResponse({ dataUrl });
+            cleanupRules();
+            return;
+          } else {
+            throw new Error(`HTTP ${response.status}`);
+          }
+        } catch (error) {
+          // If CORS failed, try no-cors mode
+          try {
+            const noCorsController = new AbortController();
+            const noCorsTimeoutId = setTimeout(
+              () => noCorsController.abort(),
+              IMAGE_FETCH_TIMEOUTS.BACKGROUND_FETCH,
+            );
+
+            const noCorsResponse = await fetch(request.url, {
+              method: 'GET',
+              headers,
+              signal: noCorsController.signal,
+              credentials: 'omit',
+              mode: 'no-cors',
+            });
+
+            clearTimeout(noCorsTimeoutId);
+
+            // With no-cors, we can't check status, but if we got here it likely worked
+            const blob = await noCorsResponse.blob();
+            if (blob && blob.size > 0) {
+              const dataUrl = await blobToDataUrl(blob);
+              sendResponse({ dataUrl });
+              cleanupRules();
+              return;
+            }
+          } catch (noCorsError) {
+            // Silent failure for no-cors
+          }
+
+          clearTimeout(timeoutId);
+
+          // If both CORS and no-cors failed, return error
+          sendResponse({ error: true });
+          cleanupRules();
+        }
+      } catch (error) {
+        handleError(error);
+        sendResponse({ success: false, error: String(error) });
+      }
+    })();
+    return true; // Required for async response
   }
+
+  sendResponse({ success: false, error: 'Unknown message type' });
   return false;
 });
 

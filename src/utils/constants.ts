@@ -156,64 +156,10 @@ export const NOTIFICATION_DURATION = {
 };
 
 /**
- * Configuration for sites that need special handling due to CORS restrictions
- * Each site has:
- * - patterns: URL patterns to match
- * - referrer: Which referrer to use when fetching
- * - origin: Which origin to set in requests
+ * Timeouts for image fetching operations
  */
-export const CORS_SITE_CONFIG: {
-  [key: string]: {
-    patterns: string[];
-    referrer: string;
-    origin: string;
-    userAgent?: string;
-  };
-} = {
-  instagram: {
-    patterns: [
-      'instagram.',
-      '.fbcdn.net',
-      'cdninstagram',
-      'fbinstagram',
-      'instagram.fsof',
-      't51.2885-15',
-      't51.29350-15',
-      'ig_cache_key',
-    ],
-    referrer: 'https://www.instagram.com',
-    origin: 'https://www.instagram.com',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
-  },
-  pinterest: {
-    patterns: ['pinimg.com', 'pinterest.com'],
-    referrer: 'https://www.pinterest.com',
-    origin: 'https://www.pinterest.com',
-  },
-  twitter: {
-    patterns: ['twimg.com', 'twitter.com', 'x.com'],
-    referrer: 'https://twitter.com',
-    origin: 'https://twitter.com',
-  },
-  facebook: {
-    patterns: ['facebook.com', 'fbcdn.net'],
-    referrer: 'https://www.facebook.com',
-    origin: 'https://www.facebook.com',
-  },
-  reddit: {
-    patterns: ['redd.it', 'reddit.com'],
-    referrer: 'https://www.reddit.com',
-    origin: 'https://www.reddit.com',
-  },
-  tumblr: {
-    patterns: ['tumblr.com'],
-    referrer: 'https://www.tumblr.com',
-    origin: 'https://www.tumblr.com',
-  },
-  tiktok: {
-    patterns: ['tiktok.com', 'tiktokcdn.com'],
-    referrer: 'https://www.tiktok.com',
-    origin: 'https://www.tiktok.com',
-  },
-  // Можно добавить другие сайты по мере необходимости
+export const IMAGE_FETCH_TIMEOUTS = {
+  CONTENT_SCRIPT: 2000, // 2 seconds
+  CANVAS_TIMEOUT: 5000, // 5 seconds
+  BACKGROUND_FETCH: 30000, // 30 seconds
 };

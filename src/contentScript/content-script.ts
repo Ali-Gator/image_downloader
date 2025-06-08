@@ -1,6 +1,7 @@
 import { ImageData, MessageActionType } from '@types';
 import { handleError, PlaceholderImages } from '@utils';
 import { getSmartFileName } from '@utils/fileUtils';
+import { blobToDataUrl } from '@utils/imageUtils';
 
 /**
  * Проверяет, является ли URL допустимым изображением
@@ -84,9 +85,40 @@ const estimateImageSize = (img: HTMLImageElement): number => {
   }
 };
 
+/**
+ * Simple fetch image as data URL (content script version)
+ */
+async function fetchImageAsDataUrl(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url, {
+      credentials: 'include',
+      mode: 'cors',
+    });
+
+    if (!response.ok) return null;
+
+    const blob = await response.blob();
+    return blobToDataUrl(blob);
+  } catch (error) {
+    return null;
+  }
+}
+
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   try {
+    if (message.action === MessageActionType.FETCH_IMAGE_AS_DATA_URL) {
+      // Handle image fetch request from popup/page
+      fetchImageAsDataUrl(message.url)
+        .then((dataUrl) => {
+          sendResponse({ dataUrl });
+        })
+        .catch(() => {
+          sendResponse({ dataUrl: null });
+        });
+      return true; // Indicate async response
+    }
+
     if (message.action === MessageActionType.GRAB_IMAGES) {
       const allImgElements = Array.from(document.getElementsByTagName('img'));
 

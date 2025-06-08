@@ -25,7 +25,7 @@ const manifest: ManifestV3Export = {
     service_worker: 'src/background/index.ts',
     type: 'module',
   },
-  permissions: ['activeTab', 'tabs', 'storage', 'downloads', 'declarativeNetRequest'],
+  permissions: ['activeTab', 'tabs', 'storage', 'downloads', 'declarativeNetRequest', 'scripting'],
   host_permissions: ['<all_urls>'],
   content_scripts: [
     {

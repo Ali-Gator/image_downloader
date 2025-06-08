@@ -6,6 +6,7 @@ import { Box, useTheme } from '@mui/material';
 
 import { ActionButton } from '@components/Page/components/ActionButton';
 import { CheckboxButton } from '@components/Page/components/CheckboxButton';
+import { SafeImage } from '@components/Page/components/SafeImage';
 import { useImageStore } from '@store';
 import { ImageCardProps } from '@types';
 import { useTranslation } from '@utils';
@@ -106,7 +107,7 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
       )}
 
       <StyledImageContainer className="image-container">
-        <img src={src} alt={alt || filename} loading="lazy" />
+        <SafeImage src={src} alt={alt || filename} />
       </StyledImageContainer>
 
       <ImageInfo imageId={id} />

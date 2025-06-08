@@ -206,7 +206,11 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
   const originalFilename = sanitizeFileName(image.filename);
 
   // Function to attempt download with a specific filename
-  const attemptDownload = (filename: string, isRetry = false): Promise<void> => {
+  const attemptDownload = (
+    filename: string,
+    isRetry = false,
+    useFallback = false,
+  ): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
       // Check Chrome availability
       if (typeof chrome === 'undefined' || !chrome.downloads || !chrome.downloads.download) {
@@ -225,7 +229,66 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
         return;
       }
 
-      // Let Chrome extension API handle the download
+      // If useFallback is true, try to get image data through background script first
+      if (useFallback) {
+        chrome.runtime.sendMessage(
+          { msg: MessageActionType.FETCH_IMAGE, url: image.src },
+          (response) => {
+            if (response && response.dataUrl) {
+              // Successfully got image data, now download it
+              chrome.downloads.download(
+                {
+                  url: response.dataUrl,
+                  filename: filename,
+                  conflictAction: 'uniquify' as chrome.downloads.FilenameConflictAction,
+                  saveAs: false,
+                },
+                (downloadId) => {
+                  if (chrome.runtime.lastError) {
+                    reject(
+                      new Error(
+                        `Download failed via fallback: ${chrome.runtime.lastError.message}`,
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (!downloadId) {
+                    reject(new Error('Download failed via fallback - no ID returned'));
+                    return;
+                  }
+
+                  // Register the mapping between download ID and original filename
+                  try {
+                    chrome.runtime.sendMessage(
+                      {
+                        action: MessageActionType.REGISTER_FILENAME,
+                        downloadId,
+                        filename: filename,
+                      },
+                      () => {
+                        if (chrome.runtime.lastError) {
+                          // Continue even if registration fails
+                        }
+                      },
+                    );
+                  } catch (error) {
+                    // Continue with download even if registration fails
+                  }
+
+                  resolve();
+                },
+              );
+            } else {
+              // Fallback method failed too
+              reject(new Error('All download methods failed'));
+            }
+          },
+        );
+        return;
+      }
+
+      // Let Chrome extension API handle the download (original method)
       chrome.downloads.download(
         {
           url: image.src,
@@ -245,8 +308,8 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
               const fallbackFilename = createFallbackFilename(originalFilename, image.src);
               attemptDownload(fallbackFilename, true).then(resolve).catch(reject);
             } else {
-              // If this is already a retry, then give up
-              reject(new Error(`Download failed: ${chrome.runtime.lastError.message}`));
+              // If this is already a retry with generic name, try the CORS fallback
+              attemptDownload(filename, true, true).then(resolve).catch(reject);
             }
             return;
           }
@@ -257,7 +320,8 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
               const fallbackFilename = createFallbackFilename(originalFilename, image.src);
               attemptDownload(fallbackFilename, true).then(resolve).catch(reject);
             } else {
-              reject(new Error('Download failed - no ID returned'));
+              // Try CORS fallback if generic name also failed
+              attemptDownload(filename, true, true).then(resolve).catch(reject);
             }
             return;
           }

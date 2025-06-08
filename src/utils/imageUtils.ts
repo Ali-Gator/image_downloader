@@ -160,3 +160,16 @@ export const getFriendlyUrlDisplay = (url: string): { text: string; tooltip: str
     tooltip: url,
   };
 };
+
+/**
+ * Convert blob to data URL
+ * Universal function to avoid duplication
+ */
+export function blobToDataUrl(blob: Blob): Promise<string | null> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(blob);
+  });
+}

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { DownloadButton, Header, HelpText, ReportBugLink } from '@components/Popup/components';
 import RatingWidget from '@components/RatingWidget';
 import { useImageStore } from '@store';
-import { ImageData, MessageActionType } from '@types';
+import { ImageData, MessageActionType, GrabImagesMessage } from '@types';
 import {
   ConnectionName,
   handleError,
@@ -52,49 +52,54 @@ export const Popup: React.FC = () => {
   }, []);
 
   const handleGrabImages = useCallback(async () => {
-    await withErrorHandling(async () => {
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-
-      if (!tab) {
-        throw new Error(t('no_active_tabs'));
-      }
-
-      if (!tab.id) {
-        throw new Error(t('cannot_access_tab'));
-      }
-
-      // Создаем Promise для коллбек-стиля chrome API
-      return new Promise<void>((resolve, reject) => {
-        // Отправляем сообщение в content-script
-        chrome.tabs.sendMessage(tab.id!, { action: MessageActionType.GRAB_IMAGES }, (response) => {
-          if (chrome.runtime.lastError) {
-            reject(new Error(chrome.runtime.lastError.message || t('content_script_failed')));
-            return;
-          }
-
-          if (!response) {
-            reject(new Error(t('no_response_from_script')));
-            return;
-          }
-
-          if (response.error) {
-            reject(new Error(response.details || response.error));
-            return;
-          }
-
-          if (!response.images || !response.images.length) {
-            reject(new Error(t('no_images_found')));
-            return;
-          }
-
-          openImagesPage(response.images);
-          resolve();
+    await withErrorHandling(
+      async () => {
+        const [tab] = await chrome.tabs.query({
+          active: true,
+          currentWindow: true,
         });
-      });
-    }, setIsLoading);
+
+        if (!tab) {
+          throw new Error(t('no_active_tabs'));
+        }
+
+        if (!tab.id) {
+          throw new Error(t('cannot_access_tab'));
+        }
+
+        // Создаем Promise для коллбек-стиля chrome API
+        return new Promise<void>((resolve, reject) => {
+          // Отправляем сообщение в content-script
+          const message: GrabImagesMessage = { action: MessageActionType.GRAB_IMAGES };
+          chrome.tabs.sendMessage(tab.id!, message, (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message || t('content_script_failed')));
+              return;
+            }
+
+            if (!response) {
+              reject(new Error(t('no_response_from_script')));
+              return;
+            }
+
+            if (response.error) {
+              reject(new Error(response.details || response.error));
+              return;
+            }
+
+            if (!response.images || !response.images.length) {
+              reject(new Error(t('no_images_found')));
+              return;
+            }
+
+            openImagesPage(response.images);
+            resolve();
+          });
+        });
+      },
+      setIsLoading,
+      '', //TODO: "Could not establish connection. Receiving end does not exist." When click Download button
+    );
   }, [openImagesPage, t, setIsLoading]);
 
   return (

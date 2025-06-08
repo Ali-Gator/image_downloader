@@ -232,5 +232,11 @@
   },
   "options_auto_apply_message": {
     "message": "Options are applied automatically"
+  },
+  "image_load_failed": {
+    "message": "Failed to load image"
+  },
+  "image_alt_fallback": {
+    "message": "Image"
   }
 }

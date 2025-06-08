@@ -2,6 +2,7 @@
 export { ImageUrl } from './ImageUrl';
 export { MetadataBadge } from './MetadataBadge';
 export { ImageActions } from './ImageActions';
+export { SafeImage } from './SafeImage';
 
 // Export other components
 export { ActionButton } from './ActionButton';

@@ -5,6 +5,7 @@ export enum MessageActionType {
   REGISTER_FILENAME = 'registerFilename',
   FETCH_IMAGE = 'fetchImage',
   GRAB_IMAGES = 'grabImages',
+  FETCH_IMAGE_AS_DATA_URL = 'fetchImageAsDataUrl',
 }
 
 /**
@@ -35,6 +36,21 @@ export interface FetchImageMessage {
  */
 export interface GrabImagesMessage {
   action: MessageActionType.GRAB_IMAGES;
+}
+
+/**
+ * Response from image fetch operations
+ */
+export interface ImageFetchResponse {
+  dataUrl?: string;
+  error?: boolean;
+}
+
+/**
+ * Response from content script image fetch
+ */
+export interface ContentScriptImageResponse {
+  dataUrl?: string;
 }
 
 export interface ImageData {
@@ -122,6 +138,15 @@ export interface ImageActionsProps {
 }
 
 /**
+ * Props for the SafeImage component
+ */
+export interface SafeImageProps {
+  src: string;
+  alt?: string;
+  className?: string;
+}
+
+/**
  * Props for styling view buttons
  */
 export interface ViewButtonProps {
@@ -169,12 +194,4 @@ export interface ErrorBoundaryProps {
 export interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
-}
-
-// Конфигурация для сайтов с CORS-защитой
-export interface CorsSiteConfig {
-  patterns: string[];
-  referrer: string;
-  origin: string;
-  userAgent?: string;
 }
