@@ -249,6 +249,6 @@
     "message": "Extension stores are not supported. Please navigate to a regular website."
   },
   "content_script_not_loaded": {
-    "message": "Extension is not loaded on this page. Trying to load automatically..."
+    "message": "Extension failed to load on this page. Please refresh the page and try again."
   }
 }
