@@ -238,5 +238,17 @@
   },
   "image_alt_fallback": {
     "message": "Image"
+  },
+  "tab_url_unavailable": {
+    "message": "Tab URL is not available"
+  },
+  "unsupported_page_type": {
+    "message": "This page type is not supported. Please navigate to a regular website."
+  },
+  "webstore_not_supported": {
+    "message": "Extension stores are not supported. Please navigate to a regular website."
+  },
+  "content_script_not_loaded": {
+    "message": "Extension is not loaded on this page. Trying to load automatically..."
   }
 }

@@ -39,6 +39,20 @@ export interface GrabImagesMessage {
 }
 
 /**
+ * Interface for the fetchImageAsDataUrl message
+ * Used to request content script to fetch image data URL
+ */
+export interface FetchImageAsDataUrlMessage {
+  action: MessageActionType.FETCH_IMAGE_AS_DATA_URL;
+  url: string;
+}
+
+/**
+ * Union type for all possible messages to content script
+ */
+export type ContentScriptMessage = GrabImagesMessage | FetchImageAsDataUrlMessage;
+
+/**
  * Response from image fetch operations
  */
 export interface ImageFetchResponse {
@@ -51,6 +65,15 @@ export interface ImageFetchResponse {
  */
 export interface ContentScriptImageResponse {
   dataUrl?: string;
+}
+
+/**
+ * Response from content script when grabbing images
+ */
+export interface GrabImagesResponse {
+  images?: ImageData[];
+  error?: string;
+  details?: string;
 }
 
 export interface ImageData {

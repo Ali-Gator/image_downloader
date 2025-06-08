@@ -3,11 +3,13 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { DownloadButton, Header, HelpText, ReportBugLink } from '@components/Popup/components';
 import RatingWidget from '@components/RatingWidget';
 import { useImageStore } from '@store';
-import { ImageData, MessageActionType, GrabImagesMessage } from '@types';
+import { GrabImagesMessage, GrabImagesResponse, ImageData, MessageActionType } from '@types';
 import {
   ConnectionName,
   handleError,
+  isContentScriptSupported,
   sendImagesToTab,
+  sendMessageToContentScript,
   useTranslation,
   withErrorHandling,
 } from '@utils';
@@ -67,38 +69,46 @@ export const Popup: React.FC = () => {
           throw new Error(t('cannot_access_tab'));
         }
 
-        // Создаем Promise для коллбек-стиля chrome API
-        return new Promise<void>((resolve, reject) => {
-          // Отправляем сообщение в content-script
-          const message: GrabImagesMessage = { action: MessageActionType.GRAB_IMAGES };
-          chrome.tabs.sendMessage(tab.id!, message, (response) => {
-            if (chrome.runtime.lastError) {
-              reject(new Error(chrome.runtime.lastError.message || t('content_script_failed')));
-              return;
-            }
+        // Check if tab URL is supported for content scripts
+        if (!tab.url) {
+          throw new Error(t('tab_url_unavailable'));
+        }
 
-            if (!response) {
-              reject(new Error(t('no_response_from_script')));
-              return;
-            }
+        if (!isContentScriptSupported(tab.url)) {
+          if (
+            tab.url.includes('chrome.google.com/webstore') ||
+            tab.url.includes('microsoftedge.microsoft.com/addons')
+          ) {
+            throw new Error(t('webstore_not_supported'));
+          } else {
+            throw new Error(t('unsupported_page_type'));
+          }
+        }
 
-            if (response.error) {
-              reject(new Error(response.details || response.error));
-              return;
-            }
+        // Try to send message using safe wrapper
+        const message: GrabImagesMessage = { action: MessageActionType.GRAB_IMAGES };
+        const response = await sendMessageToContentScript<GrabImagesResponse>(
+          tab.id!,
+          message,
+          10000,
+        );
 
-            if (!response.images || !response.images.length) {
-              reject(new Error(t('no_images_found')));
-              return;
-            }
+        if (!response) {
+          throw new Error(t('content_script_not_loaded'));
+        }
 
-            openImagesPage(response.images);
-            resolve();
-          });
-        });
+        if (response.error) {
+          throw new Error(response.details || response.error);
+        }
+
+        if (!response.images || !response.images.length) {
+          throw new Error(t('no_images_found'));
+        }
+
+        openImagesPage(response.images);
       },
       setIsLoading,
-      '', //TODO: "Could not establish connection. Receiving end does not exist." When click Download button
+      '',
     );
   }, [openImagesPage, t, setIsLoading]);
 

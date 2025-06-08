@@ -29,6 +29,55 @@ let currentOriginWithRules = '';
 // Это позволит сохранить исходное имя при переименовании
 const downloadFilenamesMap: Record<number, string> = {};
 
+/**
+ * Injects content script into all existing tabs when extension is installed/updated
+ */
+async function injectContentScriptIntoAllTabs() {
+  try {
+    const tabs = await chrome.tabs.query({});
+
+    for (const tab of tabs) {
+      if (!tab.id || !tab.url) continue;
+
+      // Skip special pages
+      const url = tab.url.toLowerCase();
+      const unsupportedProtocols = [
+        'chrome:',
+        'chrome-extension:',
+        'moz-extension:',
+        'edge:',
+        'file:',
+        'about:',
+        'data:',
+      ];
+
+      if (unsupportedProtocols.some((protocol) => url.startsWith(protocol))) {
+        continue;
+      }
+
+      // Skip extension stores
+      if (
+        url.includes('chrome.google.com/webstore') ||
+        url.includes('microsoftedge.microsoft.com/addons') ||
+        url.includes('addons.mozilla.org')
+      ) {
+        continue;
+      }
+
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content-script.js'],
+        });
+      } catch (error) {
+        // Some tabs might not allow script injection, that's okay - silently ignore
+      }
+    }
+  } catch (error) {
+    handleError(error);
+  }
+}
+
 // Clean up any existing rules when extension loads
 removeReferrerRules().catch(handleError);
 
@@ -416,8 +465,10 @@ try {
         chrome.tabs.create({
           url: ApplicationLinks.INSTALL_URL,
         });
+        injectContentScriptIntoAllTabs();
       } else if (details.reason === chrome.runtime.OnInstalledReason.UPDATE) {
         // When extension is updated
+        injectContentScriptIntoAllTabs();
       } else if (details.reason === chrome.runtime.OnInstalledReason.CHROME_UPDATE) {
         // When browser is updated
       } else if (details.reason === chrome.runtime.OnInstalledReason.SHARED_MODULE_UPDATE) {
@@ -426,6 +477,15 @@ try {
 
       // Clean up any existing rules on install/update
       removeReferrerRules().catch(handleError);
+    } catch (error) {
+      handleError(error);
+    }
+  });
+
+  // Handle extension startup (browser restart)
+  chrome.runtime.onStartup.addListener(() => {
+    try {
+      injectContentScriptIntoAllTabs();
     } catch (error) {
       handleError(error);
     }
