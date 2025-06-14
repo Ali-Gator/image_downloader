@@ -25,6 +25,10 @@ import { blobToDataUrl } from '../utils/imageUtils';
 let activeTabOrigin = '';
 let currentOriginWithRules = '';
 
+// Mutex to prevent race conditions when updating referrer rules
+let isUpdatingRules = false;
+let pendingRuleUpdate: Promise<void> | null = null;
+
 // Словарь для хранения соответствий между ID загрузки и именами файлов
 // Это позволит сохранить исходное имя при переименовании
 const downloadFilenamesMap: Record<number, string> = {};
@@ -86,68 +90,90 @@ removeReferrerRules().catch(handleError);
  * This helps bypass CORS restrictions for certain image hosts
  */
 async function addReferrerRules(origin?: string) {
-  try {
-    // Skip if we already have rules for this origin
-    if (origin && origin === currentOriginWithRules) {
-      return;
-    }
-
-    // First remove existing rules
-    await removeReferrerRules();
-
-    // If origin is provided, add rules to set referrer header
-    if (origin) {
-      activeTabOrigin = origin;
-      currentOriginWithRules = origin;
-
-      await chrome.declarativeNetRequest.updateSessionRules({
-        addRules: [
-          {
-            id: 987654321,
-            priority: 1,
-            action: {
-              type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-              requestHeaders: [
-                {
-                  header: 'Referer',
-                  operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-                  value: origin,
-                },
-                {
-                  header: 'Origin',
-                  operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-                  value: origin,
-                },
-                {
-                  header: 'Sec-Fetch-Site',
-                  operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-                  value: 'same-origin',
-                },
-                {
-                  header: 'Sec-Fetch-Mode',
-                  operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-                  value: 'cors',
-                },
-              ],
-            },
-            condition: {
-              urlFilter: '*',
-              resourceTypes: [
-                chrome.declarativeNetRequest.ResourceType.IMAGE,
-                chrome.declarativeNetRequest.ResourceType.MEDIA,
-                chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST,
-                chrome.declarativeNetRequest.ResourceType.OTHER,
-                chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
-                chrome.declarativeNetRequest.ResourceType.SUB_FRAME,
-              ],
-            },
-          },
-        ],
-      });
-    }
-  } catch (error) {
-    handleError(error);
+  // If another update is in progress, wait for it to complete
+  if (isUpdatingRules && pendingRuleUpdate) {
+    await pendingRuleUpdate;
   }
+  
+  // Skip if we already have rules for this origin after waiting
+  if (origin && origin === currentOriginWithRules) {
+    return;
+  }
+  
+  // If still updating after wait, skip to avoid infinite loop
+  if (isUpdatingRules) {
+    return;
+  }
+  
+  isUpdatingRules = true;
+  
+  // Create promise for other callers to wait on
+  pendingRuleUpdate = (async () => {
+    try {
+      const REFERRER_RULE_ID = 987654321;
+
+      // Atomically remove and add the rule to avoid duplicate ID error
+      await chrome.declarativeNetRequest.updateSessionRules({
+        removeRuleIds: [REFERRER_RULE_ID],
+        addRules: origin
+          ? [
+              {
+                id: REFERRER_RULE_ID,
+                priority: 1,
+                action: {
+                  type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+                  requestHeaders: [
+                    {
+                      header: 'Referer',
+                      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                      value: origin,
+                    },
+                    {
+                      header: 'Origin',
+                      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                      value: origin,
+                    },
+                    {
+                      header: 'Sec-Fetch-Site',
+                      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                      value: 'same-origin',
+                    },
+                    {
+                      header: 'Sec-Fetch-Mode',
+                      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                      value: 'cors',
+                    },
+                  ],
+                },
+                condition: {
+                  urlFilter: '*',
+                  resourceTypes: [
+                    chrome.declarativeNetRequest.ResourceType.IMAGE,
+                    chrome.declarativeNetRequest.ResourceType.MEDIA,
+                    chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST,
+                    chrome.declarativeNetRequest.ResourceType.OTHER,
+                    chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
+                    chrome.declarativeNetRequest.ResourceType.SUB_FRAME,
+                  ],
+                },
+              },
+            ]
+          : [],
+      });
+
+      if (origin) {
+        activeTabOrigin = origin;
+        currentOriginWithRules = origin;
+      }
+    } catch (error) {
+      handleError(error);
+    } finally {
+      isUpdatingRules = false;
+      pendingRuleUpdate = null;
+    }
+  })();
+  
+  await pendingRuleUpdate;
 }
 
 /**
