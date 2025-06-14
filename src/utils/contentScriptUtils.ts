@@ -44,7 +44,7 @@ export const isContentScriptSupported = (url: string): boolean => {
 /**
  * Injects content script into a tab
  */
-const injectContentScript = async (tabId: number): Promise<boolean> => {
+const injectContentScript = async (tabId: number, tabUrl?: string): Promise<boolean> => {
   try {
     await chrome.scripting.executeScript({
       target: { tabId },
@@ -52,6 +52,10 @@ const injectContentScript = async (tabId: number): Promise<boolean> => {
     });
     return true;
   } catch (error) {
+    // enrich error with tabUrl
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    (error as unknown).tabUrl = tabUrl;
     handleError(error);
     return false;
   }
@@ -96,8 +100,17 @@ export const sendMessageToContentScript = async <T = never>(
     return firstAttempt;
   }
 
+  // Получаем url вкладки для enrich
+  let tabUrl: string | undefined = undefined;
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    tabUrl = tab?.url;
+  } catch {
+    /* empty */
+  }
+
   // First attempt failed - try to inject content script and retry
-  const injected = await injectContentScript(tabId);
+  const injected = await injectContentScript(tabId, tabUrl);
 
   if (!injected) {
     return null;
@@ -114,11 +127,13 @@ export const sendMessageToContentScript = async <T = never>(
       clearTimeout(timeoutId);
 
       if (chrome.runtime.lastError) {
-        handleError(
-          new Error(
-            `Content script message failed after injection: ${chrome.runtime.lastError.message}`,
-          ),
+        const error = new Error(
+          `Content script message failed after injection: ${chrome.runtime.lastError.message}`,
         );
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        (error as unknown).tabUrl = tabUrl;
+        handleError(error);
         resolve(null);
       } else {
         resolve(response);

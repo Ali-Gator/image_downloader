@@ -17,8 +17,15 @@ export function ensureError(error: unknown): Error {
  */
 export function handleError(error: unknown, showAlert = false, customMessage?: string): void {
   const errorObj = ensureError(error);
-  // Отправляем в Sentry
-  captureException(errorObj);
+  // enrich Sentry with tabUrl if present
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  const tabUrl = (error as unknown)?.tabUrl;
+  if (tabUrl) {
+    captureException(errorObj, { componentStack: `tabUrl: ${tabUrl}` });
+  } else {
+    captureException(errorObj);
+  }
 
   // Показываем пользователю, если нужно
   if (showAlert) {
