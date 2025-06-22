@@ -1,3 +1,5 @@
+import type { ErrorInfo } from 'react';
+
 import { captureException } from './sentryCapturer';
 
 /**
@@ -22,7 +24,7 @@ export function handleError(error: unknown, showAlert = false, customMessage?: s
   // @ts-expect-error
   const tabUrl = (error as unknown)?.tabUrl;
   if (tabUrl) {
-    captureException(errorObj, { componentStack: `tabUrl: ${tabUrl}` });
+    captureException(errorObj, { componentStack: `tabUrl: ${tabUrl}` } as ErrorInfo);
   } else {
     captureException(errorObj);
   }

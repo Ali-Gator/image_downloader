@@ -40,11 +40,29 @@ export const captureException = (error: Error, errorInfo?: ErrorInfo) => {
   scope.setTag('error.type', error.name);
   scope.setTag('handled', 'true');
   scope.setLevel('error');
-  scope.setContext('Error Details', {
+
+  // Prepare error details context
+  const errorDetails: Record<string, unknown> = {
     message: error.message,
     stack: error.stack,
-    componentStack: errorInfo?.componentStack,
-  });
+  };
+
+  // Add componentStack if available
+  if (errorInfo?.componentStack) {
+    errorDetails.componentStack = errorInfo.componentStack;
+    // If componentStack contains tabUrl, also set it as a separate tag for easier filtering
+    if (errorInfo.componentStack.includes('tabUrl:')) {
+      const tabUrlMatch = errorInfo.componentStack.match(/tabUrl:\s*([^\s]+)/);
+      if (tabUrlMatch?.[1]) {
+        scope.setTag('tab.url', tabUrlMatch[1]);
+        scope.setContext('Tab Context', {
+          url: tabUrlMatch[1],
+        });
+      }
+    }
+  }
+
+  scope.setContext('Error Details', errorDetails);
 
   const hint: EventHint = {
     data: {

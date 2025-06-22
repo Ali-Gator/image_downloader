@@ -10,15 +10,15 @@ import {
   ApplicationLinks,
   ConnectionName,
   DEFAULT_DOWNLOAD_OPTIONS,
-  StorageKeys,
   IMAGE_FETCH_TIMEOUTS,
+  StorageKeys,
 } from '../utils/constants';
 import {
   applyRenamePattern,
   ensureValidExtension,
   sanitizeFileName,
 } from '../utils/downloadHelpers';
-import { handleError } from '../utils/errorHandlers';
+import { ensureError, handleError } from '../utils/errorHandlers';
 import { blobToDataUrl } from '../utils/imageUtils';
 
 // Global variable for storing download options
@@ -28,6 +28,9 @@ let currentOriginWithRules = '';
 // Mutex to prevent race conditions when updating referrer rules
 let isUpdatingRules = false;
 let pendingRuleUpdate: Promise<void> | null = null;
+
+// Unique ID for our referrer rule - using a more unique value to avoid conflicts
+const REFERRER_RULE_ID = 842751963;
 
 // Словарь для хранения соответствий между ID загрузки и именами файлов
 // Это позволит сохранить исходное имя при переименовании
@@ -83,7 +86,19 @@ async function injectContentScriptIntoAllTabs() {
 }
 
 // Clean up any existing rules when extension loads
-removeReferrerRules().catch(handleError);
+// Enhanced cleanup with additional logging
+(async () => {
+  try {
+    await removeReferrerRules();
+  } catch (error) {
+    const enhancedError = ensureError(error);
+    Object.assign(enhancedError, {
+      context: 'startup_cleanup',
+      timestamp: new Date().toISOString(),
+    });
+    handleError(enhancedError);
+  }
+})();
 
 /**
  * Adds referrer rules for cross-origin image requests
@@ -94,85 +109,159 @@ async function addReferrerRules(origin?: string) {
   if (isUpdatingRules && pendingRuleUpdate) {
     await pendingRuleUpdate;
   }
-  
+
   // Skip if we already have rules for this origin after waiting
   if (origin && origin === currentOriginWithRules) {
     return;
   }
-  
+
   // If still updating after wait, skip to avoid infinite loop
   if (isUpdatingRules) {
     return;
   }
-  
+
   isUpdatingRules = true;
-  
+
   // Create promise for other callers to wait on
   pendingRuleUpdate = (async () => {
     try {
-      const REFERRER_RULE_ID = 987654321;
+      // First, aggressively clean up any existing rules to prevent conflicts
+      try {
+        // Try to remove all existing rules first
+        const allExistingRules = await chrome.declarativeNetRequest.getSessionRules();
+        if (allExistingRules.length > 0) {
+          await chrome.declarativeNetRequest.updateSessionRules({
+            removeRuleIds: allExistingRules.map((rule) => rule.id),
+          });
+          // Small delay to ensure rules are fully removed
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+      } catch (cleanupError) {
+        // Failed to cleanup, continue with normal flow
+      }
 
-      // Atomically remove and add the rule to avoid duplicate ID error
-      await chrome.declarativeNetRequest.updateSessionRules({
-        removeRuleIds: [REFERRER_RULE_ID],
-        addRules: origin
-          ? [
-              {
-                id: REFERRER_RULE_ID,
-                priority: 1,
-                action: {
-                  type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-                  requestHeaders: [
-                    {
-                      header: 'Referer',
-                      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-                      value: origin,
-                    },
-                    {
-                      header: 'Origin',
-                      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-                      value: origin,
-                    },
-                    {
-                      header: 'Sec-Fetch-Site',
-                      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-                      value: 'same-origin',
-                    },
-                    {
-                      header: 'Sec-Fetch-Mode',
-                      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-                      value: 'cors',
-                    },
-                  ],
-                },
-                condition: {
-                  urlFilter: '*',
-                  resourceTypes: [
-                    chrome.declarativeNetRequest.ResourceType.IMAGE,
-                    chrome.declarativeNetRequest.ResourceType.MEDIA,
-                    chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST,
-                    chrome.declarativeNetRequest.ResourceType.OTHER,
-                    chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
-                    chrome.declarativeNetRequest.ResourceType.SUB_FRAME,
-                  ],
-                },
+      // Now add the new rule if needed
+      if (origin) {
+        await chrome.declarativeNetRequest.updateSessionRules({
+          removeRuleIds: [REFERRER_RULE_ID], // Safety remove in case cleanup failed
+          addRules: [
+            {
+              id: REFERRER_RULE_ID,
+              priority: 1,
+              action: {
+                type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+                requestHeaders: [
+                  {
+                    header: 'Referer',
+                    operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                    value: origin,
+                  },
+                  {
+                    header: 'Origin',
+                    operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                    value: origin,
+                  },
+                  {
+                    header: 'Sec-Fetch-Site',
+                    operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                    value: 'same-origin',
+                  },
+                  {
+                    header: 'Sec-Fetch-Mode',
+                    operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                    value: 'cors',
+                  },
+                ],
               },
-            ]
-          : [],
-      });
+              condition: {
+                urlFilter: '*',
+                resourceTypes: [
+                  chrome.declarativeNetRequest.ResourceType.IMAGE,
+                  chrome.declarativeNetRequest.ResourceType.MEDIA,
+                  chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST,
+                  chrome.declarativeNetRequest.ResourceType.OTHER,
+                  chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
+                  chrome.declarativeNetRequest.ResourceType.SUB_FRAME,
+                ],
+              },
+            },
+          ],
+        });
+      } else {
+        // Just remove existing rules if no origin provided
+        await chrome.declarativeNetRequest.updateSessionRules({
+          removeRuleIds: [REFERRER_RULE_ID],
+          addRules: [],
+        });
+      }
 
       if (origin) {
         activeTabOrigin = origin;
         currentOriginWithRules = origin;
       }
     } catch (error) {
-      handleError(error);
+      // Create enhanced error with diagnostic info
+      const enhancedError = ensureError(error);
+
+      // Add diagnostic information to the error for Sentry
+      Object.assign(enhancedError, {
+        context: 'addReferrerRules',
+        diagnosticInfo: {
+          origin,
+          currentOriginWithRules,
+          activeTabOrigin,
+          isUpdatingRules,
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          chromeVersion: /Chrome\/([0-9.]+)/.exec(navigator.userAgent)?.[1] || 'unknown',
+          errorMessage: enhancedError.message,
+          errorStack: enhancedError.stack,
+        },
+      });
+
+      // If this is the specific "unique ID" error, add even more context
+      if (
+        enhancedError.message.includes('unique ID') ||
+        enhancedError.message.includes(String(REFERRER_RULE_ID)) ||
+        enhancedError.message.includes('duplicate')
+      ) {
+        try {
+          const currentRules = await chrome.declarativeNetRequest.getSessionRules();
+          Object.assign(enhancedError, {
+            ruleConflictInfo: {
+              currentRulesCount: currentRules.length,
+              conflictingRules: currentRules.filter((rule) => rule.id === REFERRER_RULE_ID),
+              allRuleIds: currentRules.map((rule) => rule.id),
+              allRules: currentRules, // Full rule objects for detailed analysis
+            },
+          });
+
+          // Try to force cleanup the problematic rule
+          try {
+            await chrome.declarativeNetRequest.updateSessionRules({
+              removeRuleIds: [REFERRER_RULE_ID],
+              addRules: [],
+            });
+            // Successfully cleaned up conflicting rule
+          } catch (forceCleanupError) {
+            Object.assign(enhancedError, {
+              forceCleanupError: String(forceCleanupError),
+            });
+          }
+        } catch (getRulesError) {
+          Object.assign(enhancedError, {
+            getRulesError: String(getRulesError),
+          });
+        }
+      }
+
+      handleError(enhancedError);
     } finally {
       isUpdatingRules = false;
       pendingRuleUpdate = null;
     }
   })();
-  
+
   await pendingRuleUpdate;
 }
 
@@ -194,7 +283,25 @@ async function removeReferrerRules() {
     // Reset the current origin with rules
     currentOriginWithRules = '';
   } catch (error) {
-    // Ignore errors when removing rules
+    // Enhanced error reporting for rule removal failures
+    const enhancedError = ensureError(error);
+    Object.assign(enhancedError, {
+      context: 'removeReferrerRules',
+      diagnosticInfo: {
+        currentOriginWithRules,
+        activeTabOrigin,
+        timestamp: new Date().toISOString(),
+        errorMessage: enhancedError.message,
+      },
+    });
+
+    // Only log significant errors, not permission denials
+    if (
+      !enhancedError.message.includes('permissions') &&
+      !enhancedError.message.includes('denied')
+    ) {
+      handleError(enhancedError);
+    }
   }
 }
 
