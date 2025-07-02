@@ -13,7 +13,7 @@ import {
   SelectAllContainer,
   TitleContainer,
 } from './styles';
-import { downloadImage, useTranslation } from '../../../../utils';
+import { downloadImagesWithConversion, useTranslation } from '../../../../utils';
 import { NOTIFICATION_DURATION, NotificationType } from '../../../../utils/constants';
 import { SettingsButton } from '../SettingsButton';
 
@@ -56,24 +56,13 @@ export const Header: FC = () => {
         NotificationType.INFO,
       );
 
-      // Download all selected images sequentially
-      let successCount = 0;
-
-      for (const image of selectedImages) {
-        try {
-          await downloadImage(image);
-          successCount++;
-        } catch (error) {
-          // Error is already handled in downloadImage
-        }
-      }
+      // Use unified bulk download with conversion function
+      const { successCount, totalCount } = await downloadImagesWithConversion(selectedImages);
 
       // Show notification about download completion
-      const message = `${t('download_complete_text')}: ${successCount}/${selectedImages.length}`;
+      const message = `${t('download_complete_text')}: ${successCount}/${totalCount}`;
       const variant =
-        successCount === selectedImages.length
-          ? NotificationType.SUCCESS
-          : NotificationType.WARNING;
+        successCount === totalCount ? NotificationType.SUCCESS : NotificationType.WARNING;
 
       showNotification(message, variant, NOTIFICATION_DURATION.LONG);
     } catch (error) {

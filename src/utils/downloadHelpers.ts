@@ -281,7 +281,9 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
               );
             } else {
               // Fallback method failed too
-              reject(new Error('All download methods failed'));
+              const errorMessage = response?.message || 'All download methods failed';
+
+              reject(new Error(errorMessage));
             }
           },
         );

@@ -218,6 +218,9 @@
   "convert_info": {
     "message": "Convert images to a different format when downloading"
   },
+  "no_conversion": {
+    "message": "No conversion"
+  },
   "to": {
     "message": "to"
   },

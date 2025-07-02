@@ -2,13 +2,13 @@ import { useCallback } from 'react';
 
 import { useSnackbar } from 'notistack';
 
-import { downloadImage, useTranslation } from '../utils';
+import { downloadImageWithConversion, useTranslation } from '../utils';
 import { NOTIFICATION_DURATION, NotificationType } from './constants';
 
 /**
  * Hook for common image operations - copying URLs and downloading images
  */
-export const useImageOperations = (src: string, fileName: string) => {
+export const useImageOperations = (src: string, fileName: string, imageId?: string) => {
   const { enqueueSnackbar } = useSnackbar();
   const { t } = useTranslation();
 
@@ -66,13 +66,14 @@ export const useImageOperations = (src: string, fileName: string) => {
       // Show notification about download start
       showNotification(NotificationType.INFO);
 
-      // Download the image using settings from the store
-      await downloadImage({ src, filename: fileName });
+      // Use unified download with conversion function
+      await downloadImageWithConversion({ src, filename: fileName, id: imageId });
+
       showNotification(NotificationType.SUCCESS);
     } catch (error) {
       showNotification(NotificationType.ERROR);
     }
-  }, [src, fileName, showNotification]);
+  }, [src, fileName, imageId, showNotification]);
 
   return { handleCopyUrl, handleDownload };
 };

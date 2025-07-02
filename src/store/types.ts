@@ -25,6 +25,7 @@ export interface SettingsState {
   setConvertFrom: (option: string) => void;
   setConvertTo: (format: string) => void;
   resetDownloadOptions: () => void;
+  refreshSettings: () => Promise<void>;
 }
 
 /**

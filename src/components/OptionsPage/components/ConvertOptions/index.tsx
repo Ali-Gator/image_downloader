@@ -29,23 +29,35 @@ export const ConvertOptions: FC = () => {
             onChange={(e) => setConvertFrom(String(e.target.value))}
             size="small"
           >
+            <MenuItem value="none">{t('no_conversion')}</MenuItem>
             <MenuItem value="all">{t('all_images')}</MenuItem>
-            <MenuItem value="webp">{t('webp_only')}</MenuItem>
-          </StyledSelect>
-        </StyledFormControl>
-
-        <Typography>{t('to')}</Typography>
-
-        <StyledFormControl size="small" variant="outlined">
-          <StyledSelect
-            value={convertTo}
-            onChange={(e) => setConvertTo(String(e.target.value))}
-            size="small"
-          >
-            <MenuItem value="jpeg">JPEG</MenuItem>
+            <MenuItem value="webp">WebP</MenuItem>
             <MenuItem value="png">PNG</MenuItem>
+            <MenuItem value="jpeg">JPEG</MenuItem>
+            <MenuItem value="gif">GIF</MenuItem>
+            <MenuItem value="bmp">BMP</MenuItem>
+            <MenuItem value="tiff">TIFF</MenuItem>
+            <MenuItem value="svg">SVG</MenuItem>
           </StyledSelect>
         </StyledFormControl>
+
+        {convertFrom !== 'none' && (
+          <>
+            <Typography>{t('to')}</Typography>
+
+            <StyledFormControl size="small" variant="outlined">
+              <StyledSelect
+                value={convertTo}
+                onChange={(e) => setConvertTo(String(e.target.value))}
+                size="small"
+              >
+                <MenuItem value="jpeg">JPEG</MenuItem>
+                <MenuItem value="png">PNG</MenuItem>
+                <MenuItem value="webp">WebP</MenuItem>
+              </StyledSelect>
+            </StyledFormControl>
+          </>
+        )}
 
         <InfoTooltip title={t('convert_info')} />
       </SelectsContainer>

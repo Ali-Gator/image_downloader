@@ -88,7 +88,7 @@ export const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = {
   folderName: 'images',
   fileName: '',
   renamePattern: '',
-  convertFrom: 'all',
+  convertFrom: 'none',
   convertTo: 'jpeg',
 };
 

@@ -6,6 +6,7 @@ export enum MessageActionType {
   FETCH_IMAGE = 'fetchImage',
   GRAB_IMAGES = 'grabImages',
   FETCH_IMAGE_AS_DATA_URL = 'fetchImageAsDataUrl',
+  CONVERT_IMAGE_ELEMENT = 'convertImageElement',
 }
 
 /**
@@ -48,9 +49,24 @@ export interface FetchImageAsDataUrlMessage {
 }
 
 /**
+ * Interface for the convertImageElement message
+ * Used to request content script to convert image element from DOM
+ */
+export interface ConvertImageElementMessage {
+  action: MessageActionType.CONVERT_IMAGE_ELEMENT;
+  imageUrl: string;
+  filename: string;
+  convertFrom: string;
+  convertTo: string;
+}
+
+/**
  * Union type for all possible messages to content script
  */
-export type ContentScriptMessage = GrabImagesMessage | FetchImageAsDataUrlMessage;
+export type ContentScriptMessage =
+  | GrabImagesMessage
+  | FetchImageAsDataUrlMessage
+  | ConvertImageElementMessage;
 
 /**
  * Response from image fetch operations

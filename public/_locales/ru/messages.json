@@ -152,5 +152,20 @@
   },
   "rateUs": {
     "message": "Оцените нас"
+  },
+  "convert": {
+    "message": "Конвертировать"
+  },
+  "convert_info": {
+    "message": "Конвертировать изображения в другой формат при загрузке"
+  },
+  "no_conversion": {
+    "message": "Без конвертации"
+  },
+  "to": {
+    "message": "в"
+  },
+  "all_images": {
+    "message": "Все изображения"
   }
 }

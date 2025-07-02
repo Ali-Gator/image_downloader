@@ -32,7 +32,7 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
   const { id, src, alt, filename } = image;
   const theme = useTheme();
   const { t } = useTranslation();
-  const { handleCopyUrl, handleDownload } = useImageOperations(src, filename);
+  const { handleCopyUrl, handleDownload } = useImageOperations(src, filename, id);
 
   const { isGridView, selectedImages, toggleSelectImage } = useImageStore();
 
@@ -73,6 +73,7 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
       className={isSelected ? 'selected' : ''}
       sx={cardStyles} // Keeping sx here since it's the cleanest way to apply the dynamic styles
       onClick={handleSelect}
+      data-image-id={id} // Add unique identifier for finding the image
     >
       {!isListMode && (
         <StyledTopActionBar className="top-action-bar">

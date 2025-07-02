@@ -28,6 +28,40 @@ export const useSettingsStore = create<SettingsState>()(
       setConvertFrom: (convertFrom) => set({ convertFrom }),
       setConvertTo: (convertTo) => set({ convertTo }),
       resetDownloadOptions: () => set(DEFAULT_DOWNLOAD_OPTIONS),
+
+      // Force refresh settings from storage
+      refreshSettings: async () => {
+        try {
+          const stored = await fallbackStorage.getItem(StorageKeys.SETTINGS_STORE_KEY);
+          if (stored) {
+            const parsedData = JSON.parse(stored);
+
+            // Zustand persist stores data in format: { state: {...}, version: 0 }
+            const settingsData = parsedData.state || parsedData;
+
+            // Update only the settings part, not the actions
+            const {
+              defaultGridView,
+              showDownloadNotifications,
+              folderName,
+              renamePattern,
+              convertFrom,
+              convertTo,
+            } = settingsData;
+
+            set({
+              defaultGridView,
+              showDownloadNotifications,
+              folderName,
+              renamePattern,
+              convertFrom,
+              convertTo,
+            });
+          }
+        } catch (error) {
+          throw new Error(JSON.stringify(error));
+        }
+      },
     }),
     {
       name: StorageKeys.SETTINGS_STORE_KEY,

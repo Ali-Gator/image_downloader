@@ -521,13 +521,44 @@ chrome.runtime.onMessage.addListener((request: FetchImageMessage, _, sendRespons
           clearTimeout(timeoutId);
 
           if (response.ok) {
+            const contentType = response.headers.get('content-type') || '';
+
+            // Check if response is actually an image
+            if (!contentType.startsWith('image/')) {
+              // Try to read response as text to see what we got
+              try {
+                sendResponse({
+                  error: true,
+                  message: `Server returned ${contentType} instead of image`,
+                });
+                cleanupRules();
+                return;
+              } catch (textError) {
+                throw new Error(JSON.stringify(textError));
+              }
+            }
+
             const blob = await response.blob();
+
+            // Double-check blob type
+            if (blob.type && !blob.type.startsWith('image/')) {
+              sendResponse({ error: true, message: `Received ${blob.type} instead of image` });
+              cleanupRules();
+              return;
+            }
+
             const dataUrl = await blobToDataUrl(blob);
+            if (!dataUrl) {
+              sendResponse({ error: true, message: 'Failed to convert image to data URL' });
+              cleanupRules();
+              return;
+            }
+
             sendResponse({ dataUrl });
             cleanupRules();
             return;
           } else {
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
         } catch (error) {
           // If CORS failed, try no-cors mode

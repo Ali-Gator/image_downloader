@@ -25,6 +25,16 @@ export * from './imageUtils';
 // Re-export download helpers
 export * from './downloadHelpers';
 
+// Re-export download with conversion utilities
+export * from './downloadWithConversion';
+
+// Re-export image conversion utilities
+export * from './imageConverter';
+export * from './imageFormats';
+
+// Re-export DOM image utilities
+export * from './domImageUtils';
+
 // Re-export general utilities
 export * from './utils';
 

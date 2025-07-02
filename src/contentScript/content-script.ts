@@ -1,7 +1,7 @@
-import { ImageData, MessageActionType } from '@types';
-import { handleError, PlaceholderImages } from '@utils';
-import { getSmartFileName } from '@utils/fileUtils';
-import { blobToDataUrl } from '@utils/imageUtils';
+import { ImageData, MessageActionType } from '../types';
+import { handleError, PlaceholderImages } from '../utils';
+import { getSmartFileName } from '../utils/fileUtils';
+import { blobToDataUrl } from '../utils/imageUtils';
 
 /**
  * Проверяет, является ли URL допустимым изображением
