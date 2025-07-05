@@ -20,7 +20,7 @@ import { SettingsButton } from '../SettingsButton';
 export const Header: FC = () => {
   const { t } = useTranslation();
   const { filteredImages, selectedImages, selectAll, deselectAll } = useImageStore();
-  const { showDownloadNotifications } = useSettingsStore();
+  const { showDownloadNotifications, createZipArchive } = useSettingsStore();
   const { enqueueSnackbar } = useSnackbar();
 
   const handleSelectAllChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -50,25 +50,39 @@ export const Header: FC = () => {
     if (selectedImages.length === 0) return;
 
     try {
-      // Show notification about download start
-      showNotification(
-        `${t('download_started_text')} (${selectedImages.length})`,
-        NotificationType.INFO,
-      );
+      // Show initial notification
+      const startMessage = createZipArchive
+        ? t('creating_archive')
+        : `${t('download_started_text')} (${selectedImages.length})`;
+
+      showNotification(startMessage, NotificationType.INFO);
+
+      // Progress callback for ZIP creation
+      const onProgress = createZipArchive
+        ? (current: number, total: number) => {
+            const progressMessage = t('adding_image', [current.toString(), total.toString()]);
+            showNotification(progressMessage, NotificationType.INFO, NOTIFICATION_DURATION.SHORT);
+          }
+        : undefined;
 
       // Use unified bulk download with conversion function
-      const { successCount, totalCount } = await downloadImagesWithConversion(selectedImages);
+      const { successCount, totalCount } = await downloadImagesWithConversion(
+        selectedImages,
+        onProgress,
+      );
 
-      // Show notification about download completion
-      const message = `${t('download_complete_text')}: ${successCount}/${totalCount}`;
+      // Show completion notification
+      const completionMessage = createZipArchive
+        ? t('download_complete_text')
+        : `${t('download_complete_text')}: ${successCount}/${totalCount}`;
+
       const variant =
         successCount === totalCount ? NotificationType.SUCCESS : NotificationType.WARNING;
-
-      showNotification(message, variant, NOTIFICATION_DURATION.LONG);
+      showNotification(completionMessage, variant, NOTIFICATION_DURATION.LONG);
     } catch (error) {
       showNotification(t('download_error_text'), NotificationType.ERROR);
     }
-  }, [selectedImages, showNotification, t]);
+  }, [selectedImages, showNotification, t, createZipArchive]);
 
   const selectedCount = selectedImages.length;
   const totalCount = filteredImages.length;

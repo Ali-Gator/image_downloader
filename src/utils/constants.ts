@@ -72,6 +72,7 @@ export const DownloadConstants = {
    * - Trademark and copyright symbols
    * - Parentheses and brackets
    * - Special Unicode characters
+   * Note: + is excluded as it's commonly used in MIME types (e.g., svg+xml)
    */
   UNSAFE_FILENAME_CHARS_REGEX: /[\\/:*?"<>|«»'`~!@#$%^&=;,{}[\]()™©®°±§]/g,
 

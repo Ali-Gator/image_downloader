@@ -27,4 +27,4 @@ export const ZipArchiveOption: FC = () => {
       <InfoTooltip title={t('create_zip_archive_info')} />
     </OptionRow>
   );
-}; 
+};

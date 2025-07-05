@@ -23,7 +23,14 @@ export const getFileExtension = (fileName: string): string => {
     const mimeMatch = fileName.match(/data:([a-z]+)\/([a-z0-9.+-]+);/i);
     if (mimeMatch && mimeMatch[1] === 'image') {
       // Для изображений возвращаем тип из MIME
-      return getDisplayFormat(mimeMatch[2]);
+      let mimeType = mimeMatch[2];
+
+      // Обрабатываем случай svg+xml -> svg
+      if (mimeType === 'svg+xml') {
+        mimeType = 'svg';
+      }
+
+      return getDisplayFormat(mimeType);
     }
   }
 

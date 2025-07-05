@@ -46,5 +46,8 @@ export * from './imagePreview';
 // Re-export content script utilities
 export * from './contentScriptUtils';
 
+// Re-export ZIP archive utilities
+export * from './zipArchive';
+
 // Note: zip.js is not exported as it doesn't contain exports
 // It's a script that runs gulp tasks directly

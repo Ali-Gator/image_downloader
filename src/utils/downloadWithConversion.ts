@@ -4,6 +4,7 @@ import { getImageSrcFromDOM } from './domImageUtils';
 import { downloadImage } from './downloadHelpers';
 import { convertImageElementToFormat } from './imageConverter';
 import { updateFilenameExtensionFromDataUrl } from './imageUtils';
+import { createAndDownloadZipArchive } from './zipArchive';
 import { useSettingsStore } from '../store';
 import { ImageData } from '../types';
 
@@ -79,13 +80,27 @@ export const downloadImageWithConversion = async (
 };
 
 /**
- * Downloads multiple images with conversion
+ * Downloads multiple images with conversion or as ZIP archive
  * @param images Array of image data
+ * @param onProgress Optional progress callback for ZIP creation
  * @returns Promise with download results
  */
 export const downloadImagesWithConversion = async (
   images: ImageData[],
+  onProgress?: (current: number, total: number) => void,
 ): Promise<{ successCount: number; totalCount: number }> => {
+  // Force refresh settings from storage to get latest values
+  await useSettingsStore.getState().refreshSettings();
+
+  // Get ZIP archive setting
+  const { createZipArchive } = useSettingsStore.getState();
+
+  // If ZIP archive is enabled and we have multiple images, create ZIP
+  if (createZipArchive && images.length > 0) {
+    return await createAndDownloadZipArchive(images, onProgress);
+  }
+
+  // Otherwise, download images individually (original behavior)
   let successCount = 0;
   const totalCount = images.length;
 

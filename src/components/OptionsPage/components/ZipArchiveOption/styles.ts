@@ -5,4 +5,4 @@ export const OptionRow = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1),
   marginBottom: theme.spacing(2),
-})); 
+}));
