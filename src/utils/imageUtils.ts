@@ -1,3 +1,5 @@
+import { getFormatFromDomainRules, getDisplayFormat, VALID_IMAGE_EXTENSIONS } from './imageFormats';
+
 /**
  * Truncates a URL for display
  * Shows beginning and end of URL, replacing the middle with ellipsis
@@ -21,7 +23,7 @@ export const getFileExtension = (fileName: string): string => {
     const mimeMatch = fileName.match(/data:([a-z]+)\/([a-z0-9.+-]+);/i);
     if (mimeMatch && mimeMatch[1] === 'image') {
       // Для изображений возвращаем тип из MIME
-      return mimeMatch[2].toUpperCase();
+      return getDisplayFormat(mimeMatch[2]);
     }
   }
 
@@ -31,26 +33,10 @@ export const getFileExtension = (fileName: string): string => {
       // Создаем URL объект для разбора
       const url = new URL(fileName);
 
-      // Проверяем, содержит ли URL специфические пути изображений
-      // Например, google/cloudinary и другие CDN изображений
-      const hostname = url.hostname.toLowerCase();
-
-      // Для некоторых фотохостингов определяем формат по URL или домену
-      if (
-        hostname.includes('googleusercontent.com') ||
-        hostname.includes('gstatic.com') ||
-        hostname.includes('lh3.google.com')
-      ) {
-        // Google обычно использует WebP или PNG, но проверяем параметры
-        if (url.searchParams.has('format')) {
-          const format = url.searchParams.get('format')?.toLowerCase();
-          if (format) return format.toUpperCase();
-        }
-
-        // Если формат не указан явно, предполагаем PNG для иконок
-        if (url.pathname.includes('s32-c-mo') || url.pathname.includes('favicon')) {
-          return 'PNG';
-        }
+      // Применяем правила для специфических доменов
+      const domainFormat = getFormatFromDomainRules(fileName);
+      if (domainFormat) {
+        return getDisplayFormat(domainFormat);
       }
 
       // Удаляем параметры запроса
@@ -75,9 +61,11 @@ export const getFileExtension = (fileName: string): string => {
         if (
           ext &&
           /^[a-z0-9]+$/i.test(ext) &&
-          ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext.toLowerCase())
+          (VALID_IMAGE_EXTENSIONS as readonly string[]).includes(ext.toLowerCase())
         ) {
-          return ext.toUpperCase();
+          // Convert jpg to jpeg for consistent display
+          const normalizedExt = ext.toLowerCase() === 'jpg' ? 'jpeg' : ext.toLowerCase();
+          return getDisplayFormat(normalizedExt);
         }
       }
 
@@ -86,24 +74,28 @@ export const getFileExtension = (fileName: string): string => {
         const type = url.searchParams.get('type')?.toLowerCase();
         if (type?.startsWith('image/')) {
           const format = type.substring(6);
-          if (format) return format.toUpperCase();
-        } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(type?.toLowerCase() || '')) {
-          return type!.toUpperCase();
+          if (format) return getDisplayFormat(format);
+        } else if (
+          type &&
+          (VALID_IMAGE_EXTENSIONS as readonly string[]).includes(type.toLowerCase())
+        ) {
+          const normalizedType = type!.toLowerCase() === 'jpg' ? 'jpeg' : type!.toLowerCase();
+          return getDisplayFormat(normalizedType);
         }
       }
 
       // Если не удалось определить из URL, проверяем, содержит ли pathname указание на формат
-      if (pathWithoutQuery.toLowerCase().includes('/png/')) return 'PNG';
+      if (pathWithoutQuery.toLowerCase().includes('/png/')) return getDisplayFormat('png');
       if (
         pathWithoutQuery.toLowerCase().includes('/jpg/') ||
         pathWithoutQuery.toLowerCase().includes('/jpeg/')
       )
-        return 'JPEG';
-      if (pathWithoutQuery.toLowerCase().includes('/webp/')) return 'WEBP';
-      if (pathWithoutQuery.toLowerCase().includes('/gif/')) return 'GIF';
+        return getDisplayFormat('jpeg');
+      if (pathWithoutQuery.toLowerCase().includes('/webp/')) return getDisplayFormat('webp');
+      if (pathWithoutQuery.toLowerCase().includes('/gif/')) return getDisplayFormat('gif');
 
       // Не удалось определить расширение из URL
-      return 'PNG';
+      return getDisplayFormat('png');
     }
   } catch (e) {
     // Ошибка разбора URL, продолжаем со стандартной логикой
@@ -120,14 +112,16 @@ export const getFileExtension = (fileName: string): string => {
     // Проверяем, что расширение состоит только из букв и цифр и является одним из стандартных форматов изображений
     if (/^[a-z0-9]+$/i.test(ext)) {
       const lowerExt = ext.toLowerCase();
-      if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(lowerExt)) {
-        return ext.toUpperCase();
+      if ((VALID_IMAGE_EXTENSIONS as readonly string[]).includes(lowerExt)) {
+        // Convert jpg to jpeg for consistent display
+        const normalizedExt = lowerExt === 'jpg' ? 'jpeg' : lowerExt;
+        return getDisplayFormat(normalizedExt);
       }
     }
   }
 
   // Если не найдено валидное расширение, используем PNG по умолчанию
-  return 'PNG';
+  return getDisplayFormat('png');
 };
 
 /**
@@ -172,4 +166,39 @@ export function blobToDataUrl(blob: Blob): Promise<string | null> {
     reader.onerror = () => resolve(null);
     reader.readAsDataURL(blob);
   });
+}
+
+/**
+ * Updates the file extension in filename based on actual data URL
+ * This resolves the issue where display format (e.g., PNG) differs from actual format (e.g., JPEG)
+ * @param filename Original filename
+ * @param dataUrl Data URL with actual format information
+ * @returns Filename with corrected extension
+ */
+export function updateFilenameExtensionFromDataUrl(filename: string, dataUrl: string): string {
+  if (!dataUrl.startsWith('data:')) {
+    return filename;
+  }
+
+  // Extract actual format from data URL
+  const actualExtension = getFileExtension(dataUrl);
+
+  // Get current extension from filename (but only if filename actually has an extension)
+  const hasExtension = filename.includes('.');
+  const currentExtension = hasExtension ? getFileExtension(filename) : null;
+
+  // If filename has extension and extensions are the same, no change needed
+  if (hasExtension && actualExtension === currentExtension) {
+    return filename;
+  }
+
+  // Replace the extension with the actual one
+  if (filename.includes('.')) {
+    const lastDotIndex = filename.lastIndexOf('.');
+    const nameWithoutExtension = filename.substring(0, lastDotIndex);
+    return `${nameWithoutExtension}.${actualExtension.toLowerCase()}`;
+  } else {
+    // No extension found, add the actual one
+    return `${filename}.${actualExtension.toLowerCase()}`;
+  }
 }

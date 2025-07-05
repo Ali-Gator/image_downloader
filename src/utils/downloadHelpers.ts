@@ -6,6 +6,7 @@ import { handleError } from '@utils/errorHandlers';
 
 import { MessageActionType } from '../types';
 import { DEFAULT_DOWNLOAD_OPTIONS, DownloadConstants } from './constants';
+import { updateFilenameExtensionFromDataUrl } from './imageUtils';
 
 /**
  * Sanitizes a filename by replacing unsafe characters with underscores and handling special cases
@@ -235,11 +236,17 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
           { msg: MessageActionType.FETCH_IMAGE, url: image.src },
           (response) => {
             if (response && response.dataUrl) {
+              // Update filename extension based on actual format from data URL
+              const correctedFilename = updateFilenameExtensionFromDataUrl(
+                filename,
+                response.dataUrl,
+              );
+
               // Successfully got image data, now download it
               chrome.downloads.download(
                 {
                   url: response.dataUrl,
-                  filename: filename,
+                  filename: correctedFilename,
                   conflictAction: 'uniquify' as chrome.downloads.FilenameConflictAction,
                   saveAs: false,
                 },
@@ -264,7 +271,7 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
                       {
                         action: MessageActionType.REGISTER_FILENAME,
                         downloadId,
-                        filename: filename,
+                        filename: correctedFilename,
                       },
                       () => {
                         if (chrome.runtime.lastError) {

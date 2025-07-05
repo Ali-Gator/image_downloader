@@ -3,6 +3,7 @@ import { shouldConvertImage, updateFileExtension } from '@utils/imageFormats';
 import { getImageSrcFromDOM } from './domImageUtils';
 import { downloadImage } from './downloadHelpers';
 import { convertImageElementToFormat } from './imageConverter';
+import { updateFilenameExtensionFromDataUrl } from './imageUtils';
 import { useSettingsStore } from '../store';
 import { ImageData } from '../types';
 
@@ -58,9 +59,14 @@ export const downloadImageWithConversion = async (
     const originalSrc = await getImageSrcFromDOM({ id, filename });
 
     if (originalSrc) {
+      // Update filename extension based on actual format if it's a data URL
+      const correctedFilename = originalSrc.startsWith('data:')
+        ? updateFilenameExtensionFromDataUrl(filename, originalSrc)
+        : filename;
+
       await downloadImage({
         src: originalSrc,
-        filename,
+        filename: correctedFilename,
       });
       return;
     }
