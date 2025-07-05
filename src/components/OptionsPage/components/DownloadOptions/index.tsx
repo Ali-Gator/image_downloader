@@ -7,6 +7,7 @@ import {
   OptionsHeader,
   RenamePatternField,
   ResetButton,
+  ZipArchiveOption,
 } from '..';
 import { StyledContainer } from './styles';
 
@@ -17,6 +18,7 @@ export const DownloadOptions: FC = () => {
       <FolderField />
       <RenamePatternField />
       <ConvertOptions />
+      <ZipArchiveOption />
       <ResetButton />
       <InfoMessage />
     </StyledContainer>

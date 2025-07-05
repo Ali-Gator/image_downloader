@@ -14,6 +14,7 @@ export interface SettingsState {
   renamePattern: string;
   convertFrom: string;
   convertTo: string;
+  createZipArchive: boolean;
 
   // Actions
   setDefaultGridView: (isGridView: boolean) => void;
@@ -24,6 +25,7 @@ export interface SettingsState {
   setRenamePattern: (pattern: string) => void;
   setConvertFrom: (option: string) => void;
   setConvertTo: (format: string) => void;
+  setCreateZipArchive: (createZip: boolean) => void;
   resetDownloadOptions: () => void;
   refreshSettings: () => Promise<void>;
 }

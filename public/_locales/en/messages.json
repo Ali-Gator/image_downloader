@@ -253,5 +253,11 @@
   },
   "content_script_not_loaded": {
     "message": "Extension failed to load on this page. Please refresh the page and try again."
+  },
+  "create_zip_archive": {
+    "message": "Create ZIP archive"
+  },
+  "create_zip_archive_info": {
+    "message": "Download all images as a single ZIP file instead of individual files"
   }
 }

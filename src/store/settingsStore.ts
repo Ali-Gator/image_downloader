@@ -27,6 +27,7 @@ export const useSettingsStore = create<SettingsState>()(
       setRenamePattern: (renamePattern) => set({ renamePattern }),
       setConvertFrom: (convertFrom) => set({ convertFrom }),
       setConvertTo: (convertTo) => set({ convertTo }),
+      setCreateZipArchive: (createZipArchive) => set({ createZipArchive }),
       resetDownloadOptions: () => set(DEFAULT_DOWNLOAD_OPTIONS),
 
       // Force refresh settings from storage
@@ -47,6 +48,7 @@ export const useSettingsStore = create<SettingsState>()(
               renamePattern,
               convertFrom,
               convertTo,
+              createZipArchive,
             } = settingsData;
 
             set({
@@ -56,6 +58,7 @@ export const useSettingsStore = create<SettingsState>()(
               renamePattern,
               convertFrom,
               convertTo,
+              createZipArchive,
             });
           }
         } catch (error) {
@@ -75,6 +78,7 @@ export const useSettingsStore = create<SettingsState>()(
         renamePattern: state.renamePattern,
         convertFrom: state.convertFrom,
         convertTo: state.convertTo,
+        createZipArchive: state.createZipArchive,
       }),
     },
   ),

@@ -221,6 +221,7 @@ export interface DownloadOptions {
   renamePattern: string;
   convertFrom: string;
   convertTo: string;
+  createZipArchive: boolean;
 }
 
 // Props for the ErrorBoundary component

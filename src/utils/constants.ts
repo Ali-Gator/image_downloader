@@ -90,6 +90,7 @@ export const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = {
   renamePattern: '',
   convertFrom: 'none',
   convertTo: 'jpeg',
+  createZipArchive: false,
 };
 
 /**

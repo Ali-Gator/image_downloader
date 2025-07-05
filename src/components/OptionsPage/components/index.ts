@@ -1,7 +1,9 @@
-export * from './ConvertOptions';
-export * from './FolderField';
-export * from './DownloadOptions';
-export * from './InfoMessage';
-export * from './OptionsHeader';
-export * from './RenamePatternField';
-export * from './ResetButton';
+export { ConvertOptions } from './ConvertOptions';
+export { DownloadOptions } from './DownloadOptions';
+export { FolderField } from './FolderField';
+export { InfoTooltip } from './InfoIcon';
+export { InfoMessage } from './InfoMessage';
+export { OptionsHeader } from './OptionsHeader';
+export { RenamePatternField } from './RenamePatternField';
+export { ResetButton } from './ResetButton';
+export { ZipArchiveOption } from './ZipArchiveOption';
