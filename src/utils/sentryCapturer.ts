@@ -41,6 +41,12 @@ export const captureException = (error: Error, errorInfo?: ErrorInfo) => {
   scope.setTag('handled', 'true');
   scope.setLevel('error');
 
+  // Add browser and environment tags for better filtering
+  scope.setTag('browser', 'chrome');
+  scope.setTag('extension.id', chrome.runtime.id);
+  scope.setTag('extension.version', packageData.version);
+  scope.setTag('chrome.version', /Chrome\/([0-9.]+)/.exec(navigator.userAgent)?.[1] || 'unknown');
+
   // Prepare error details context
   const errorDetails: Record<string, unknown> = {
     message: error.message,

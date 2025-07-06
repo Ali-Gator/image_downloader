@@ -7,6 +7,7 @@ export enum MessageActionType {
   GRAB_IMAGES = 'grabImages',
   FETCH_IMAGE_AS_DATA_URL = 'fetchImageAsDataUrl',
   CONVERT_IMAGE_ELEMENT = 'convertImageElement',
+  HEALTH_CHECK = 'healthCheck',
 }
 
 /**
@@ -61,12 +62,21 @@ export interface ConvertImageElementMessage {
 }
 
 /**
+ * Interface for the health check message
+ * Used to check if content script is available
+ */
+export interface HealthCheckMessage {
+  action: MessageActionType.HEALTH_CHECK;
+}
+
+/**
  * Union type for all possible messages to content script
  */
 export type ContentScriptMessage =
   | GrabImagesMessage
   | FetchImageAsDataUrlMessage
-  | ConvertImageElementMessage;
+  | ConvertImageElementMessage
+  | HealthCheckMessage;
 
 /**
  * Response from image fetch operations

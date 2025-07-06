@@ -1,5 +1,5 @@
 import { ImageData, MessageActionType } from '../types';
-import { handleError, PlaceholderImages } from '../utils';
+import { handleError, PlaceholderImages, ContentScriptConstants } from '../utils';
 import { getSmartFileName } from '../utils/fileUtils';
 import { blobToDataUrl } from '../utils/imageUtils';
 
@@ -107,6 +107,12 @@ async function fetchImageAsDataUrl(url: string): Promise<string | null> {
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   try {
+    // Health check для проверки доступности content script
+    if (message.action === MessageActionType.HEALTH_CHECK) {
+      sendResponse({ available: true, timestamp: Date.now() });
+      return true;
+    }
+
     if (message.action === MessageActionType.FETCH_IMAGE_AS_DATA_URL) {
       // Handle image fetch request from popup/page
       fetchImageAsDataUrl(message.url)
@@ -164,8 +170,20 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
       return true; // Указываем, что ответ будет асинхронным
     }
   } catch (error) {
-    // Отправляем ошибку в Sentry, без показа пользователю
-    handleError(error);
+    // Отправляем ошибку в Sentry с подробным контекстом
+    const contentScriptError = error instanceof Error ? error : new Error(String(error));
+    Object.assign(contentScriptError, {
+      context: ContentScriptConstants.CONTEXT.MESSAGE_HANDLER,
+      messageAction: message.action,
+      tabInfo: {
+        url: window.location.href,
+        domain: window.location.hostname,
+        protocol: window.location.protocol,
+        userAgent: navigator.userAgent,
+      },
+      timestamp: new Date().toISOString(),
+    });
+    handleError(contentScriptError);
     // Send error response to avoid hanging the message port
     sendResponse({
       error: 'An error occurred while processing the request',

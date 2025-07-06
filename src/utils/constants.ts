@@ -165,3 +165,23 @@ export const IMAGE_FETCH_TIMEOUTS = {
   CANVAS_TIMEOUT: 5000, // 5 seconds
   BACKGROUND_FETCH: 30000, // 30 seconds
 };
+
+/**
+ * Content script related constants
+ */
+export const ContentScriptConstants = {
+  /**
+   * Context identifiers for Sentry error tracking
+   */
+  CONTEXT: {
+    INJECTION: 'content_script_injection',
+    DIAGNOSIS: 'content_script_diagnosis',
+    REINJECT_FAILED: 'content_script_reinject_failed',
+    MESSAGE_HANDLER: 'content_script_message_handler',
+  },
+
+  /**
+   * Delay before running content script diagnostics (ms)
+   */
+  DIAGNOSIS_DELAY: 1000,
+};

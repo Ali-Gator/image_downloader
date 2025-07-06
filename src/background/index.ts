@@ -9,6 +9,7 @@ import {
 import {
   ApplicationLinks,
   ConnectionName,
+  ContentScriptConstants,
   DEFAULT_DOWNLOAD_OPTIONS,
   IMAGE_FETCH_TIMEOUTS,
   StorageKeys,
@@ -35,6 +36,59 @@ const REFERRER_RULE_ID = 842751963;
 // Словарь для хранения соответствий между ID загрузки и именами файлов
 // Это позволит сохранить исходное имя при переименовании
 const downloadFilenamesMap: Record<number, string> = {};
+
+/**
+ * Gets the actual content script path from manifest
+ */
+function getContentScriptPath(): string {
+  try {
+    const manifest = chrome.runtime.getManifest();
+    const contentScripts = manifest.content_scripts;
+    if (contentScripts && contentScripts.length > 0 && contentScripts[0].js) {
+      return contentScripts[0].js[0];
+    }
+
+    // Если content_scripts пуст или неправильный, логируем это
+    const manifestError = new Error('Content scripts not found in manifest');
+    Object.assign(manifestError, {
+      context: ContentScriptConstants.CONTEXT.INJECTION,
+      manifestInfo: {
+        hasContentScripts: !!contentScripts,
+        contentScriptsLength: contentScripts?.length || 0,
+        manifest: manifest,
+      },
+      timestamp: new Date().toISOString(),
+    });
+    handleError(manifestError);
+
+    throw manifestError;
+  } catch (error) {
+    // Логируем ошибку чтения manifest
+    const readError = ensureError(error);
+    Object.assign(readError, {
+      context: ContentScriptConstants.CONTEXT.INJECTION,
+      manifestReadError: true,
+      timestamp: new Date().toISOString(),
+    });
+    handleError(readError);
+
+    throw readError;
+  }
+}
+
+/**
+ * Checks if content script is available on a tab
+ */
+async function isContentScriptAvailable(tabId: number): Promise<boolean> {
+  try {
+    const response = await chrome.tabs.sendMessage(tabId, {
+      action: MessageActionType.HEALTH_CHECK,
+    });
+    return response && response.available;
+  } catch (error) {
+    return false;
+  }
+}
 
 /**
  * Injects content script into all existing tabs when extension is installed/updated
@@ -72,12 +126,82 @@ async function injectContentScriptIntoAllTabs() {
       }
 
       try {
+        const contentScriptPath = getContentScriptPath();
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
-          files: ['content-script.js'],
+          files: [contentScriptPath], // Динамический путь из manifest
         });
       } catch (error) {
-        // Some tabs might not allow script injection, that's okay - silently ignore
+        // Детальное логирование ошибок инъекции в Sentry
+        const injectionError = ensureError(error);
+        Object.assign(injectionError, {
+          context: ContentScriptConstants.CONTEXT.INJECTION,
+          tabInfo: {
+            tabId: tab.id,
+            url: tab.url,
+            title: tab.title,
+            status: tab.status,
+            active: tab.active,
+          },
+          timestamp: new Date().toISOString(),
+        });
+        handleError(injectionError);
+      }
+    }
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+/**
+ * Диагностика content script на активной вкладке
+ */
+async function diagnoseContentScript() {
+  try {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tabs[0]?.id) return;
+
+    const tab = tabs[0];
+    const tabId = tab.id;
+    if (!tabId) return;
+
+    const isAvailable = await isContentScriptAvailable(tabId);
+
+    if (!isAvailable) {
+      // Content script недоступен - логируем это
+      const diagnosticError = new Error('Content script not available on active tab');
+      Object.assign(diagnosticError, {
+        context: ContentScriptConstants.CONTEXT.DIAGNOSIS,
+        tabInfo: {
+          tabId: tabId,
+          url: tab.url,
+          title: tab.title,
+          status: tab.status,
+          active: tab.active,
+        },
+        timestamp: new Date().toISOString(),
+      });
+      handleError(diagnosticError);
+
+      // Пытаемся переинжектировать
+      try {
+        const contentScriptPath = getContentScriptPath();
+        await chrome.scripting.executeScript({
+          target: { tabId: tabId },
+          files: [contentScriptPath],
+        });
+      } catch (reinjectError) {
+        const failedReinject = ensureError(reinjectError);
+        Object.assign(failedReinject, {
+          context: ContentScriptConstants.CONTEXT.REINJECT_FAILED,
+          tabInfo: {
+            tabId: tabId,
+            url: tab.url,
+            title: tab.title,
+          },
+          timestamp: new Date().toISOString(),
+        });
+        handleError(failedReinject);
       }
     }
   } catch (error) {
@@ -623,22 +747,20 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 // Wrap event handlers with try-catch to capture errors with Sentry
 try {
   // Handle extension installation
-  chrome.runtime.onInstalled.addListener((details) => {
+  chrome.runtime.onInstalled.addListener(async (details) => {
     try {
       if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-        chrome.tabs.create({
+        await chrome.tabs.create({
           url: ApplicationLinks.INSTALL_URL,
         });
-        injectContentScriptIntoAllTabs();
       } else if (details.reason === chrome.runtime.OnInstalledReason.UPDATE) {
         // When extension is updated
-        injectContentScriptIntoAllTabs();
       } else if (details.reason === chrome.runtime.OnInstalledReason.CHROME_UPDATE) {
         // When browser is updated
       } else if (details.reason === chrome.runtime.OnInstalledReason.SHARED_MODULE_UPDATE) {
         // When a shared module is updated
       }
-
+      await injectContentScriptIntoAllTabs();
       // Clean up any existing rules on install/update
       removeReferrerRules().catch(handleError);
     } catch (error) {
@@ -669,6 +791,10 @@ try {
   chrome.tabs.onActivated.addListener(() => {
     // When user switches tabs, remove any active rules
     removeReferrerRules().catch(handleError);
+    // Также запускаем диагностику после короткой задержки
+    setTimeout(() => {
+      diagnoseContentScript().catch(handleError);
+    }, ContentScriptConstants.DIAGNOSIS_DELAY);
   });
 
   chrome.runtime.setUninstallURL(ApplicationLinks.UNINSTALL_URL);
