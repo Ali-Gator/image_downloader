@@ -19,6 +19,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { RatingWidget } from '@components';
 import { useImageStore } from '@store';
 import { SizeFilter, SortOption, useTranslation } from '@utils';
 
@@ -32,6 +33,7 @@ import {
   DividerContainer,
   InfoContainer,
   LeftSection,
+  MiddleSection,
   RightSection,
   SizePopoverContent,
   SortContainer,
@@ -319,6 +321,10 @@ export const Toolbar: FC = () => {
           </ControlItem>
         </ControlsRow>
       </LeftSection>
+
+      <MiddleSection>
+        <RatingWidget />
+      </MiddleSection>
 
       <RightSection>
         <InfoContainer>

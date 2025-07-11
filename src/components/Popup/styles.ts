@@ -16,9 +16,11 @@ export const ContentContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
 }));
 
-export const FeedbackRow = styled(Box)(({ theme }) => ({
+export const FeedbackRow = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'hasRatedApp',
+})<{ hasRatedApp: boolean }>(({ theme, hasRatedApp }) => ({
   display: 'flex',
-  justifyContent: 'space-between',
+  justifyContent: hasRatedApp ? 'center' : 'space-between',
   width: '100%',
   marginTop: theme.spacing(1),
 }));

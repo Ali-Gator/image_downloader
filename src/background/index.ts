@@ -12,6 +12,7 @@ import {
   ContentScriptConstants,
   DEFAULT_DOWNLOAD_OPTIONS,
   IMAGE_FETCH_TIMEOUTS,
+  RatingConstants,
   StorageKeys,
 } from '../utils/constants';
 import {
@@ -760,6 +761,15 @@ try {
       } else if (details.reason === chrome.runtime.OnInstalledReason.SHARED_MODULE_UPDATE) {
         // When a shared module is updated
       }
+
+      // Устанавливаем флаг напоминания через 10 дней
+      const reminderDate = new Date();
+      reminderDate.setDate(reminderDate.getDate() + RatingConstants.REMINDER_INTERVAL_DAYS);
+
+      await chrome.storage.local.set({
+        [StorageKeys.REMINDER_DATE_FLAG]: reminderDate.toISOString(),
+      });
+
       await injectContentScriptIntoAllTabs();
       // Clean up any existing rules on install/update
       removeReferrerRules().catch(handleError);

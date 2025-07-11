@@ -24,6 +24,18 @@ export const LeftSection = styled('div')(() => ({
   flexGrow: 1,
 }));
 
+export const MiddleSection = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flex: '0 1 auto',
+
+  [theme.breakpoints.down('md')]: {
+    marginTop: theme.spacing(1),
+    justifyContent: 'center',
+  },
+}));
+
 export const RightSection = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',

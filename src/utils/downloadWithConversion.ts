@@ -5,7 +5,7 @@ import { downloadImage } from './downloadHelpers';
 import { convertImageElementToFormat } from './imageConverter';
 import { updateFilenameExtensionFromDataUrl } from './imageUtils';
 import { createAndDownloadZipArchive } from './zipArchive';
-import { useSettingsStore } from '../store';
+import { useRatingStore, useSettingsStore } from '../store';
 import { ImageData } from '../types';
 
 /**
@@ -49,6 +49,9 @@ export const downloadImageWithConversion = async (
             src: convertedDataUrl,
             filename: newFilename,
           });
+
+          // Уведомляем store об успешной загрузке
+          useRatingStore.getState().setHasSuccessfulDownload(true);
           return;
         } catch (conversionError) {
           // Remove all console.log and console.warn except for real errors (console.error)
@@ -69,6 +72,9 @@ export const downloadImageWithConversion = async (
         src: originalSrc,
         filename: correctedFilename,
       });
+
+      // Уведомляем store об успешной загрузке
+      useRatingStore.getState().setHasSuccessfulDownload(true);
       return;
     }
   } catch (domError) {
@@ -77,6 +83,9 @@ export const downloadImageWithConversion = async (
 
   // Fallback to original download
   await downloadImage({ src, filename });
+
+  // Уведомляем store об успешной загрузке
+  useRatingStore.getState().setHasSuccessfulDownload(true);
 };
 
 /**
@@ -112,6 +121,11 @@ export const downloadImagesWithConversion = async (
     } catch (error) {
       // Remove all console.log and console.warn except for real errors (console.error)
     }
+  }
+
+  // Уведомляем store о успешных загрузках
+  if (successCount > 0) {
+    useRatingStore.getState().setHasSuccessfulDownload(true);
   }
 
   return { successCount, totalCount };

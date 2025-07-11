@@ -14,3 +14,6 @@ export * from './OptionsPage';
 
 // Re-export RatingWidget component
 export { default as RatingWidget } from './RatingWidget';
+
+// Re-export RatingReminderModal component
+export { default as RatingReminderModal } from './RatingReminderModal';

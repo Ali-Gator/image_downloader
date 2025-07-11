@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 
+import { RatingWidget } from '@components';
 import { DownloadButton, Header, HelpText, ReportBugLink } from '@components/Popup/components';
-import RatingWidget from '@components/RatingWidget';
-import { useImageStore } from '@store';
+import { useImageStore, useRatingStore } from '@store';
 import { GrabImagesMessage, GrabImagesResponse, ImageData, MessageActionType } from '@types';
 import {
   ConnectionName,
@@ -17,9 +17,14 @@ import {
 import { ContentContainer, FeedbackRow, PopupContainer } from './styles';
 
 export const Popup: React.FC = () => {
+  const { hasRatedApp, loadRatingFromStorage } = useRatingStore();
   const { isLoading, setIsLoading } = useImageStore();
   const { t } = useTranslation();
   const portRef = useRef<chrome.runtime.Port | null>(null);
+
+  useEffect(() => {
+    loadRatingFromStorage();
+  }, [loadRatingFromStorage]);
 
   // Establish connection with background script when popup opens
   // This helps background script track when popup is closed
@@ -118,7 +123,7 @@ export const Popup: React.FC = () => {
       <ContentContainer>
         <DownloadButton onClick={handleGrabImages} isLoading={isLoading} />
         <HelpText text={t('help_text')} />
-        <FeedbackRow>
+        <FeedbackRow hasRatedApp={hasRatedApp}>
           <RatingWidget />
           <ReportBugLink />
         </FeedbackRow>

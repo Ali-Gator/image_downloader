@@ -74,7 +74,7 @@ const loadJSZip = async (): Promise<JSZipClass> => {
   throw new Error('JSZip library not available. Make sure it is properly loaded in page.html');
 };
 
-import { useSettingsStore } from '@store';
+import { useRatingStore, useSettingsStore } from '@store';
 import { ImageData, MessageActionType } from '@types';
 
 import { getImageSrcFromDOM } from './domImageUtils';
@@ -289,6 +289,11 @@ export const createAndDownloadZipArchive = async (
 
     // Clean up blob URL
     URL.revokeObjectURL(downloadUrl);
+
+    // Уведомляем store об успешной загрузке
+    if (successCount > 0) {
+      useRatingStore.getState().setHasSuccessfulDownload(true);
+    }
 
     return { successCount, totalCount };
   } catch (error) {

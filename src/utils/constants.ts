@@ -99,11 +99,40 @@ export const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = {
  */
 export const StorageKeys = {
   /**
-   * Key for storing user's rating score
+   * Key for storing user's individual rating score (1-5 stars)
    */
   RATING_SCORE: 'app_rating_score',
+  /**
+   * Key for storing download settings (folder name, conversion options, etc.)
+   */
   SETTINGS_STORE_KEY: 'image-downloader-settings',
-};
+  /**
+   * Key for storing rating system state (reminders, shown status, etc.)
+   */
+  RATING_STORE_KEY: 'image-downloader-rating',
+  /**
+   * Key for storing simple reminder date flag
+   */
+  REMINDER_DATE_FLAG: 'image-downloader-reminder-date',
+} as const;
+
+/**
+ * Rating system configuration
+ */
+export const RatingConstants = {
+  /**
+   * Number of days after installation when reminder should be shown
+   * Users get one reminder after this period to rate the app
+   */
+  REMINDER_INTERVAL_DAYS: 10,
+
+  /**
+   * Threshold for considering a rating as "positive"
+   * Ratings above this value redirect to Chrome Web Store
+   * Ratings at or below redirect to feedback form
+   */
+  POSITIVE_RATING_THRESHOLD: 3,
+} as const;
 
 /**
  * Application links for user feedback and bug reports

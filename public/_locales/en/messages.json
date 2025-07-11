@@ -161,6 +161,12 @@
   "rateUs": {
     "message": "Rate us:"
   },
+  "reminder_modal_title": {
+    "message": "😊 How do you like the extension?"
+  },
+  "reminder_modal_message": {
+    "message": "We hope you like Image Downloader! Share your feedback with other users."
+  },
   "url_copied_text": {
     "message": "URL copied to clipboard"
   },

@@ -38,6 +38,9 @@ export * from './domImageUtils';
 // Re-export general utilities
 export * from './utils';
 
+// Re-export rating utilities
+export * from './ratingUtils';
+
 export * from './imageOperations';
 
 // Re-export image preview utilities
