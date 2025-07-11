@@ -265,5 +265,8 @@
   },
   "create_zip_archive_info": {
     "message": "Download all images as a single ZIP file instead of individual files"
+  },
+  "image_quality": {
+    "message": "Image Quality:"
   }
 }

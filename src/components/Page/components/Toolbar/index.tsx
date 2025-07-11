@@ -1,7 +1,6 @@
 import { FC, SyntheticEvent, useState } from 'react';
 
 import GridViewIcon from '@mui/icons-material/GridView';
-import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import {
@@ -26,12 +25,9 @@ import { SizeFilter, SortOption, useTranslation } from '@utils';
 import {
   ControlItem,
   ControlsRow,
-  CounterBadge,
-  CounterText,
   CustomDimensionsContainer,
   DimensionInput,
   DividerContainer,
-  InfoContainer,
   LeftSection,
   MiddleSection,
   RightSection,
@@ -56,8 +52,6 @@ export const Toolbar: FC = () => {
     setSortOption,
     isGridView,
     setIsGridView,
-    filteredImages,
-    selectedImages,
   } = useImageStore();
 
   // Size filter popover state
@@ -70,9 +64,6 @@ export const Toolbar: FC = () => {
 
   // Track if custom dimensions have user input
   const hasCustomDimensions = Boolean(minWidth || minHeight);
-
-  const selectedCount = selectedImages.length;
-  const totalCount = filteredImages.length;
 
   const handleSizeFilterClick = (event: SyntheticEvent<HTMLElement>) => {
     setSizeAnchorEl(event.currentTarget);
@@ -327,15 +318,6 @@ export const Toolbar: FC = () => {
       </MiddleSection>
 
       <RightSection>
-        <InfoContainer>
-          <CounterBadge>
-            <PhotoLibraryIcon />
-            <CounterText>
-              {selectedCount} {t('of_text')} {totalCount} {t('images_selected_text')}
-            </CounterText>
-          </CounterBadge>
-        </InfoContainer>
-
         <SortContainer>
           <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
             <InputLabel id="sort-images-label">{t('sort_text')}</InputLabel>

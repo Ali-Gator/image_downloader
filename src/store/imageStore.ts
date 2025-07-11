@@ -105,12 +105,13 @@ export const useImageStore = create<ImageState>((set, get) => ({
   applyFilters: () => {
     const { images, filterText, sizeFilters, customSizeFilter, sortOption } = get();
 
-    // Filter by text
+    // Filter by text - optimize for memory usage
     let filtered = filterText
       ? images.filter((img) => {
           const searchTerm = filterText.toLowerCase();
+          // Use more efficient string matching - only check first 100 chars of URL
           const altText = (img.alt || '').toLowerCase();
-          const srcUrl = img.src.toLowerCase();
+          const srcUrl = img.src.toLowerCase().slice(0, 100);
           const filename = (img.filename || '').toLowerCase();
 
           return (
@@ -119,7 +120,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
             filename.includes(searchTerm)
           );
         })
-      : [...images];
+      : images; // Don't clone array if not needed
 
     // Используем либо стандартные фильтры размера, либо кастомные, но не оба вместе
     if (customSizeFilter.minWidth || customSizeFilter.minHeight) {
@@ -147,18 +148,23 @@ export const useImageStore = create<ImageState>((set, get) => ({
       });
     }
 
-    // Sort images
+    // Sort images - optimize for memory usage
     if (sortOption !== SortOption.DEFAULT) {
+      // Only clone if we need to sort and it's not already a copy
+      if (filtered === images) {
+        filtered = [...filtered];
+      }
+
       filtered.sort((a, b) => {
         switch (sortOption) {
           case SortOption.NAME_ASC:
-            return a.filename.localeCompare(b.filename);
+            return (a.filename || '').localeCompare(b.filename || '');
           case SortOption.NAME_DESC:
-            return b.filename.localeCompare(a.filename);
+            return (b.filename || '').localeCompare(a.filename || '');
           case SortOption.SIZE_ASC:
-            return a.fileSize - b.fileSize;
+            return (a.fileSize || 0) - (b.fileSize || 0);
           case SortOption.SIZE_DESC:
-            return b.fileSize - a.fileSize;
+            return (b.fileSize || 0) - (a.fileSize || 0);
           default:
             return 0;
         }

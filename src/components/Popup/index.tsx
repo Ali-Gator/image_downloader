@@ -85,8 +85,19 @@ export const Popup: React.FC = () => {
             tab.url.includes('microsoftedge.microsoft.com/addons')
           ) {
             throw new Error(t('webstore_not_supported'));
+          } else if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+            throw new Error('Extension cannot access Chrome internal pages');
+          } else if (tab.url.startsWith('file://')) {
+            throw new Error(
+              'Extension cannot access local files. Upload files to a website first.',
+            );
+          } else if (tab.url.startsWith('https://chrome.google.com/')) {
+            throw new Error('Chrome Web Store pages are not supported');
           } else {
-            throw new Error(t('unsupported_page_type'));
+            throw new Error(
+              t('unsupported_page_type') +
+                ' - Try refreshing the page or visiting a different website.',
+            );
           }
         }
 
@@ -99,7 +110,10 @@ export const Popup: React.FC = () => {
         );
 
         if (!response) {
-          throw new Error(t('content_script_not_loaded'));
+          throw new Error(
+            t('content_script_not_loaded') +
+              ' Please refresh the page and try again. If the problem persists, the website may be blocking extensions.',
+          );
         }
 
         if (response.error) {
@@ -107,7 +121,10 @@ export const Popup: React.FC = () => {
         }
 
         if (!response.images || !response.images.length) {
-          throw new Error(t('no_images_found'));
+          throw new Error(
+            t('no_images_found') +
+              ' This could be because: 1) The page has no images, 2) Images are too small (less than 10px), 3) Images are loaded dynamically. Try scrolling down to load more images, then try again.',
+          );
         }
 
         openImagesPage(response.images);

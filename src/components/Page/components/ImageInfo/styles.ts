@@ -82,6 +82,34 @@ export const FileExtension = styled('span')(({ theme }) => ({
   textAlign: 'center',
 }));
 
+export const QualityBadge = styled('span')<{ quality: 'high' | 'medium' | 'low' }>(
+  ({ theme, quality }) => ({
+    ...commonBadgeStyles(theme),
+    fontWeight: 500,
+    minWidth: '36px',
+    textAlign: 'center',
+    backgroundColor:
+      quality === 'high'
+        ? theme.palette.success.light
+        : quality === 'medium'
+          ? theme.palette.warning.light
+          : theme.palette.error.light,
+    color:
+      quality === 'high'
+        ? theme.palette.success.contrastText
+        : quality === 'medium'
+          ? theme.palette.warning.contrastText
+          : theme.palette.error.contrastText,
+    border: `1px solid ${
+      quality === 'high'
+        ? theme.palette.success.main
+        : quality === 'medium'
+          ? theme.palette.warning.main
+          : theme.palette.error.main
+    }`,
+  }),
+);
+
 export const ActionsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',

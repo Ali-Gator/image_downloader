@@ -114,6 +114,14 @@ export interface ImageData {
 }
 
 /**
+ * Extended image data type for internal processing in content script
+ * Contains temporary quality score for sorting before conversion to ImageData
+ */
+export interface ImageCandidate extends ImageData {
+  qualityScore: number;
+}
+
+/**
  * Custom size filter type for min width/height
  */
 export interface CustomSizeFilter {

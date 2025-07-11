@@ -203,8 +203,22 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
     return Promise.reject(new Error('Invalid image source or filename'));
   }
 
+  // Validate image source
+  if (
+    !image.src.startsWith('http://') &&
+    !image.src.startsWith('https://') &&
+    !image.src.startsWith('data:') &&
+    !image.src.startsWith('blob:')
+  ) {
+    return Promise.reject(new Error('Invalid image URL format'));
+  }
+
   // Sanitize the filename to ensure it's properly formatted
   const originalFilename = sanitizeFileName(image.filename);
+
+  if (!originalFilename) {
+    return Promise.reject(new Error('Failed to generate valid filename'));
+  }
 
   // Function to attempt download with a specific filename
   const attemptDownload = (
@@ -232,9 +246,20 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
 
       // If useFallback is true, try to get image data through background script first
       if (useFallback) {
+        const messageTimeout = setTimeout(() => {
+          reject(new Error('Timeout: Background script did not respond within 15 seconds'));
+        }, 15000);
+
         chrome.runtime.sendMessage(
           { msg: MessageActionType.FETCH_IMAGE, url: image.src },
           (response) => {
+            clearTimeout(messageTimeout);
+
+            if (chrome.runtime.lastError) {
+              reject(new Error(`Background script error: ${chrome.runtime.lastError.message}`));
+              return;
+            }
+
             if (response && response.dataUrl) {
               // Update filename extension based on actual format from data URL
               const correctedFilename = updateFilenameExtensionFromDataUrl(
@@ -252,11 +277,8 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
                 },
                 (downloadId) => {
                   if (chrome.runtime.lastError) {
-                    reject(
-                      new Error(
-                        `Download failed via fallback: ${chrome.runtime.lastError.message}`,
-                      ),
-                    );
+                    const errorMessage = chrome.runtime.lastError.message || 'Unknown error';
+                    reject(new Error(`Download failed via fallback: ${errorMessage}`));
                     return;
                   }
 
@@ -286,11 +308,13 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
                   resolve();
                 },
               );
+            } else if (response && response.error) {
+              // Background script returned an error with details
+              const errorMessage = response.message || 'Image could not be fetched';
+              reject(new Error(`Background fetch failed: ${errorMessage}`));
             } else {
               // Fallback method failed too
-              const errorMessage = response?.message || 'All download methods failed';
-
-              reject(new Error(errorMessage));
+              reject(new Error('All download methods failed - image may not be accessible'));
             }
           },
         );
@@ -307,10 +331,12 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
         },
         (downloadId) => {
           if (chrome.runtime.lastError) {
+            const errorMessage = chrome.runtime.lastError.message || 'Unknown download error';
+
             if (!isRetry) {
               // If this is the first attempt and it failed, try with a generic name
               handleError(
-                `Download failed with original name: ${chrome.runtime.lastError.message}. Trying with generic name.`,
+                `Download failed with original name: ${errorMessage}. Trying with generic name.`,
               );
 
               // Create and use fallback filename
@@ -318,7 +344,20 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
               attemptDownload(fallbackFilename, true).then(resolve).catch(reject);
             } else {
               // If this is already a retry with generic name, try the CORS fallback
-              attemptDownload(filename, true, true).then(resolve).catch(reject);
+              handleError(
+                `Download failed with generic name: ${errorMessage}. Trying CORS fallback.`,
+              );
+              attemptDownload(filename, true, true)
+                .then(resolve)
+                .catch((fallbackError) => {
+                  // All methods failed, provide comprehensive error message
+                  const finalError = new Error(
+                    `All download methods failed. Original error: ${errorMessage}. ` +
+                      `Fallback error: ${fallbackError.message}. ` +
+                      `The image may not be accessible or the server may be blocking downloads.`,
+                  );
+                  reject(finalError);
+                });
             }
             return;
           }
@@ -330,7 +369,17 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
               attemptDownload(fallbackFilename, true).then(resolve).catch(reject);
             } else {
               // Try CORS fallback if generic name also failed
-              attemptDownload(filename, true, true).then(resolve).catch(reject);
+              attemptDownload(filename, true, true)
+                .then(resolve)
+                .catch((fallbackError) => {
+                  reject(
+                    new Error(
+                      `Download failed: No download ID returned. ` +
+                        `This may be due to browser restrictions or invalid image URL. ` +
+                        `Fallback error: ${fallbackError.message}`,
+                    ),
+                  );
+                });
             }
             return;
           }

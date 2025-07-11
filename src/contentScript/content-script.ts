@@ -1,7 +1,11 @@
-import { ImageData, MessageActionType } from '../types';
-import { handleError, PlaceholderImages, ContentScriptConstants } from '../utils';
+import { ImageCandidate, ImageData, MessageActionType } from '../types';
+import { ContentScriptConstants, handleError, PlaceholderImages } from '../utils';
 import { getSmartFileName } from '../utils/fileUtils';
-import { blobToDataUrl } from '../utils/imageUtils';
+import {
+  analyzeImageQuality,
+  blobToDataUrl,
+  constructHighResolutionUrl,
+} from '../utils/imageUtils';
 
 /**
  * Проверяет, является ли URL допустимым изображением
@@ -128,11 +132,15 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
     if (message.action === MessageActionType.GRAB_IMAGES) {
       const allImgElements = Array.from(document.getElementsByTagName('img'));
 
+      // Limit processing to avoid memory issues - process in batches
+      const MAX_IMAGES_TO_PROCESS = 500;
+      const imagesToProcess = allImgElements.slice(0, MAX_IMAGES_TO_PROCESS);
+
       // Сразу отфильтровываем и создаем объекты с нужными свойствами
-      const filteredImages = [];
+      const candidateImages: ImageCandidate[] = [];
       const seenUrls = new Set<string>();
 
-      for (const img of allImgElements) {
+      for (const img of imagesToProcess) {
         // Проверяем, является ли изображение допустимым и достаточно большим
         const isValid = isValidImage(img.src);
         const isBigEnough =
@@ -147,26 +155,64 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
         // Добавляем URL в множество просмотренных
         seenUrls.add(img.src);
 
+        // Analyze image quality and try to get high-resolution URL
+        let finalSrc = img.src;
+        const qualityScore = analyzeImageQuality(img.src);
+
+        // If quality is low, try to construct a high-resolution URL
+        if (qualityScore < 50) {
+          const highResUrl = constructHighResolutionUrl(img.src);
+          if (highResUrl && !seenUrls.has(highResUrl)) {
+            finalSrc = highResUrl;
+            seenUrls.add(highResUrl);
+          }
+        }
+
         // Создаем объект изображения с именем файла для поиска
-        const imageData: ImageData = {
-          id: generateImageId(img.src, img.naturalWidth, img.naturalHeight),
-          src: img.src,
+        const imageCandidate: ImageCandidate = {
+          id: generateImageId(finalSrc, img.naturalWidth, img.naturalHeight),
+          src: finalSrc,
           alt: img.alt || '',
           width: img.naturalWidth,
           height: img.naturalHeight,
           aspectRatio: img.naturalWidth / img.naturalHeight,
           filename: '',
           fileSize: estimateImageSize(img),
+          qualityScore: qualityScore,
         };
 
         // Генерируем умное имя файла, которое будет использоваться всеми компонентами
-        imageData.filename = getSmartFileName(imageData);
+        imageCandidate.filename = getSmartFileName(imageCandidate);
 
-        // Добавляем изображение в отфильтрованный список
-        filteredImages.push(imageData);
+        // Добавляем изображение в список кандидатов
+        candidateImages.push(imageCandidate);
       }
 
-      sendResponse({ images: filteredImages });
+      // Sort images by quality score (higher is better) and then by size
+      candidateImages.sort((a, b) => {
+        // First sort by quality score
+        if (a.qualityScore !== b.qualityScore) {
+          return b.qualityScore - a.qualityScore;
+        }
+
+        // Then by image size (area)
+        const areaA = a.width * a.height;
+        const areaB = b.width * b.height;
+        return areaB - areaA;
+      });
+
+      // Remove quality score from final results as it's not part of ImageData type
+      const filteredImages: ImageData[] = candidateImages.map((candidate) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { qualityScore, ...imageData } = candidate;
+        return imageData;
+      });
+
+      // Limit final results to prevent UI overload and memory issues
+      const MAX_FINAL_IMAGES = 200;
+      const finalImages = filteredImages.slice(0, MAX_FINAL_IMAGES);
+
+      sendResponse({ images: finalImages });
       return true; // Указываем, что ответ будет асинхронным
     }
   } catch (error) {

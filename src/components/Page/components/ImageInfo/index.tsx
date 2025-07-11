@@ -10,6 +10,7 @@ import { useImageStore } from '@store';
 import { ImageInfoProps } from '@types';
 import { formatFileSize, getFileExtension, getFriendlyUrlDisplay, useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
+import { analyzeImageQuality } from '@utils/imageUtils';
 
 import {
   ActionsContainer,
@@ -21,6 +22,7 @@ import {
   ImageInfoContainer,
   ImageUrl,
   NonClickableUrl,
+  QualityBadge,
   UrlContainer,
   UrlText,
 } from './styles';
@@ -55,6 +57,31 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   const canOpenExternally = !src.startsWith('data:') && !src.startsWith('blob:');
   const fileExtension = getFileExtension(fileName);
 
+  // Determine image quality based on URL patterns and dimensions
+  const getImageQuality = (): { level: 'high' | 'medium' | 'low'; label: string } => {
+    if (!image) return { level: 'low', label: 'LOW' };
+
+    const urlQualityScore = analyzeImageQuality(src);
+    const imageArea = (width || 0) * (height || 0);
+
+    // High quality: large images or high quality URLs
+    if (imageArea > 1000000 || urlQualityScore > 75) {
+      // 1MP+
+      return { level: 'high', label: 'HD' };
+    }
+
+    // Medium quality: medium-sized images or medium quality URLs
+    if (imageArea > 300000 || urlQualityScore > 25) {
+      // 300K pixels+
+      return { level: 'medium', label: 'MED' };
+    }
+
+    // Low quality: small images or low quality URLs
+    return { level: 'low', label: 'LOW' };
+  };
+
+  const imageQuality = getImageQuality();
+
   // Если изображение не найдено, возвращаем пустой контейнер
   if (!image) {
     return <ImageInfoContainer />;
@@ -71,6 +98,12 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
           <Dimensions className="dimensions">{dimensions}</Dimensions>
           {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
           <FileExtension className="file-extension">{fileExtension}</FileExtension>
+          <QualityBadge
+            quality={imageQuality.level}
+            title={`${t('image_quality')} ${imageQuality.label}`}
+          >
+            {imageQuality.label}
+          </QualityBadge>
         </DimensionsContainer>
       )}
 

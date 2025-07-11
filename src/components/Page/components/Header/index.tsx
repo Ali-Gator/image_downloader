@@ -104,7 +104,9 @@ export const Header: FC = () => {
             indeterminate={isIndeterminate}
             onChange={handleSelectAllChange}
           />
-          <label htmlFor="selectAll">Select All</label>
+          <label htmlFor="selectAll">
+            Select All ({selectedCount} of {totalCount} images)
+          </label>
         </SelectAllContainer>
 
         <Button
