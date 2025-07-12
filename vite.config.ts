@@ -19,6 +19,17 @@ export default defineConfig({
       },
       output: {
         chunkFileNames: 'assets/chunk-[hash].js',
+        manualChunks: (id) => {
+          // Disable code splitting for content script and related modules
+          if (id.includes('contentScript') || id.includes('content-script')) {
+            return undefined; // Forces inline bundling
+          }
+          // Default chunking for vendor libraries
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+          return undefined;
+        },
       },
     },
   },

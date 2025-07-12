@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { ImageData } from '../types';
 import { SizeFilter, SortOption } from '../utils';
 import { ImageState } from './types';
 
@@ -34,6 +35,69 @@ export const useImageStore = create<ImageState>((set, get) => ({
     } else {
       set({ selectedImages: [...selectedImages, image] });
     }
+  },
+
+  updateImageVariant: (imageId, variantIndex) => {
+    const { images, filteredImages, selectedImages } = get();
+
+    // Update in main images array
+    const updatedImages = images.map((img) =>
+      img.id === imageId ? { ...img, selectedVariantIndex: variantIndex } : img,
+    );
+
+    // Update in filtered images array
+    const updatedFilteredImages = filteredImages.map((img) =>
+      img.id === imageId ? { ...img, selectedVariantIndex: variantIndex } : img,
+    );
+
+    // Update in selected images array
+    const updatedSelectedImages = selectedImages.map((img) =>
+      img.id === imageId ? { ...img, selectedVariantIndex: variantIndex } : img,
+    );
+
+    set({
+      images: updatedImages,
+      filteredImages: updatedFilteredImages,
+      selectedImages: updatedSelectedImages,
+    });
+  },
+
+  bulkUpdateVariants: (imageIds, variantSelectionStrategy) => {
+    const { images, filteredImages, selectedImages } = get();
+
+    const updateImageVariant = (img: ImageData) => {
+      if (!imageIds.includes(img.id) || !img.variants?.length) return img;
+
+      let newVariantIndex = 0;
+
+      switch (variantSelectionStrategy) {
+        case 'highest':
+          // Select highest quality variant
+          newVariantIndex = 0; // Already sorted by quality
+          break;
+        case 'lowest':
+          // Select lowest quality variant
+          newVariantIndex = img.variants.length - 1;
+          break;
+        case 'medium':
+          // Select middle quality variant
+          newVariantIndex = Math.floor(img.variants.length / 2);
+          break;
+        case 'specific-resolution':
+          // This would be handled by a more specific function
+          break;
+        default:
+          newVariantIndex = 0;
+      }
+
+      return { ...img, selectedVariantIndex: newVariantIndex };
+    };
+
+    set({
+      images: images.map(updateImageVariant),
+      filteredImages: filteredImages.map(updateImageVariant),
+      selectedImages: selectedImages.map(updateImageVariant),
+    });
   },
 
   selectAll: () => {

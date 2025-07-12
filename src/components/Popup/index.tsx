@@ -112,7 +112,7 @@ export const Popup: React.FC = () => {
         if (!response) {
           throw new Error(
             t('content_script_not_loaded') +
-              ' Please refresh the page and try again. If the problem persists, the website may be blocking extensions.',
+              ' If the problem persists, the website may be blocking extensions.',
           );
         }
 

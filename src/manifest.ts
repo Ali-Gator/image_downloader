@@ -49,6 +49,10 @@ const manifest: ManifestV3Export = {
       resources: ['icons/logo.png'],
       matches: ['<all_urls>'],
     },
+    {
+      resources: ['assets/chunk-*.js', 'assets/*.js'],
+      matches: ['<all_urls>'],
+    },
   ],
   options_ui: {
     page: 'options.html',

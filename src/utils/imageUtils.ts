@@ -100,9 +100,335 @@ export const getQualityFromDimensions = (
   height: number,
 ): 'high' | 'medium' | 'low' => {
   const area = width * height;
-  if (area > 1000000) return 'high'; // 1MP+
-  if (area > 300000) return 'medium'; // 300K pixels+
+  if (area >= 1000000) return 'high'; // 1MP+
+  if (area >= 300000) return 'medium'; // 300K+
   return 'low';
+};
+
+/**
+ * Parses srcset attribute to extract different resolution variants
+ * @param srcset The srcset attribute value
+ * @returns Array of image variants with URLs and descriptors
+ */
+export const parseSrcset = (
+  srcset: string,
+): Array<{ url: string; descriptor: string; width?: number; density?: number }> => {
+  if (!srcset) return [];
+
+  const variants: Array<{ url: string; descriptor: string; width?: number; density?: number }> = [];
+
+  // Split by comma and parse each variant
+  const sources = srcset.split(',').map((s) => s.trim());
+
+  for (const source of sources) {
+    const parts = source.split(/\s+/);
+    if (parts.length < 2) continue;
+
+    const url = parts[0];
+    const descriptor = parts[1];
+
+    const variant: { url: string; descriptor: string; width?: number; density?: number } = {
+      url,
+      descriptor,
+    };
+
+    if (descriptor.endsWith('w')) {
+      // Width descriptor (e.g., "1200w")
+      const width = parseInt(descriptor.slice(0, -1));
+      if (!isNaN(width)) {
+        variant.width = width;
+      }
+    } else if (descriptor.endsWith('x')) {
+      // Density descriptor (e.g., "2x")
+      const density = parseFloat(descriptor.slice(0, -1));
+      if (!isNaN(density)) {
+        variant.density = density;
+      }
+    }
+
+    variants.push(variant);
+  }
+
+  return variants;
+};
+
+/**
+ * Finds image variants from DOM element including srcset, sizes, and URL patterns
+ * @param imgElement The image element to analyze
+ * @returns Array of image variants with dimensions and quality info
+ */
+export const findImageVariants = (
+  imgElement: HTMLImageElement,
+): Array<{
+  url: string;
+  width: number;
+  height: number;
+  quality: 'high' | 'medium' | 'low';
+  qualityScore: number;
+  label: string;
+  fileSize: number;
+}> => {
+  const variants: Array<{
+    url: string;
+    width: number;
+    height: number;
+    quality: 'high' | 'medium' | 'low';
+    qualityScore: number;
+    label: string;
+    fileSize: number;
+  }> = [];
+
+  // Get estimated file size for the main image
+  const estimateFileSize = (width: number, height: number): number => {
+    const pixelCount = width * height;
+    const isWebP =
+      imgElement.src.toLowerCase().includes('webp') || imgElement.src.startsWith('data:image/webp');
+    return isWebP ? pixelCount * 2 : pixelCount * 3;
+  };
+
+  // Add main image as primary variant
+  const mainWidth = imgElement.naturalWidth || imgElement.width;
+  const mainHeight = imgElement.naturalHeight || imgElement.height;
+  const mainQuality = getQualityFromDimensions(mainWidth, mainHeight);
+  const mainQualityScore = analyzeImageQuality(imgElement.src);
+
+  variants.push({
+    url: imgElement.src,
+    width: mainWidth,
+    height: mainHeight,
+    quality: mainQuality,
+    qualityScore: mainQualityScore,
+    label: `${mainQuality.toUpperCase()} ${mainWidth}×${mainHeight}`,
+    fileSize: estimateFileSize(mainWidth, mainHeight),
+  });
+
+  // Parse srcset if available
+  const srcset = imgElement.srcset || imgElement.getAttribute('srcset');
+  if (srcset) {
+    const srcsetVariants = parseSrcset(srcset);
+
+    for (const srcsetVariant of srcsetVariants) {
+      if (srcsetVariant.width) {
+        // For width descriptors, we need to estimate height based on aspect ratio
+        const aspectRatio = mainWidth / mainHeight;
+        const estimatedHeight = Math.round(srcsetVariant.width / aspectRatio);
+        const quality = getQualityFromDimensions(srcsetVariant.width, estimatedHeight);
+        const qualityScore = analyzeImageQuality(srcsetVariant.url);
+
+        variants.push({
+          url: srcsetVariant.url,
+          width: srcsetVariant.width,
+          height: estimatedHeight,
+          quality,
+          qualityScore,
+          label: `${quality.toUpperCase()} ${srcsetVariant.width}×${estimatedHeight}`,
+          fileSize: estimateFileSize(srcsetVariant.width, estimatedHeight),
+        });
+      } else if (srcsetVariant.density) {
+        // For density descriptors, scale main image dimensions
+        const scaledWidth = Math.round(mainWidth * srcsetVariant.density);
+        const scaledHeight = Math.round(mainHeight * srcsetVariant.density);
+        const quality = getQualityFromDimensions(scaledWidth, scaledHeight);
+        const qualityScore = analyzeImageQuality(srcsetVariant.url);
+
+        variants.push({
+          url: srcsetVariant.url,
+          width: scaledWidth,
+          height: scaledHeight,
+          quality,
+          qualityScore,
+          label: `${quality.toUpperCase()} ${scaledWidth}×${scaledHeight}`,
+          fileSize: estimateFileSize(scaledWidth, scaledHeight),
+        });
+      }
+    }
+  }
+
+  // Find DOM-related variants (picture, data-src, etc.)
+  const domVariants = findDomRelatedVariants(imgElement);
+  if (domVariants.length > 0) {
+    variants.push(...domVariants);
+  }
+
+  // ОТКЛЮЧЕНО: URL pattern analysis создает фиктивные варианты
+  // const patternVariants = findUrlPatternVariants(imgElement.src, mainWidth, mainHeight);
+  // if (patternVariants.length > 0) {
+  //   console.log('🌐 [findImageVariants] Found URL pattern variants:', patternVariants);
+  // }
+  // variants.push(...patternVariants);
+
+  // Remove duplicates based on EXACT URL comparison (not dimensions)
+  const uniqueVariants = variants.filter(
+    (variant, index, self) =>
+      self.findIndex((v) => v.url === variant.url) === index,
+  );
+
+  // Sort by quality score (higher is better) and then by size
+  const sortedVariants = uniqueVariants.sort((a, b) => {
+    if (a.qualityScore !== b.qualityScore) {
+      return b.qualityScore - a.qualityScore;
+    }
+    return b.width * b.height - a.width * a.height;
+  });
+
+  return sortedVariants;
+};
+
+/**
+ * Finds variants by analyzing URL patterns (Instagram, Twitter, etc.)
+ * @param originalUrl The original image URL
+ * @param originalWidth Original image width
+ * @param originalHeight Original image height
+ * @returns Array of potential variant URLs with estimated dimensions
+ */
+export const findUrlPatternVariants = (
+  originalUrl: string,
+  originalWidth: number,
+  originalHeight: number,
+): Array<{
+  url: string;
+  width: number;
+  height: number;
+  quality: 'high' | 'medium' | 'low';
+  qualityScore: number;
+  label: string;
+  fileSize: number;
+}> => {
+  const variants: Array<{
+    url: string;
+    width: number;
+    height: number;
+    quality: 'high' | 'medium' | 'low';
+    qualityScore: number;
+    label: string;
+    fileSize: number;
+  }> = [];
+
+  try {
+    const url = new URL(originalUrl);
+    const hostname = url.hostname.toLowerCase();
+
+    // Helper function to create variant object
+    const createVariant = (newUrl: string, width: number, height: number) => {
+      const quality = getQualityFromDimensions(width, height);
+      const qualityScore = analyzeImageQuality(newUrl);
+      const pixelCount = width * height;
+      const isWebP = newUrl.toLowerCase().includes('webp') || newUrl.startsWith('data:image/webp');
+      const fileSize = isWebP ? pixelCount * 2 : pixelCount * 3;
+
+      return {
+        url: newUrl,
+        width,
+        height,
+        quality,
+        qualityScore,
+        label: `${quality.toUpperCase()} ${width}×${height}`,
+        fileSize,
+      };
+    };
+
+    // Instagram CDN patterns
+    if (hostname.includes('cdninstagram.com') || hostname.includes('instagram.com')) {
+
+      // Instagram URLs often have patterns like:
+      // https://scontent-cdg4-1.cdninstagram.com/v/t51.2885-15/e35/s1080x1080/...
+      // https://scontent-cdg4-1.cdninstagram.com/v/t51.2885-15/e35/s640x640/...
+      // https://scontent-cdg4-1.cdninstagram.com/v/t51.2885-15/e35/c0.135.1080.1080a/s640x640/...
+
+      const sizes = [150, 320, 480, 640, 1080];
+
+      for (const size of sizes) {
+        if (size !== originalWidth) {
+          let newUrl = originalUrl;
+
+          // Try different Instagram URL patterns
+          if (originalUrl.includes('/s' + originalWidth + 'x' + originalHeight + '/')) {
+            // Pattern: /s1080x1080/
+            newUrl = originalUrl.replace(
+              `/s${originalWidth}x${originalHeight}/`,
+              `/s${size}x${size}/`,
+            );
+          } else if (originalUrl.includes('/s' + originalWidth + '/')) {
+            // Pattern: /s1080/
+            newUrl = originalUrl.replace(`/s${originalWidth}/`, `/s${size}/`);
+          } else if (originalUrl.includes('_n.jpg')) {
+            // Pattern: ending with _n.jpg (320x320)
+            newUrl = originalUrl.replace('_n.jpg', `_${size}.jpg`);
+          } else if (originalUrl.includes('_s.jpg')) {
+            // Pattern: ending with _s.jpg (150x150)
+            newUrl = originalUrl.replace('_s.jpg', `_${size}.jpg`);
+          } else {
+            // Try adding size parameter to URL
+            if (originalUrl.includes('?')) {
+              newUrl = originalUrl + `&s=${size}`;
+            } else {
+              newUrl = originalUrl + `?s=${size}`;
+            }
+          }
+
+          if (newUrl !== originalUrl) {
+            const aspectRatio = originalWidth / originalHeight;
+            const height = Math.round(size / aspectRatio);
+            variants.push(createVariant(newUrl, size, height));
+          }
+        }
+      }
+    }
+
+    // Twitter image patterns
+    if (hostname.includes('twimg.com')) {
+      const baseUrl = originalUrl.replace(/:(?:small|medium|large|thumb)$/, '');
+      const sizeMap = {
+        thumb: { width: 150, height: 150 },
+        small: { width: 340, height: 340 },
+        medium: { width: 600, height: 600 },
+        large: { width: 1200, height: 1200 },
+      };
+
+      for (const [sizeName, dimensions] of Object.entries(sizeMap)) {
+        if (dimensions.width !== originalWidth) {
+          const aspectRatio = originalWidth / originalHeight;
+          const height = Math.round(dimensions.width / aspectRatio);
+          const newUrl = `${baseUrl}:${sizeName}`;
+          variants.push(createVariant(newUrl, dimensions.width, height));
+        }
+      }
+    }
+
+    // Google Photos / Google services
+    if (hostname.includes('googleusercontent.com') || hostname.includes('lh3.google.com')) {
+      const baseUrl = originalUrl.replace(/=s\d{2,4}/, '').replace(/=w\d{2,4}-h\d{2,4}/, '');
+      const sizes = [200, 400, 800, 1600, 2048];
+
+      for (const size of sizes) {
+        if (size !== originalWidth) {
+          const aspectRatio = originalWidth / originalHeight;
+          const height = Math.round(size / aspectRatio);
+          const newUrl = `${baseUrl}=s${size}`;
+          variants.push(createVariant(newUrl, size, height));
+        }
+      }
+    }
+
+    // Facebook images
+    if (hostname.includes('fbcdn.net')) {
+      const baseUrl = originalUrl.replace(/\bs\d{3,4}\b/g, '');
+      const sizes = [320, 640, 960, 1280, 2048];
+
+      for (const size of sizes) {
+        if (size !== originalWidth) {
+          const aspectRatio = originalWidth / originalHeight;
+          const height = Math.round(size / aspectRatio);
+          const newUrl = baseUrl.replace(/\.(jpg|jpeg|png|webp)/, `_s${size}.$1`);
+          variants.push(createVariant(newUrl, size, height));
+        }
+      }
+    }
+  } catch (error) {
+    // Invalid URL, skip pattern analysis
+  }
+
+  return variants;
 };
 
 /**
@@ -366,3 +692,155 @@ export function updateFilenameExtensionFromDataUrl(filename: string, dataUrl: st
     return `${filename}.${actualExtension.toLowerCase()}`;
   }
 }
+
+/**
+ * Analyzes DOM around the image element to find related variants
+ * @param imgElement The image element to analyze
+ * @returns Array of potential variant URLs with dimensions
+ */
+export const findDomRelatedVariants = (
+  imgElement: HTMLImageElement,
+): Array<{
+  url: string;
+  width: number;
+  height: number;
+  quality: 'high' | 'medium' | 'low';
+  qualityScore: number;
+  label: string;
+  fileSize: number;
+}> => {
+  const variants: Array<{
+    url: string;
+    width: number;
+    height: number;
+    quality: 'high' | 'medium' | 'low';
+    qualityScore: number;
+    label: string;
+    fileSize: number;
+  }> = [];
+
+  const mainWidth = imgElement.naturalWidth || imgElement.width;
+  const mainHeight = imgElement.naturalHeight || imgElement.height;
+
+  const estimateFileSize = (width: number, height: number): number => {
+    const pixelCount = width * height;
+    const isWebP =
+      imgElement.src.toLowerCase().includes('webp') || imgElement.src.startsWith('data:image/webp');
+    return isWebP ? pixelCount * 2 : pixelCount * 3;
+  };
+
+  const createVariant = (url: string, width: number, height: number) => {
+    const quality = getQualityFromDimensions(width, height);
+    const qualityScore = analyzeImageQuality(url);
+    return {
+      url,
+      width,
+      height,
+      quality,
+      qualityScore,
+      label: `${quality.toUpperCase()} ${width}×${height}`,
+      fileSize: estimateFileSize(width, height),
+    };
+  };
+
+  // Helper to check if media query matches current viewport
+  const matchesMediaQuery = (mediaQuery: string): boolean => {
+    try {
+      return window.matchMedia(mediaQuery).matches;
+    } catch {
+      return false; // Invalid media query
+    }
+  };
+
+  // 1. Check if image is inside a <picture> element
+  const pictureElement = imgElement.closest('picture');
+  if (pictureElement) {
+    const sources = pictureElement.querySelectorAll('source');
+
+    sources.forEach((source) => {
+      // Skip sources that don't match current media query
+      const mediaAttr = source.getAttribute('media');
+      if (mediaAttr && !matchesMediaQuery(mediaAttr)) {
+        return;
+      }
+
+      const srcset = source.getAttribute('srcset');
+      if (srcset) {
+        const srcsetVariants = parseSrcset(srcset);
+
+        srcsetVariants.forEach((variant) => {
+          // Skip if this is the currently loaded image
+          if (variant.url === imgElement.src) return;
+
+          if (variant.width) {
+            // Width descriptor: estimate height from aspect ratio
+            const aspectRatio = mainWidth / mainHeight;
+            const estimatedHeight = Math.round(variant.width / aspectRatio);
+            variants.push(createVariant(variant.url, variant.width, estimatedHeight));
+          } else if (variant.density) {
+            // Density descriptor: scale main dimensions
+            const scaledWidth = Math.round(mainWidth * variant.density);
+            const scaledHeight = Math.round(mainHeight * variant.density);
+            variants.push(createVariant(variant.url, scaledWidth, scaledHeight));
+          }
+        });
+      }
+    });
+  }
+
+  // 2. Check for data-src attributes on the image itself
+  const dataSrcAttributes = [
+    'data-src',
+    'data-original',
+    'data-fullsize',
+    'data-large',
+    'data-hires',
+  ];
+  dataSrcAttributes.forEach((attr) => {
+    const dataSrc = imgElement.getAttribute(attr);
+    if (dataSrc && dataSrc !== imgElement.src) {
+      // Estimate larger dimensions for high-res variants
+      const estimatedWidth = Math.max(mainWidth * 1.5, 1920);
+      const estimatedHeight = Math.round(estimatedWidth * (mainHeight / mainWidth));
+      variants.push(createVariant(dataSrc, estimatedWidth, estimatedHeight));
+    }
+  });
+
+  // 3. Check parent elements for high-resolution variants
+  let parent = imgElement.parentElement;
+  let level = 0;
+  while (parent && level < 3) {
+    // Look for clickable elements that might lead to larger images
+    if (parent.tagName === 'A' || parent.onclick || parent.hasAttribute('data-url')) {
+      const href = parent.getAttribute('href') || parent.getAttribute('data-url');
+      if (href && (href.includes('.jpg') || href.includes('.png') || href.includes('.webp'))) {
+        // Assume linked images are larger
+        const estimatedWidth = Math.max(mainWidth * 2, 1920);
+        const estimatedHeight = Math.round(estimatedWidth * (mainHeight / mainWidth));
+        variants.push(createVariant(href, estimatedWidth, estimatedHeight));
+      }
+    }
+
+    parent = parent.parentElement;
+    level++;
+  }
+
+  // 4. Check sibling elements for related images
+  const siblings = imgElement.parentElement?.children;
+  if (siblings) {
+    Array.from(siblings).forEach((sibling) => {
+      if (sibling !== imgElement && sibling.tagName === 'IMG') {
+        const siblingImg = sibling as HTMLImageElement;
+        const siblingWidth = siblingImg.naturalWidth || siblingImg.width;
+        const siblingHeight = siblingImg.naturalHeight || siblingImg.height;
+
+        // Only consider siblings with different sizes
+        if (siblingWidth !== mainWidth || siblingHeight !== mainHeight) {
+          variants.push(createVariant(siblingImg.src, siblingWidth, siblingHeight));
+        }
+      }
+    });
+  }
+
+  return variants;
+};

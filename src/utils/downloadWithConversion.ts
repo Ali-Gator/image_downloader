@@ -24,6 +24,25 @@ export const downloadImageWithConversion = async (
   const { skipConversion = false } = options || {};
   const { src, filename, id } = image;
 
+  // Get the selected variant URL if available
+  let finalSrc = src;
+  let finalFilename = filename;
+
+  if ('variants' in image && image.variants && image.variants.length > 0) {
+    const selectedVariantIndex = image.selectedVariantIndex || 0;
+    const selectedVariant = image.variants[selectedVariantIndex];
+
+    if (selectedVariant) {
+      finalSrc = selectedVariant.url;
+      // Update filename to include resolution info if different from original
+      if (selectedVariant.width !== image.width || selectedVariant.height !== image.height) {
+        const extension = finalFilename.split('.').pop();
+        const baseName = finalFilename.replace(/\.[^/.]+$/, '');
+        finalFilename = `${baseName}_${selectedVariant.width}x${selectedVariant.height}.${extension}`;
+      }
+    }
+  }
+
   // Force refresh settings from storage to get latest values
   await useSettingsStore.getState().refreshSettings();
 
@@ -31,7 +50,7 @@ export const downloadImageWithConversion = async (
   const { convertFrom, convertTo } = useSettingsStore.getState();
 
   // Check if conversion is needed
-  const needsConversion = shouldConvertImage(filename, convertFrom);
+  const needsConversion = shouldConvertImage(finalFilename, convertFrom);
   const conversionEnabled = !skipConversion && convertFrom !== 'none' && convertTo !== 'none';
   const willConvert = conversionEnabled && needsConversion;
 
@@ -43,7 +62,7 @@ export const downloadImageWithConversion = async (
       if (imgElement) {
         try {
           const convertedDataUrl = await convertImageElementToFormat(imgElement, convertTo);
-          const newFilename = updateFileExtension(filename, convertTo);
+          const newFilename = updateFileExtension(finalFilename, convertTo);
 
           await downloadImage({
             src: convertedDataUrl,
@@ -59,14 +78,14 @@ export const downloadImageWithConversion = async (
       }
     }
 
-    // No conversion needed or conversion failed - use original image src
-    const originalSrc = await getImageSrcFromDOM({ id, filename });
+    // No conversion needed or conversion failed - try to get the selected variant from DOM
+    const originalSrc = await getImageSrcFromDOM({ id, filename: finalFilename });
 
     if (originalSrc) {
       // Update filename extension based on actual format if it's a data URL
       const correctedFilename = originalSrc.startsWith('data:')
-        ? updateFilenameExtensionFromDataUrl(filename, originalSrc)
-        : filename;
+        ? updateFilenameExtensionFromDataUrl(finalFilename, originalSrc)
+        : finalFilename;
 
       await downloadImage({
         src: originalSrc,
@@ -81,8 +100,8 @@ export const downloadImageWithConversion = async (
     // Remove all console.log and console.warn except for real errors (console.error)
   }
 
-  // Fallback to original download
-  await downloadImage({ src, filename });
+  // Fallback to selected variant URL
+  await downloadImage({ src: finalSrc, filename: finalFilename });
 
   // Уведомляем store об успешной загрузке
   useRatingStore.getState().setHasSuccessfulDownload(true);

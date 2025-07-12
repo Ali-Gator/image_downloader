@@ -264,6 +264,7 @@ export interface DownloadOptions {
   convertFrom: string;
   convertTo: string;
   createZipArchive: boolean;
+  defaultResolutionSelection: 'highest' | 'lowest' | 'medium' | 'original';
 }
 
 // Props for the ErrorBoundary component

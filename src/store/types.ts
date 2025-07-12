@@ -15,6 +15,7 @@ export interface SettingsState {
   convertFrom: string;
   convertTo: string;
   createZipArchive: boolean;
+  defaultResolutionSelection: 'highest' | 'lowest' | 'medium' | 'original';
 
   // Actions
   setDefaultGridView: (isGridView: boolean) => void;
@@ -26,6 +27,7 @@ export interface SettingsState {
   setConvertFrom: (option: string) => void;
   setConvertTo: (format: string) => void;
   setCreateZipArchive: (createZip: boolean) => void;
+  setDefaultResolutionSelection: (selection: 'highest' | 'lowest' | 'medium' | 'original') => void;
   resetDownloadOptions: () => void;
   refreshSettings: () => Promise<void>;
 }
@@ -64,4 +66,9 @@ export interface ImageState {
   setCustomSizeFilter: (filter: CustomSizeFilter) => void;
   setSortOption: (option: SortOption) => void;
   applyFilters: () => void;
+  updateImageVariant: (imageId: string, variantIndex: number) => void;
+  bulkUpdateVariants: (
+    imageIds: string[],
+    variantSelectionStrategy: 'highest' | 'lowest' | 'medium' | 'specific-resolution',
+  ) => void;
 }

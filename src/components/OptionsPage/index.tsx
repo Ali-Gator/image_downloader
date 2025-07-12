@@ -2,7 +2,7 @@ import { FC } from 'react';
 
 import { useTranslation } from '@utils';
 
-import { DownloadOptions } from './components';
+import { DownloadOptions, ResolutionDefaults } from './components';
 import { ContentBox, StyledContainer, StyledTitle } from './styles';
 
 export const OptionsPage: FC = () => {
@@ -14,6 +14,7 @@ export const OptionsPage: FC = () => {
 
       <ContentBox>
         <DownloadOptions />
+        <ResolutionDefaults />
       </ContentBox>
     </StyledContainer>
   );

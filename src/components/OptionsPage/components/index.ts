@@ -6,4 +6,5 @@ export { InfoMessage } from './InfoMessage';
 export { OptionsHeader } from './OptionsHeader';
 export { RenamePatternField } from './RenamePatternField';
 export { ResetButton } from './ResetButton';
+export { ResolutionDefaults } from './ResolutionDefaults';
 export { ZipArchiveOption } from './ZipArchiveOption';

@@ -2,6 +2,7 @@ import { FC, SyntheticEvent, useState } from 'react';
 
 import GridViewIcon from '@mui/icons-material/GridView';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import TuneIcon from '@mui/icons-material/Tune';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import {
   Button,
@@ -52,11 +53,17 @@ export const Toolbar: FC = () => {
     setSortOption,
     isGridView,
     setIsGridView,
+    selectedImages,
+    bulkUpdateVariants,
   } = useImageStore();
 
   // Size filter popover state
   const [sizeAnchorEl, setSizeAnchorEl] = useState<HTMLElement | null>(null);
   const sizePopoverOpen = Boolean(sizeAnchorEl);
+
+  // Resolution selector popover state
+  const [resolutionAnchorEl, setResolutionAnchorEl] = useState<HTMLElement | null>(null);
+  const resolutionPopoverOpen = Boolean(resolutionAnchorEl);
 
   // Custom dimensions state
   const [minWidth, setMinWidth] = useState<string>(customSizeFilter.minWidth?.toString() || '');
@@ -71,6 +78,22 @@ export const Toolbar: FC = () => {
 
   const handleSizePopoverClose = () => {
     setSizeAnchorEl(null);
+  };
+
+  const handleResolutionFilterClick = (event: SyntheticEvent<HTMLElement>) => {
+    setResolutionAnchorEl(event.currentTarget);
+  };
+
+  const handleResolutionPopoverClose = () => {
+    setResolutionAnchorEl(null);
+  };
+
+  const handleBulkResolutionChange = (strategy: 'highest' | 'lowest' | 'medium') => {
+    if (selectedImages.length > 0) {
+      const imageIds = selectedImages.map((img) => img.id);
+      bulkUpdateVariants(imageIds, strategy);
+    }
+    handleResolutionPopoverClose();
   };
 
   const handleSizeFilterChange = (filter: SizeFilter) => {
@@ -309,6 +332,70 @@ export const Toolbar: FC = () => {
             >
               {t('reset_btn')}
             </Button>
+          </ControlItem>
+
+          <ControlItem>
+            <Button
+              startIcon={<TuneIcon />}
+              variant="outlined"
+              onClick={handleResolutionFilterClick}
+              disabled={selectedImages.length === 0}
+              title={
+                selectedImages.length === 0
+                  ? 'Select images to change resolution'
+                  : 'Change resolution for selected images'
+              }
+            >
+              Resolution ({selectedImages.length})
+            </Button>
+
+            <Popover
+              id="resolution-filter-popover"
+              open={resolutionPopoverOpen}
+              anchorEl={resolutionAnchorEl}
+              onClose={handleResolutionPopoverClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+            >
+              <SizePopoverContent>
+                <Typography variant="subtitle2" gutterBottom>
+                  Set resolution for {selectedImages.length} selected image
+                  {selectedImages.length !== 1 ? 's' : ''}:
+                </Typography>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => handleBulkResolutionChange('highest')}
+                  sx={{ mb: 1 }}
+                >
+                  Highest Quality
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => handleBulkResolutionChange('medium')}
+                  sx={{ mb: 1 }}
+                >
+                  Medium Quality
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => handleBulkResolutionChange('lowest')}
+                >
+                  Lowest Quality
+                </Button>
+              </SizePopoverContent>
+            </Popover>
           </ControlItem>
         </ControlsRow>
       </LeftSection>

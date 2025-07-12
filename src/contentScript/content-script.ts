@@ -6,6 +6,7 @@ import {
   blobToDataUrl,
   constructHighResolutionUrl,
   getQualityFromDimensions,
+  findImageVariants,
 } from '../utils/imageUtils';
 
 /**
@@ -47,90 +48,53 @@ const generateImageId = (src: string, width: number, height: number): string => 
 };
 
 /**
- * Generates mock variants for testing UI functionality
- * TODO: Remove this when real variant detection is implemented
+ * Finds real image variants from DOM element and URL patterns
+ * Uses srcset, sizes attributes and URL pattern analysis
  */
-const generateMockVariants = (candidate: ImageCandidate) => {
-  const variants = [];
-  const { width, height, src, fileSize } = candidate;
+const findRealImageVariants = (imgElement: HTMLImageElement, candidate: ImageCandidate) => {
+  // Try to find variants from the DOM element
+  const variants = findImageVariants(imgElement);
 
-  // Add original resolution
-  variants.push({
-    url: src,
-    width,
-    height,
-    quality: getQualityFromDimensions(width, height),
-    qualityScore: candidate.qualityScore,
-    label: `${getQualityFromDimensions(width, height).toUpperCase()} ${width}×${height}`,
-    fileSize,
-  });
+  // If no variants found from DOM, create minimal variant set
+  if (variants.length <= 1) {
+    const { width, height, src, fileSize } = candidate;
 
-  // Add some mock variants for testing (only for larger images)
-  if (width > 800 || height > 600) {
-    // Add another HD variant
-    const hd2Width = Math.floor(width * 0.9);
-    const hd2Height = Math.floor(height * 0.9);
-    variants.push({
-      url: src.replace(/\.(jpg|jpeg|png|webp)/, '_hd2.$1'),
-      width: hd2Width,
-      height: hd2Height,
-      quality: getQualityFromDimensions(hd2Width, hd2Height),
-      qualityScore: candidate.qualityScore - 5,
-      label: `${getQualityFromDimensions(hd2Width, hd2Height).toUpperCase()} ${hd2Width}×${hd2Height}`,
-      fileSize: Math.floor(fileSize * 0.8),
-    });
+    // Add original resolution
+    const originalVariant = {
+      url: src,
+      width,
+      height,
+      quality: getQualityFromDimensions(width, height),
+      qualityScore: candidate.qualityScore,
+      label: `${getQualityFromDimensions(width, height).toUpperCase()} ${width}×${height}`,
+      fileSize,
+    };
 
-    // Add first medium resolution variant
-    const mediumWidth = Math.floor(width * 0.7);
-    const mediumHeight = Math.floor(height * 0.7);
-    variants.push({
-      url: src.replace(/\.(jpg|jpeg|png|webp)/, '_medium.$1'),
-      width: mediumWidth,
-      height: mediumHeight,
-      quality: getQualityFromDimensions(mediumWidth, mediumHeight),
-      qualityScore: candidate.qualityScore - 20,
-      label: `${getQualityFromDimensions(mediumWidth, mediumHeight).toUpperCase()} ${mediumWidth}×${mediumHeight}`,
-      fileSize: Math.floor(fileSize * 0.5),
-    });
+    // Try to find high-resolution version if current quality is low
+    if (candidate.qualityScore < 50) {
+      const highResUrl = constructHighResolutionUrl(src);
+      if (highResUrl && highResUrl !== src) {
+        // Estimate dimensions for high-res version
+        const estimatedWidth = Math.floor(width * 1.5);
+        const estimatedHeight = Math.floor(height * 1.5);
+        const quality = getQualityFromDimensions(estimatedWidth, estimatedHeight);
 
-    // Add second medium resolution variant
-    const medium2Width = Math.floor(width * 0.6);
-    const medium2Height = Math.floor(height * 0.6);
-    variants.push({
-      url: src.replace(/\.(jpg|jpeg|png|webp)/, '_medium2.$1'),
-      width: medium2Width,
-      height: medium2Height,
-      quality: getQualityFromDimensions(medium2Width, medium2Height),
-      qualityScore: candidate.qualityScore - 30,
-      label: `${getQualityFromDimensions(medium2Width, medium2Height).toUpperCase()} ${medium2Width}×${medium2Height}`,
-      fileSize: Math.floor(fileSize * 0.4),
-    });
+        return [
+          {
+            url: highResUrl,
+            width: estimatedWidth,
+            height: estimatedHeight,
+            quality,
+            qualityScore: candidate.qualityScore + 25,
+            label: `${quality.toUpperCase()} ${estimatedWidth}×${estimatedHeight}`,
+            fileSize: Math.floor(fileSize * 2),
+          },
+          originalVariant,
+        ];
+      }
+    }
 
-    // Add third medium resolution variant
-    const medium3Width = Math.floor(width * 0.5);
-    const medium3Height = Math.floor(height * 0.5);
-    variants.push({
-      url: src.replace(/\.(jpg|jpeg|png|webp)/, '_medium3.$1'),
-      width: medium3Width,
-      height: medium3Height,
-      quality: getQualityFromDimensions(medium3Width, medium3Height),
-      qualityScore: candidate.qualityScore - 35,
-      label: `${getQualityFromDimensions(medium3Width, medium3Height).toUpperCase()} ${medium3Width}×${medium3Height}`,
-      fileSize: Math.floor(fileSize * 0.3),
-    });
-
-    // Add thumbnail variant
-    const thumbWidth = Math.floor(width * 0.3);
-    const thumbHeight = Math.floor(height * 0.3);
-    variants.push({
-      url: src.replace(/\.(jpg|jpeg|png|webp)/, '_thumb.$1'),
-      width: thumbWidth,
-      height: thumbHeight,
-      quality: getQualityFromDimensions(thumbWidth, thumbHeight),
-      qualityScore: candidate.qualityScore - 40,
-      label: `${getQualityFromDimensions(thumbWidth, thumbHeight).toUpperCase()} ${thumbWidth}×${thumbHeight}`,
-      fileSize: Math.floor(fileSize * 0.2),
-    });
+    return [originalVariant];
   }
 
   return variants;
@@ -297,12 +261,52 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { qualityScore, ...imageData } = candidate;
 
-        // ADD MOCK VARIANTS FOR TESTING UI
-        const mockVariants = generateMockVariants(candidate);
+        // Find the original DOM element to analyze for variants
+        const imgElement = imagesToProcess.find(
+          (img) =>
+            img.src === candidate.src &&
+            img.naturalWidth === candidate.width &&
+            img.naturalHeight === candidate.height,
+        );
+
+        // Find real image variants using srcset and URL patterns
+        const realVariants = imgElement
+          ? findRealImageVariants(imgElement, candidate)
+          : [
+              {
+                // Fallback single variant
+                url: candidate.src,
+                width: candidate.width,
+                height: candidate.height,
+                quality: getQualityFromDimensions(candidate.width, candidate.height),
+                qualityScore: candidate.qualityScore,
+                label: `${getQualityFromDimensions(candidate.width, candidate.height).toUpperCase()} ${candidate.width}×${candidate.height}`,
+                fileSize: candidate.fileSize,
+              },
+            ];
+
+        // Apply default resolution selection based on user preferences
+        let defaultVariantIndex = 0;
+
+        // Try to get user's default resolution preference from storage
+        // This will be set by the settings, defaulting to 'highest' if not found
+        try {
+          const settings = chrome.storage?.local;
+          if (settings && realVariants.length > 1) {
+            // For now, default to highest quality (index 0, as variants are sorted by quality)
+            // TODO: Read from settings once they're integrated
+            defaultVariantIndex = 0;
+          }
+        } catch (error) {
+          // Storage not available, use default
+          defaultVariantIndex = 0;
+        }
+
         return {
           ...imageData,
-          variants: mockVariants,
-          selectedVariantIndex: 0,
+          // Only include variants if there are actually multiple options
+          variants: realVariants.length > 1 ? realVariants : undefined,
+          selectedVariantIndex: realVariants.length > 1 ? defaultVariantIndex : undefined,
         };
       });
 

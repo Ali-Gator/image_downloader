@@ -116,21 +116,40 @@ export const generateZipArchiveName = (imageCount: number): string => {
 const downloadImageAsBlob = async (image: ImageData): Promise<{ blob: Blob; filename: string }> => {
   const { src, filename, id } = image;
 
+  // Get the selected variant URL if available
+  let selectedSrc = src;
+  let selectedFilename = filename;
+
+  if (image.variants && image.variants.length > 0) {
+    const selectedVariantIndex = image.selectedVariantIndex || 0;
+    const selectedVariant = image.variants[selectedVariantIndex];
+
+    if (selectedVariant) {
+      selectedSrc = selectedVariant.url;
+      // Update filename to include resolution info if different from original
+      if (selectedVariant.width !== image.width || selectedVariant.height !== image.height) {
+        const extension = selectedFilename.split('.').pop();
+        const baseName = selectedFilename.replace(/\.[^/.]+$/, '');
+        selectedFilename = `${baseName}_${selectedVariant.width}x${selectedVariant.height}.${extension}`;
+      }
+    }
+  }
+
   // Get settings for conversion
   const settings = useSettingsStore.getState();
   const { convertFrom, convertTo, renamePattern } = settings;
 
   // Check if conversion is needed
-  const needsConversion = shouldConvertImage(filename, convertFrom);
+  const needsConversion = shouldConvertImage(selectedFilename, convertFrom);
   const conversionEnabled = convertFrom !== 'none' && convertTo !== 'none';
   const willConvert = conversionEnabled && needsConversion;
 
-  let finalSrc = src;
-  let finalFilename = filename;
+  let workingSrc = selectedSrc;
+  let workingFilename = selectedFilename;
 
   // Apply rename pattern if specified
   if (renamePattern) {
-    finalFilename = applyRenamePattern(finalFilename, renamePattern);
+    workingFilename = applyRenamePattern(workingFilename, renamePattern);
   }
 
   try {
@@ -140,38 +159,38 @@ const downloadImageAsBlob = async (image: ImageData): Promise<{ blob: Blob; file
       if (imgElement) {
         try {
           const convertedDataUrl = await convertImageElementToFormat(imgElement, convertTo);
-          finalSrc = convertedDataUrl;
-          finalFilename = updateFileExtension(finalFilename, convertTo);
+          workingSrc = convertedDataUrl;
+          workingFilename = updateFileExtension(workingFilename, convertTo);
         } catch (conversionError) {
           // Fallback to original if conversion fails
         }
       }
     }
 
-    // If no conversion or conversion failed, try to get original from DOM
-    if (finalSrc === src && id) {
+    // If no conversion or conversion failed, try to get selected variant from DOM
+    if (workingSrc === selectedSrc && id) {
       try {
-        const originalSrc = await getImageSrcFromDOM({ id, filename });
+        const originalSrc = await getImageSrcFromDOM({ id, filename: workingFilename });
         if (originalSrc) {
-          finalSrc = originalSrc;
+          workingSrc = originalSrc;
           // Update filename extension if it's a data URL
           if (originalSrc.startsWith('data:')) {
-            finalFilename = updateFilenameExtensionFromDataUrl(finalFilename, originalSrc);
+            workingFilename = updateFilenameExtensionFromDataUrl(workingFilename, originalSrc);
           }
         }
       } catch (domError) {
-        // Continue with original src
+        // Continue with selected src
       }
     }
 
     // Fetch the image data
-    const response = await fetch(finalSrc);
+    const response = await fetch(workingSrc);
     if (!response.ok) {
       throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
     }
 
     const blob = await response.blob();
-    return { blob, filename: finalFilename };
+    return { blob, filename: workingFilename };
   } catch (error) {
     // If direct fetch fails, try through background script
     try {
@@ -203,10 +222,10 @@ const downloadImageAsBlob = async (image: ImageData): Promise<{ blob: Blob; file
 
         // Update filename extension based on data URL
         if (bgResponse.dataUrl.startsWith('data:')) {
-          finalFilename = updateFilenameExtensionFromDataUrl(finalFilename, bgResponse.dataUrl);
+          workingFilename = updateFilenameExtensionFromDataUrl(workingFilename, bgResponse.dataUrl);
         }
 
-        return { blob, filename: finalFilename };
+        return { blob, filename: workingFilename };
       }
 
       throw new Error('No data URL in background response');
