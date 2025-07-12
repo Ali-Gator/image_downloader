@@ -6,15 +6,14 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Tooltip } from '@mui/material';
 
 import { ActionButton } from '@components/Page/components/ActionButton';
+import { ResolutionSelector } from '@components/Page/components/ResolutionSelector';
 import { useImageStore } from '@store';
 import { ImageInfoProps } from '@types';
 import { formatFileSize, getFileExtension, getFriendlyUrlDisplay, useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
-import { analyzeImageQuality } from '@utils/imageUtils';
 
 import {
   ActionsContainer,
-  Dimensions,
   DimensionsContainer,
   FileExtension,
   FileName,
@@ -22,7 +21,6 @@ import {
   ImageInfoContainer,
   ImageUrl,
   NonClickableUrl,
-  QualityBadge,
   UrlContainer,
   UrlText,
 } from './styles';
@@ -37,14 +35,11 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
 
   // Хуки всегда вызываются, даже если image не найден
   const isListMode = !isGridView;
-  const emptyStr = '';
   const defaultSrc = '';
   const defaultFileName = '';
 
   // Безопасно извлекаем значения, используя дефолтные, если image не найден
   const src = image?.src || defaultSrc;
-  const width = image?.width;
-  const height = image?.height;
   const fileName = image ? image.filename : defaultFileName;
   const formattedFileSize = image?.fileSize ? formatFileSize(image.fileSize) : null;
 
@@ -52,35 +47,11 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   const { handleCopyUrl, handleDownload } = useImageOperations(src, fileName);
 
   // Вычисляем свойства, основанные на извлеченных данных
-  const dimensions = width && height ? `${width} × ${height}` : emptyStr;
   const urlDisplay = getFriendlyUrlDisplay(src);
   const canOpenExternally = !src.startsWith('data:') && !src.startsWith('blob:');
   const fileExtension = getFileExtension(fileName);
 
-  // Determine image quality based on URL patterns and dimensions
-  const getImageQuality = (): { level: 'high' | 'medium' | 'low'; label: string } => {
-    if (!image) return { level: 'low', label: 'LOW' };
-
-    const urlQualityScore = analyzeImageQuality(src);
-    const imageArea = (width || 0) * (height || 0);
-
-    // High quality: large images or high quality URLs
-    if (imageArea > 1000000 || urlQualityScore > 75) {
-      // 1MP+
-      return { level: 'high', label: 'HD' };
-    }
-
-    // Medium quality: medium-sized images or medium quality URLs
-    if (imageArea > 300000 || urlQualityScore > 25) {
-      // 300K pixels+
-      return { level: 'medium', label: 'MED' };
-    }
-
-    // Low quality: small images or low quality URLs
-    return { level: 'low', label: 'LOW' };
-  };
-
-  const imageQuality = getImageQuality();
+  // Note: imageQuality logic moved to ResolutionSelector component
 
   // Если изображение не найдено, возвращаем пустой контейнер
   if (!image) {
@@ -93,19 +64,18 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
         {fileName}
       </FileName>
 
-      {dimensions && (
-        <DimensionsContainer className="dimensions-container">
-          <Dimensions className="dimensions">{dimensions}</Dimensions>
-          {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
-          <FileExtension className="file-extension">{fileExtension}</FileExtension>
-          <QualityBadge
-            quality={imageQuality.level}
-            title={`${t('image_quality')} ${imageQuality.label}`}
-          >
-            {imageQuality.label}
-          </QualityBadge>
-        </DimensionsContainer>
-      )}
+      <DimensionsContainer className="dimensions-container">
+        <ResolutionSelector
+          image={image}
+          onVariantSelect={(variantIndex) => {
+            // TODO: Implement variant selection logic
+            // eslint-disable-next-line no-console
+            console.log('Selected variant:', variantIndex);
+          }}
+        />
+        {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
+        <FileExtension className="file-extension">{fileExtension}</FileExtension>
+      </DimensionsContainer>
 
       {isListMode && (
         <>

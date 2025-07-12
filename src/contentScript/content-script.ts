@@ -5,6 +5,7 @@ import {
   analyzeImageQuality,
   blobToDataUrl,
   constructHighResolutionUrl,
+  getQualityFromDimensions,
 } from '../utils/imageUtils';
 
 /**
@@ -43,6 +44,96 @@ const isValidImage = (url: string): boolean => {
 
 const generateImageId = (src: string, width: number, height: number): string => {
   return `${src}_${width}_${height}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+};
+
+/**
+ * Generates mock variants for testing UI functionality
+ * TODO: Remove this when real variant detection is implemented
+ */
+const generateMockVariants = (candidate: ImageCandidate) => {
+  const variants = [];
+  const { width, height, src, fileSize } = candidate;
+
+  // Add original resolution
+  variants.push({
+    url: src,
+    width,
+    height,
+    quality: getQualityFromDimensions(width, height),
+    qualityScore: candidate.qualityScore,
+    label: `${getQualityFromDimensions(width, height).toUpperCase()} ${width}×${height}`,
+    fileSize,
+  });
+
+  // Add some mock variants for testing (only for larger images)
+  if (width > 800 || height > 600) {
+    // Add another HD variant
+    const hd2Width = Math.floor(width * 0.9);
+    const hd2Height = Math.floor(height * 0.9);
+    variants.push({
+      url: src.replace(/\.(jpg|jpeg|png|webp)/, '_hd2.$1'),
+      width: hd2Width,
+      height: hd2Height,
+      quality: getQualityFromDimensions(hd2Width, hd2Height),
+      qualityScore: candidate.qualityScore - 5,
+      label: `${getQualityFromDimensions(hd2Width, hd2Height).toUpperCase()} ${hd2Width}×${hd2Height}`,
+      fileSize: Math.floor(fileSize * 0.8),
+    });
+
+    // Add first medium resolution variant
+    const mediumWidth = Math.floor(width * 0.7);
+    const mediumHeight = Math.floor(height * 0.7);
+    variants.push({
+      url: src.replace(/\.(jpg|jpeg|png|webp)/, '_medium.$1'),
+      width: mediumWidth,
+      height: mediumHeight,
+      quality: getQualityFromDimensions(mediumWidth, mediumHeight),
+      qualityScore: candidate.qualityScore - 20,
+      label: `${getQualityFromDimensions(mediumWidth, mediumHeight).toUpperCase()} ${mediumWidth}×${mediumHeight}`,
+      fileSize: Math.floor(fileSize * 0.5),
+    });
+
+    // Add second medium resolution variant
+    const medium2Width = Math.floor(width * 0.6);
+    const medium2Height = Math.floor(height * 0.6);
+    variants.push({
+      url: src.replace(/\.(jpg|jpeg|png|webp)/, '_medium2.$1'),
+      width: medium2Width,
+      height: medium2Height,
+      quality: getQualityFromDimensions(medium2Width, medium2Height),
+      qualityScore: candidate.qualityScore - 30,
+      label: `${getQualityFromDimensions(medium2Width, medium2Height).toUpperCase()} ${medium2Width}×${medium2Height}`,
+      fileSize: Math.floor(fileSize * 0.4),
+    });
+
+    // Add third medium resolution variant
+    const medium3Width = Math.floor(width * 0.5);
+    const medium3Height = Math.floor(height * 0.5);
+    variants.push({
+      url: src.replace(/\.(jpg|jpeg|png|webp)/, '_medium3.$1'),
+      width: medium3Width,
+      height: medium3Height,
+      quality: getQualityFromDimensions(medium3Width, medium3Height),
+      qualityScore: candidate.qualityScore - 35,
+      label: `${getQualityFromDimensions(medium3Width, medium3Height).toUpperCase()} ${medium3Width}×${medium3Height}`,
+      fileSize: Math.floor(fileSize * 0.3),
+    });
+
+    // Add thumbnail variant
+    const thumbWidth = Math.floor(width * 0.3);
+    const thumbHeight = Math.floor(height * 0.3);
+    variants.push({
+      url: src.replace(/\.(jpg|jpeg|png|webp)/, '_thumb.$1'),
+      width: thumbWidth,
+      height: thumbHeight,
+      quality: getQualityFromDimensions(thumbWidth, thumbHeight),
+      qualityScore: candidate.qualityScore - 40,
+      label: `${getQualityFromDimensions(thumbWidth, thumbHeight).toUpperCase()} ${thumbWidth}×${thumbHeight}`,
+      fileSize: Math.floor(fileSize * 0.2),
+    });
+  }
+
+  return variants;
 };
 
 /**
@@ -205,7 +296,14 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
       const filteredImages: ImageData[] = candidateImages.map((candidate) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { qualityScore, ...imageData } = candidate;
-        return imageData;
+
+        // ADD MOCK VARIANTS FOR TESTING UI
+        const mockVariants = generateMockVariants(candidate);
+        return {
+          ...imageData,
+          variants: mockVariants,
+          selectedVariantIndex: 0,
+        };
       });
 
       // Limit final results to prevent UI overload and memory issues

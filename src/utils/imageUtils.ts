@@ -90,6 +90,22 @@ export const analyzeImageQuality = (url: string): number => {
 };
 
 /**
+ * Determines image quality level based on dimensions
+ * @param width Image width in pixels
+ * @param height Image height in pixels
+ * @returns Quality level: 'high', 'medium', or 'low'
+ */
+export const getQualityFromDimensions = (
+  width: number,
+  height: number,
+): 'high' | 'medium' | 'low' => {
+  const area = width * height;
+  if (area > 1000000) return 'high'; // 1MP+
+  if (area > 300000) return 'medium'; // 300K pixels+
+  return 'low';
+};
+
+/**
  * Attempts to construct a high-resolution URL from a thumbnail URL
  * @param thumbnailUrl Original thumbnail URL
  * @returns Potential high-resolution URL or null if no pattern matches

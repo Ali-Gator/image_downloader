@@ -102,6 +102,19 @@ export interface GrabImagesResponse {
   details?: string;
 }
 
+/**
+ * Image variant representing different resolutions/qualities of the same image
+ */
+export interface ImageVariant {
+  url: string;
+  width: number;
+  height: number;
+  quality: 'high' | 'medium' | 'low';
+  qualityScore: number;
+  label: string; // e.g., "HD 1920×1080", "MED 800×600", "LOW 320×240"
+  fileSize?: number;
+}
+
 export interface ImageData {
   id: string;
   src: string;
@@ -111,6 +124,9 @@ export interface ImageData {
   aspectRatio: number;
   filename: string;
   fileSize: number;
+  // Resolution variants support
+  variants?: ImageVariant[];
+  selectedVariantIndex?: number;
 }
 
 /**
@@ -201,6 +217,14 @@ export interface SafeImageProps {
   src: string;
   alt?: string;
   className?: string;
+}
+
+/**
+ * Props for the ResolutionSelector component
+ */
+export interface ResolutionSelectorProps {
+  image: ImageData;
+  onVariantSelect?: (variantIndex: number) => void;
 }
 
 /**

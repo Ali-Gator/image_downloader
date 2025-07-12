@@ -3,6 +3,7 @@ export { ImageUrl } from './ImageUrl';
 export { MetadataBadge } from './MetadataBadge';
 export { ImageActions } from './ImageActions';
 export { SafeImage } from './SafeImage';
+export { ResolutionSelector } from './ResolutionSelector';
 
 // Export other components
 export { ActionButton } from './ActionButton';
