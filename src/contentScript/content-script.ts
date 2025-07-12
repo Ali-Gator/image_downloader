@@ -1,11 +1,7 @@
 import { ImageCandidate, ImageData, MessageActionType } from '../types';
 import { ContentScriptConstants, handleError, PlaceholderImages } from '../utils';
 import { getSmartFileName } from '../utils/fileUtils';
-import {
-  analyzeImageQuality,
-  blobToDataUrl,
-  constructHighResolutionUrl,
-} from '../utils/imageUtils';
+import { blobToDataUrl } from '../utils/imageUtils';
 
 /**
  * Проверяет, является ли URL допустимым изображением
@@ -155,18 +151,8 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
         // Добавляем URL в множество просмотренных
         seenUrls.add(img.src);
 
-        // Analyze image quality and try to get high-resolution URL
-        let finalSrc = img.src;
-        const qualityScore = analyzeImageQuality(img.src);
-
-        // If quality is low, try to construct a high-resolution URL
-        if (qualityScore < 50) {
-          const highResUrl = constructHighResolutionUrl(img.src);
-          if (highResUrl && !seenUrls.has(highResUrl)) {
-            finalSrc = highResUrl;
-            seenUrls.add(highResUrl);
-          }
-        }
+        // Use original image source
+        const finalSrc = img.src;
 
         // Создаем объект изображения с именем файла для поиска
         const imageCandidate: ImageCandidate = {
@@ -178,7 +164,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
           aspectRatio: img.naturalWidth / img.naturalHeight,
           filename: '',
           fileSize: estimateImageSize(img),
-          qualityScore: qualityScore,
+          qualityScore: 0, // Default quality score
         };
 
         // Генерируем умное имя файла, которое будет использоваться всеми компонентами
@@ -188,14 +174,8 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
         candidateImages.push(imageCandidate);
       }
 
-      // Sort images by quality score (higher is better) and then by size
+      // Sort images by size (area) - larger images first
       candidateImages.sort((a, b) => {
-        // First sort by quality score
-        if (a.qualityScore !== b.qualityScore) {
-          return b.qualityScore - a.qualityScore;
-        }
-
-        // Then by image size (area)
         const areaA = a.width * a.height;
         const areaB = b.width * b.height;
         return areaB - areaA;

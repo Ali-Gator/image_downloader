@@ -1,5 +1,5 @@
 import { CustomSizeFilter, ImageData } from '../types';
-import { SizeFilter, SortOption } from '../utils';
+import { QualityLevel, SortOption } from '../utils';
 
 /**
  * State for settings store - manages user preferences and download options
@@ -45,7 +45,7 @@ export interface ImageState {
 
   // Filter state
   filterText: string;
-  sizeFilters: SizeFilter[];
+  qualityFilters: QualityLevel[];
   customSizeFilter: CustomSizeFilter;
   sortOption: SortOption;
 
@@ -59,8 +59,8 @@ export interface ImageState {
   setIsLoading: (isLoading: boolean) => void;
   setIsGridView: (isGridView: boolean) => void;
   setFilterText: (text: string) => void;
-  setSizeFilters: (filters: SizeFilter[]) => void;
-  toggleSizeFilter: (filter: SizeFilter) => void;
+  setQualityFilters: (filters: QualityLevel[]) => void;
+  toggleQualityFilter: (filter: QualityLevel) => void;
   setCustomSizeFilter: (filter: CustomSizeFilter) => void;
   setSortOption: (option: SortOption) => void;
   applyFilters: () => void;

@@ -89,20 +89,23 @@
   "filter_text": {
     "message": "Filter..."
   },
-  "size_filter_all": {
-    "message": "All sizes"
+  "quality_filter_all": {
+    "message": "Any quality"
   },
-  "size_filter_small": {
-    "message": "Small (< 300px)"
+  "quality_filter_low": {
+    "message": "Low quality"
   },
-  "size_filter_medium": {
-    "message": "Medium (300-1000px)"
+  "quality_filter_medium": {
+    "message": "Medium quality"
   },
-  "size_filter_large": {
-    "message": "Large (> 1000px)"
+  "quality_filter_hd": {
+    "message": "HD quality"
   },
-  "size_filters_selected": {
-    "message": "filters selected"
+  "quality_filters_selected": {
+    "message": "selected"
+  },
+  "filter_by_quality_text": {
+    "message": "Filter by quality"
   },
   "min_width": {
     "message": "Min width (px)"

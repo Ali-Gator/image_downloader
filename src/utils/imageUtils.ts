@@ -1,4 +1,5 @@
-import { getFormatFromDomainRules, getDisplayFormat, VALID_IMAGE_EXTENSIONS } from './imageFormats';
+import { QualityLevel } from './constants';
+import { getDisplayFormat, getFormatFromDomainRules, VALID_IMAGE_EXTENSIONS } from './imageFormats';
 
 /**
  * Truncates a URL for display
@@ -12,144 +13,29 @@ export const truncateUrl = (url: string, length: number = 40): string => {
 };
 
 /**
- * Common patterns that indicate high-resolution images
+ * Determines image quality based on dimensions
+ * @param width Image width
+ * @param height Image height
+ * @returns Quality level from QualityFilter enum
  */
-const HIGH_RESOLUTION_PATTERNS = [
-  // Size indicators
-  { pattern: /\bs1600\b/i, priority: 100 },
-  { pattern: /\bs2048\b/i, priority: 95 },
-  { pattern: /\bs1200\b/i, priority: 90 },
-  { pattern: /\bs800\b/i, priority: 85 },
-  { pattern: /\blarge\b/i, priority: 80 },
-  { pattern: /\borig\b/i, priority: 75 },
-  { pattern: /\boriginal\b/i, priority: 75 },
-  { pattern: /\bfull\b/i, priority: 70 },
-  { pattern: /\bmax\b/i, priority: 65 },
-  { pattern: /\bhd\b/i, priority: 60 },
-  { pattern: /\bhigh\b/i, priority: 55 },
-  // Resolution patterns
-  { pattern: /\d{4}x\d{4}/i, priority: 85 },
-  { pattern: /\d{3,4}x\d{3,4}/i, priority: 80 },
-  // Quality indicators
-  { pattern: /\bq_auto\b/i, priority: 50 },
-  { pattern: /\bq_100\b/i, priority: 45 },
-  { pattern: /\bq_90\b/i, priority: 40 },
-];
+export const getQualityFromDimensions = (
+  width: number,
+  height: number,
+): QualityLevel.HD | QualityLevel.MEDIUM | QualityLevel.LOW => {
+  const area = width * height;
 
-/**
- * Patterns that indicate thumbnails or low-resolution images
- */
-const THUMBNAIL_PATTERNS = [
-  // Size indicators
-  { pattern: /\bthumb\b/i, penalty: -50 },
-  { pattern: /\bthumbnail\b/i, penalty: -50 },
-  { pattern: /\bsmall\b/i, penalty: -40 },
-  { pattern: /\btiny\b/i, penalty: -45 },
-  { pattern: /\bmini\b/i, penalty: -40 },
-  { pattern: /\bicon\b/i, penalty: -60 },
-  { pattern: /\bavatar\b/i, penalty: -35 },
-  { pattern: /\bprofile\b/i, penalty: -30 },
-  // Size patterns
-  { pattern: /\bs150\b/i, penalty: -40 },
-  { pattern: /\bs200\b/i, penalty: -35 },
-  { pattern: /\bs300\b/i, penalty: -30 },
-  { pattern: /\bs400\b/i, penalty: -25 },
-  { pattern: /\bs500\b/i, penalty: -20 },
-  // Resolution patterns
-  { pattern: /\d{2}x\d{2}/i, penalty: -50 },
-  { pattern: /\d{3}x\d{3}/i, penalty: -30 },
-  // Quality indicators
-  { pattern: /\bq_auto:low\b/i, penalty: -40 },
-  { pattern: /\bq_30\b/i, penalty: -35 },
-  { pattern: /\bq_50\b/i, penalty: -25 },
-];
-
-/**
- * Analyzes image URL to determine if it's likely a high-resolution image
- * @param url Image URL to analyze
- * @returns Quality score (higher is better, 0 is neutral)
- */
-export const analyzeImageQuality = (url: string): number => {
-  let score = 0;
-
-  // Check for high-resolution patterns
-  for (const { pattern, priority } of HIGH_RESOLUTION_PATTERNS) {
-    if (pattern.test(url)) {
-      score += priority;
-    }
+  // HD quality: 1MP+ (1920x1080 = 2,073,600 pixels)
+  if (area >= 1000000) {
+    return QualityLevel.HD;
   }
 
-  // Check for thumbnail patterns
-  for (const { pattern, penalty } of THUMBNAIL_PATTERNS) {
-    if (pattern.test(url)) {
-      score += penalty;
-    }
+  // Medium quality: 300K+ pixels (roughly 640x480 = 307,200 pixels)
+  if (area >= 300000) {
+    return QualityLevel.MEDIUM;
   }
 
-  return score;
-};
-
-/**
- * Attempts to construct a high-resolution URL from a thumbnail URL
- * @param thumbnailUrl Original thumbnail URL
- * @returns Potential high-resolution URL or null if no pattern matches
- */
-export const constructHighResolutionUrl = (thumbnailUrl: string): string | null => {
-  try {
-    const url = new URL(thumbnailUrl);
-    const hostname = url.hostname.toLowerCase();
-
-    // Instagram CDN
-    if (hostname.includes('cdninstagram.com')) {
-      // Replace size parameters with higher resolution
-      let newUrl = thumbnailUrl.replace(/\bs\d{3,4}\b/g, 's1080');
-      newUrl = newUrl.replace(/\bc_fill,\s*w_\d+,\s*h_\d+/g, 'c_fill,w_1080,h_1080');
-      return newUrl !== thumbnailUrl ? newUrl : null;
-    }
-
-    // Twitter images
-    if (hostname.includes('twimg.com')) {
-      // Replace size suffixes
-      let newUrl = thumbnailUrl.replace(/:small$/, ':large');
-      newUrl = newUrl.replace(/:medium$/, ':large');
-      newUrl = newUrl.replace(/:thumb$/, ':large');
-      newUrl = newUrl.replace(/&name=small/, '&name=large');
-      newUrl = newUrl.replace(/&name=medium/, '&name=large');
-      newUrl = newUrl.replace(/&name=thumb/, '&name=large');
-      return newUrl !== thumbnailUrl ? newUrl : null;
-    }
-
-    // Facebook images
-    if (hostname.includes('fbcdn.net')) {
-      // Replace size parameters
-      let newUrl = thumbnailUrl.replace(/\bs\d{3,4}\b/g, 's2048');
-      newUrl = newUrl.replace(/\bc_fill,\s*w_\d+,\s*h_\d+/g, 'c_fill,w_2048,h_2048');
-      return newUrl !== thumbnailUrl ? newUrl : null;
-    }
-
-    // Google Photos / Google services
-    if (hostname.includes('googleusercontent.com') || hostname.includes('lh3.google.com')) {
-      // Replace size parameters
-      let newUrl = thumbnailUrl.replace(/=s\d{2,4}/, '=s1600');
-      newUrl = newUrl.replace(/=w\d{2,4}-h\d{2,4}/, '=w1600-h1600');
-      return newUrl !== thumbnailUrl ? newUrl : null;
-    }
-
-    // Generic patterns
-    // Replace common thumbnail size patterns
-    let newUrl = thumbnailUrl.replace(/\bthumb\b/gi, 'large');
-    newUrl = newUrl.replace(/\bthumbnail\b/gi, 'original');
-    newUrl = newUrl.replace(/\bsmall\b/gi, 'large');
-    newUrl = newUrl.replace(/\bs150\b/gi, 's800');
-    newUrl = newUrl.replace(/\bs200\b/gi, 's800');
-    newUrl = newUrl.replace(/\bs300\b/gi, 's800');
-    newUrl = newUrl.replace(/\bs400\b/gi, 's800');
-    newUrl = newUrl.replace(/\bs500\b/gi, 's800');
-
-    return newUrl !== thumbnailUrl ? newUrl : null;
-  } catch (error) {
-    return null;
-  }
+  // Low quality: anything below 300K pixels
+  return QualityLevel.LOW;
 };
 
 /**

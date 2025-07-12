@@ -89,17 +89,23 @@
   "filter_text": {
     "message": "Фильтр..."
   },
-  "size_filter_all": {
-    "message": "Все размеры"
+  "quality_filter_all": {
+    "message": "Любое качество"
   },
-  "size_filter_small": {
-    "message": "Маленькие (< 500px)"
+  "quality_filter_low": {
+    "message": "Низкое качество"
   },
-  "size_filter_medium": {
-    "message": "Средние (500-1000px)"
+  "quality_filter_medium": {
+    "message": "Среднее качество"
   },
-  "size_filter_large": {
-    "message": "Большие (> 1000px)"
+  "quality_filter_hd": {
+    "message": "HD качество"
+  },
+  "quality_filters_selected": {
+    "message": "выбрано"
+  },
+  "filter_by_quality_text": {
+    "message": "Фильтр по качеству"
   },
   "of_text": {
     "message": "из"

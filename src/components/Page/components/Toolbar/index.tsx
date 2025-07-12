@@ -20,7 +20,7 @@ import {
 
 import { RatingWidget } from '@components';
 import { useImageStore } from '@store';
-import { SizeFilter, SortOption, useTranslation } from '@utils';
+import { QualityLevel, SortOption, useTranslation } from '@utils';
 
 import {
   ControlItem,
@@ -43,9 +43,9 @@ export const Toolbar: FC = () => {
   const {
     filterText,
     setFilterText,
-    sizeFilters,
-    setSizeFilters,
-    toggleSizeFilter,
+    qualityFilters,
+    setQualityFilters,
+    toggleQualityFilter,
     customSizeFilter,
     setCustomSizeFilter,
     sortOption,
@@ -73,14 +73,14 @@ export const Toolbar: FC = () => {
     setSizeAnchorEl(null);
   };
 
-  const handleSizeFilterChange = (filter: SizeFilter) => {
+  const handleQualityFilterChange = (filter: QualityLevel) => {
     // Clear custom dimensions if user selects a standard filter
     if (hasCustomDimensions) {
       setMinWidth('');
       setMinHeight('');
       setCustomSizeFilter({ minWidth: undefined, minHeight: undefined });
     }
-    toggleSizeFilter(filter);
+    toggleQualityFilter(filter);
   };
 
   const handleCustomDimensionsChange = (field: 'width' | 'height', value: string) => {
@@ -105,15 +105,15 @@ export const Toolbar: FC = () => {
       };
       setCustomSizeFilter(newFilter);
       // Снимаем стандартные фильтры
-      setSizeFilters([]);
+      setQualityFilters([]);
     } else {
       // Если нет кастомных размеров, очищаем их
       setCustomSizeFilter({ minWidth: undefined, minHeight: undefined });
 
       // Проверяем стандартные фильтры
-      if (sizeFilters.length === 0) {
+      if (qualityFilters.length === 0) {
         // Если не выбраны стандартные фильтры, устанавливаем ALL
-        setSizeFilters([SizeFilter.ALL]);
+        setQualityFilters([QualityLevel.ALL]);
       }
     }
 
@@ -123,7 +123,7 @@ export const Toolbar: FC = () => {
 
   const handleClearFilters = () => {
     setFilterText('');
-    setSizeFilters([SizeFilter.ALL]);
+    setQualityFilters([QualityLevel.ALL]);
     setCustomSizeFilter({ minWidth: undefined, minHeight: undefined });
     setMinWidth('');
     setMinHeight('');
@@ -142,7 +142,7 @@ export const Toolbar: FC = () => {
     }
   };
 
-  const getSizeFilterLabel = () => {
+  const getQualityFilterLabel = () => {
     // Show custom dimensions if they are set
     if (customSizeFilter.minWidth || customSizeFilter.minHeight) {
       const parts = [];
@@ -156,24 +156,24 @@ export const Toolbar: FC = () => {
     }
 
     // Otherwise show standard filters
-    if (sizeFilters.includes(SizeFilter.ALL)) {
-      return t('size_filter_all');
+    if (qualityFilters.includes(QualityLevel.ALL)) {
+      return t('quality_filter_all');
     }
 
-    if (sizeFilters.length === 1) {
-      switch (sizeFilters[0]) {
-        case SizeFilter.SMALL:
-          return t('size_filter_small');
-        case SizeFilter.MEDIUM:
-          return t('size_filter_medium');
-        case SizeFilter.LARGE:
-          return t('size_filter_large');
+    if (qualityFilters.length === 1) {
+      switch (qualityFilters[0]) {
+        case QualityLevel.LOW:
+          return t('quality_filter_low');
+        case QualityLevel.MEDIUM:
+          return t('quality_filter_medium');
+        case QualityLevel.HD:
+          return t('quality_filter_hd');
         default:
-          return t('filter_by_size_text');
+          return t('filter_by_quality_text');
       }
     }
 
-    return `${sizeFilters.length} ${t('size_filters_selected')}`;
+    return `${qualityFilters.length} ${t('quality_filters_selected')}`;
   };
 
   return (
@@ -197,7 +197,7 @@ export const Toolbar: FC = () => {
               onClick={handleSizeFilterClick}
               aria-describedby="size-filter-popover"
             >
-              {getSizeFilterLabel()}
+              {getQualityFilterLabel()}
             </Button>
 
             <Popover
@@ -219,38 +219,38 @@ export const Toolbar: FC = () => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={sizeFilters.includes(SizeFilter.ALL)}
-                        onChange={() => handleSizeFilterChange(SizeFilter.ALL)}
+                        checked={qualityFilters.includes(QualityLevel.ALL)}
+                        onChange={() => handleQualityFilterChange(QualityLevel.ALL)}
                       />
                     }
-                    label={t('size_filter_all')}
+                    label={t('quality_filter_all')}
                   />
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={sizeFilters.includes(SizeFilter.SMALL)}
-                        onChange={() => handleSizeFilterChange(SizeFilter.SMALL)}
+                        checked={qualityFilters.includes(QualityLevel.LOW)}
+                        onChange={() => handleQualityFilterChange(QualityLevel.LOW)}
                       />
                     }
-                    label={t('size_filter_small')}
+                    label={t('quality_filter_low')}
                   />
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={sizeFilters.includes(SizeFilter.MEDIUM)}
-                        onChange={() => handleSizeFilterChange(SizeFilter.MEDIUM)}
+                        checked={qualityFilters.includes(QualityLevel.MEDIUM)}
+                        onChange={() => handleQualityFilterChange(QualityLevel.MEDIUM)}
                       />
                     }
-                    label={t('size_filter_medium')}
+                    label={t('quality_filter_medium')}
                   />
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={sizeFilters.includes(SizeFilter.LARGE)}
-                        onChange={() => handleSizeFilterChange(SizeFilter.LARGE)}
+                        checked={qualityFilters.includes(QualityLevel.HD)}
+                        onChange={() => handleQualityFilterChange(QualityLevel.HD)}
                       />
                     }
-                    label={t('size_filter_large')}
+                    label={t('quality_filter_hd')}
                   />
                 </FormGroup>
 

@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 
-import { SizeFilter, SortOption } from '../utils';
+import { QualityLevel, SortOption } from '../utils';
 import { ImageState } from './types';
+import { getQualityFromDimensions } from '../utils/imageUtils';
 
 export const useImageStore = create<ImageState>((set, get) => ({
   // Initial state
@@ -11,7 +12,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
   isLoading: false,
   isGridView: true,
   filterText: '',
-  sizeFilters: [SizeFilter.ALL],
+  qualityFilters: [QualityLevel.ALL],
   customSizeFilter: { minWidth: 0, minHeight: 0 },
   sortOption: SortOption.DEFAULT,
 
@@ -54,38 +55,38 @@ export const useImageStore = create<ImageState>((set, get) => ({
     get().applyFilters();
   },
 
-  setSizeFilters: (sizeFilters) => {
-    set({ sizeFilters });
+  setQualityFilters: (qualityFilters) => {
+    set({ qualityFilters });
     get().applyFilters();
   },
 
-  toggleSizeFilter: (filter) => {
-    const { sizeFilters } = get();
+  toggleQualityFilter: (filter) => {
+    const { qualityFilters } = get();
 
     // Special case for 'ALL' filter
-    if (filter === SizeFilter.ALL) {
+    if (filter === QualityLevel.ALL) {
       // If ALL is being toggled and wasn't already selected, select only ALL
-      if (!sizeFilters.includes(SizeFilter.ALL)) {
-        set({ sizeFilters: [SizeFilter.ALL] });
-      } else if (sizeFilters.length > 1) {
+      if (!qualityFilters.includes(QualityLevel.ALL)) {
+        set({ qualityFilters: [QualityLevel.ALL] });
+      } else if (qualityFilters.length > 1) {
         // If there are other filters and ALL is being toggled off, remove ALL
-        set({ sizeFilters: sizeFilters.filter((f) => f !== SizeFilter.ALL) });
+        set({ qualityFilters: qualityFilters.filter((f) => f !== QualityLevel.ALL) });
       }
       // Don't allow removing ALL if it's the only filter selected
     } else {
       // For non-ALL filters
       // If the filter is already selected, remove it
-      if (sizeFilters.includes(filter)) {
+      if (qualityFilters.includes(filter)) {
         // Ensure at least one filter remains selected
-        if (sizeFilters.length > 1) {
-          set({ sizeFilters: sizeFilters.filter((f) => f !== filter) });
+        if (qualityFilters.length > 1) {
+          set({ qualityFilters: qualityFilters.filter((f) => f !== filter) });
         }
       } else {
         // If the filter isn't selected, add it and remove ALL if it was selected
-        const newFilters = sizeFilters.includes(SizeFilter.ALL)
+        const newFilters = qualityFilters.includes(QualityLevel.ALL)
           ? [filter]
-          : [...sizeFilters, filter];
-        set({ sizeFilters: newFilters });
+          : [...qualityFilters, filter];
+        set({ qualityFilters: newFilters });
       }
     }
 
@@ -103,7 +104,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
   },
 
   applyFilters: () => {
-    const { images, filterText, sizeFilters, customSizeFilter, sortOption } = get();
+    const { images, filterText, qualityFilters, customSizeFilter, sortOption } = get();
 
     // Filter by text - optimize for memory usage
     let filtered = filterText
@@ -122,28 +123,24 @@ export const useImageStore = create<ImageState>((set, get) => ({
         })
       : images; // Don't clone array if not needed
 
-    // Используем либо стандартные фильтры размера, либо кастомные, но не оба вместе
+    // Use either standard quality filters or custom size filters, but not both
     if (customSizeFilter.minWidth || customSizeFilter.minHeight) {
-      // Если заданы кастомные фильтры, используем только их
+      // If custom filters are set, use only them
       filtered = filtered.filter((img) => {
         const passesMinWidth = !customSizeFilter.minWidth || img.width >= customSizeFilter.minWidth;
         const passesMinHeight =
           !customSizeFilter.minHeight || img.height >= customSizeFilter.minHeight;
         return passesMinWidth && passesMinHeight;
       });
-    } else if (!sizeFilters.includes(SizeFilter.ALL)) {
-      // Иначе используем стандартные фильтры, если не выбран ALL
+    } else if (!qualityFilters.includes(QualityLevel.ALL)) {
+      // Otherwise use standard quality filters, if ALL is not selected
       filtered = filtered.filter((img) => {
-        // Check if the image matches any of the selected size filters
-        return sizeFilters.some((filter) => {
-          if (filter === SizeFilter.SMALL) {
-            return img.width < 300;
-          } else if (filter === SizeFilter.MEDIUM) {
-            return img.width >= 300 && img.width < 1000;
-          } else if (filter === SizeFilter.LARGE) {
-            return img.width >= 1000;
-          }
-          return false;
+        // Determine image quality based on dimensions
+        const imageQuality = getQualityFromDimensions(img.width, img.height);
+
+        // Check if the image matches any of the selected quality filters
+        return qualityFilters.some((filter) => {
+          return filter === imageQuality;
         });
       });
     }

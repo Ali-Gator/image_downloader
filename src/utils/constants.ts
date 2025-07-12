@@ -15,13 +15,13 @@ export enum MessageResponse {
 }
 
 /**
- * Image size filter options
+ * Image quality filter options
  */
-export enum SizeFilter {
+export enum QualityLevel {
   ALL = 'all',
-  SMALL = 'small',
+  LOW = 'low',
   MEDIUM = 'medium',
-  LARGE = 'large',
+  HD = 'hd',
 }
 
 /**
