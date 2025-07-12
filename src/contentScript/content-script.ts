@@ -151,13 +151,10 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
         // Добавляем URL в множество просмотренных
         seenUrls.add(img.src);
 
-        // Use original image source
-        const finalSrc = img.src;
-
         // Создаем объект изображения с именем файла для поиска
         const imageCandidate: ImageCandidate = {
-          id: generateImageId(finalSrc, img.naturalWidth, img.naturalHeight),
-          src: finalSrc,
+          id: generateImageId(img.src, img.naturalWidth, img.naturalHeight),
+          src: img.src,
           alt: img.alt || '',
           width: img.naturalWidth,
           height: img.naturalHeight,
