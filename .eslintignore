@@ -6,4 +6,3 @@ dist/
 node_modules/
 
 # Third-party libraries
-src/libs/jszip.min.js

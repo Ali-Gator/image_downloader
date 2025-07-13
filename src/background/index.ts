@@ -764,8 +764,7 @@ try {
 
       // Устанавливаем флаг напоминания через 10 дней
       const reminderDate = new Date();
-      reminderDate.setSeconds(RatingConstants.REMINDER_INTERVAL_DAYS);
-      // reminderDate.setDate(reminderDate.getDate() + RatingConstants.REMINDER_INTERVAL_DAYS);
+      reminderDate.setDate(reminderDate.getDate() + RatingConstants.REMINDER_INTERVAL_DAYS);
 
       await chrome.storage.local.set({
         [StorageKeys.REMINDER_DATE_FLAG]: reminderDate.toISOString(),
