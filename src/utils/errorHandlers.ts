@@ -1,5 +1,7 @@
 import type { ErrorInfo } from 'react';
 
+import { SENTRY_FILTER_ERRORS } from '@utils/constants';
+
 import { captureException } from './sentryCapturer';
 
 /**
@@ -11,6 +13,11 @@ export function ensureError(error: unknown): Error {
   return error instanceof Error ? error : new Error(String(error));
 }
 
+function shouldIgnoreError(errorMessage: string): boolean {
+  const lower = errorMessage.toLowerCase();
+  return SENTRY_FILTER_ERRORS.some((substr) => lower.includes(substr));
+}
+
 /**
  * Обрабатывает ошибку: отправляет в Sentry и показывает пользователю (опционально)
  * @param error Ошибка для обработки
@@ -19,19 +26,27 @@ export function ensureError(error: unknown): Error {
  */
 export function handleError(error: unknown, showAlert = false, customMessage?: string): void {
   const errorObj = ensureError(error);
+  const message = errorObj?.message || errorObj?.toString() || '';
+
+  // Показываем пользователю, если нужно
+  if (showAlert) {
+    alert(customMessage || message);
+  }
+
+  if (shouldIgnoreError(message)) {
+    console.warn('[handleError] Ignored error:', message);
+    return;
+  }
+
   // enrich Sentry with tabUrl if present
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
   const tabUrl = (error as unknown)?.tabUrl;
+
   if (tabUrl) {
     captureException(errorObj, { componentStack: `tabUrl: ${tabUrl}` } as ErrorInfo);
   } else {
     captureException(errorObj);
-  }
-
-  // Показываем пользователю, если нужно
-  if (showAlert) {
-    alert(customMessage || errorObj.message);
   }
 }
 

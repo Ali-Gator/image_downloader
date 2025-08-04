@@ -214,3 +214,11 @@ export const ContentScriptConstants = {
    */
   DIAGNOSIS_DELAY: 1000,
 };
+
+export const SENTRY_FILTER_ERRORS = [
+  'cannot access',
+  'extensions gallery',
+  'frame with id 0',
+  'no tab with id:',
+  'the browser is shutting down',
+];
