@@ -65,13 +65,9 @@ interface JSZipClass {
 
 // Dynamic import function to load JSZip
 const loadJSZip = async (): Promise<JSZipClass> => {
-  // JSZip should be available globally since it's loaded in page.html
-  if (typeof (window as unknown as Record<string, unknown>).JSZip !== 'undefined') {
-    return (window as unknown as Record<string, unknown>).JSZip as JSZipClass;
-  }
-
-  // If JSZip is not available, throw an error
-  throw new Error('JSZip library not available. Make sure it is properly loaded in page.html');
+  // Use the npm package JSZip
+  const JSZip = (await import('jszip')).default;
+  return JSZip as JSZipClass;
 };
 
 import { useRatingStore, useSettingsStore } from '@store';
