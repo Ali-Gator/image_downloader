@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ContentScriptImageResponse, ImageFetchResponse, MessageActionType } from '@types';
 
 import { IMAGE_FETCH_TIMEOUTS } from './constants';
+import { isContentScriptSupported } from './contentScriptUtils';
 import { handleError } from './errorHandlers';
 
 /**
@@ -29,6 +30,11 @@ const fetchImageViaInjectedScript = async (url: string): Promise<string | null> 
 
     // Only try if we're on a proper web page
     if (!targetTab.url.startsWith('http://') && !targetTab.url.startsWith('https://')) {
+      return null;
+    }
+
+    // Skip if URL is not eligible for content scripts (web store, chrome://, etc.)
+    if (!isContentScriptSupported(targetTab.url)) {
       return null;
     }
 

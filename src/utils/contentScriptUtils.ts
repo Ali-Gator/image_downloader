@@ -46,6 +46,10 @@ export const isContentScriptSupported = (url: string): boolean => {
  */
 const injectContentScript = async (tabId: number, tabUrl?: string): Promise<boolean> => {
   try {
+    // Skip injection if URL is not supported for content scripts
+    if (tabUrl && !isContentScriptSupported(tabUrl)) {
+      return false;
+    }
     await chrome.scripting.executeScript({
       target: { tabId },
       files: ['content-script.js'],
@@ -107,6 +111,11 @@ export const sendMessageToContentScript = async <T = never>(
     tabUrl = tab?.url;
   } catch {
     /* empty */
+  }
+
+  // If the tab URL is not eligible for content scripts, do not attempt injection
+  if (tabUrl && !isContentScriptSupported(tabUrl)) {
+    return null;
   }
 
   // First attempt failed - try to inject content script and retry

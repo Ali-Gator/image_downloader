@@ -216,9 +216,14 @@ export const ContentScriptConstants = {
 };
 
 export const SENTRY_FILTER_ERRORS = [
-  'cannot access',
+  // Too generic: replace with precise Chrome messaging cases
+  'cannot access contents of the page',
   'extensions gallery',
   'frame with id 0',
   'no tab with id:',
   'the browser is shutting down',
+  // Chrome enterprise/managed policy blocks script injection
+  'this page cannot be scripted',
+  'extensionssettings policy',
+  'cannot be scripted due to an extensionssettings policy',
 ];

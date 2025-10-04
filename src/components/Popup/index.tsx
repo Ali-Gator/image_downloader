@@ -40,23 +40,26 @@ export const Popup: React.FC = () => {
     };
   }, []);
 
-  const openImagesPage = useCallback(async (images: ImageData[]) => {
-    const tab = await chrome.tabs.create({
-      url: 'page.html',
-      active: false,
-    });
+  const openImagesPage = useCallback(
+    async (images: ImageData[]) => {
+      const tab = await chrome.tabs.create({
+        url: 'page.html',
+        active: false,
+      });
 
-    setTimeout(async () => {
-      if (tab.id) {
-        const success = await sendImagesToTab(tab.id, images);
-        if (!success) {
-          handleError(new Error('Failed to send images to tab. Retry one more time'), true);
+      setTimeout(async () => {
+        if (tab.id) {
+          const success = await sendImagesToTab(tab.id, images);
+          if (!success) {
+            handleError(new Error(t('failed_to_send_images')), true);
+          }
+        } else {
+          handleError(new Error(t('invalid_tab_id')), true);
         }
-      } else {
-        handleError(new Error('Invalid tab ID. Retry one more time'), true);
-      }
-    }, 500);
-  }, []);
+      }, 500);
+    },
+    [t],
+  );
 
   const handleGrabImages = useCallback(async () => {
     await withErrorHandling(
@@ -86,13 +89,11 @@ export const Popup: React.FC = () => {
           ) {
             throw new Error(t('webstore_not_supported'));
           } else if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
-            throw new Error('Extension cannot access Chrome internal pages');
+            throw new Error(t('internal_pages_not_supported'));
           } else if (tab.url.startsWith('file://')) {
-            throw new Error(
-              'Extension cannot access local files. Upload files to a website first.',
-            );
+            throw new Error(t('local_files_not_supported'));
           } else if (tab.url.startsWith('https://chrome.google.com/')) {
-            throw new Error('Chrome Web Store pages are not supported');
+            throw new Error(t('webstore_not_supported'));
           } else {
             throw new Error(
               t('unsupported_page_type') +

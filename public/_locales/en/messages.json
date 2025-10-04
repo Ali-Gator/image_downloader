@@ -271,5 +271,17 @@
   },
   "image_quality": {
     "message": "Image Quality:"
+  },
+  "failed_to_send_images": {
+    "message": "Failed to open images tab. Please try again."
+  },
+  "invalid_tab_id": {
+    "message": "Something went wrong when opening a tab. Please try again."
+  },
+  "internal_pages_not_supported": {
+    "message": "Chrome internal pages are not supported. Please navigate to a regular website."
+  },
+  "local_files_not_supported": {
+    "message": "Local files are not supported. Upload the file to a website first."
   }
 }
