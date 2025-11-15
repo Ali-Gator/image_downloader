@@ -217,7 +217,8 @@ export const ContentScriptConstants = {
 
 export const SENTRY_FILTER_ERRORS = [
   // Too generic: replace with precise Chrome messaging cases
-  'cannot access contents of the page',
+  'cannot access contents of',
+  'cannot access a chrome',
   'extensions gallery',
   'frame with id 0',
   'no tab with id:',
