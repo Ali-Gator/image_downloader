@@ -1,0 +1,42 @@
+## Chrome MV3 architecture & messaging rules
+
+### MV3 constraints (non-negotiable)
+- Background runs as a **service worker** (`src/background/index.ts`).
+- Content scripts run in the page context (`src/contentScript/content-script.ts`).
+- UI pages (popup/page/options) are regular extension pages (React apps).
+
+### “Who does what”
+- **Content script**:
+  - DOM inspection, scraping, lightweight fetch (best-effort).
+  - Responds to typed messages like `GRAB_IMAGES`, `FETCH_IMAGE_AS_DATA_URL`, `HEALTH_CHECK`.
+- **Background service worker**:
+  - privileged APIs: downloads, DNR session rules, fetch proxying to bypass CORS.
+  - installs/startup hooks; content script injection logic (defensive).
+- **Popup/UI**:
+  - initiates actions, shows errors, opens pages, wires state.
+
+### Messaging contracts
+- All action enums and message payload types live in `src/types/index.ts` (`MessageActionType`, message interfaces).
+- **Do** use existing wrappers/utilities:
+  - `sendMessageToContentScript<T>(tabId, message, timeout)` in `src/utils/contentScriptUtils.ts`
+  - `sendImagesToTab(tabId, images)` in `src/utils/messaging.ts`
+- **Do not** invent new ad-hoc `chrome.tabs.sendMessage` call patterns without timeouts and error handling.
+
+### Async message listeners (Chrome API gotcha)
+- If you reply asynchronously from a listener, you **must** return `true` from the listener to keep the channel open.
+
+### Safety gates (content script eligibility)
+- **Do** check tab URL support via `isContentScriptSupported(url)` before injection/messaging.
+- **Do** provide clear user-facing errors for unsupported pages (Chrome internal pages, web store, file URLs).
+
+### DNR session rules (Referer/Origin hacks)
+Background uses `chrome.declarativeNetRequest.updateSessionRules` and includes cleanup + conflict avoidance.
+- **Do** remove/cleanup session rules when done to avoid affecting normal browsing.
+- **Do not** leave persistent rules for unrelated origins.
+
+### When adding a new cross-boundary feature
+- Add/extend a `MessageActionType` value and a typed message interface in `src/types/index.ts`.
+- Implement handler in the appropriate boundary (content/background).
+- In UI, call the wrapper (`sendMessageToContentScript`) and handle `null` (not loaded / not supported) explicitly.
+
+

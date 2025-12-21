@@ -1,0 +1,27 @@
+## Errors, Sentry, and i18n
+
+### Error handling (centralize it)
+- **Do** use `handleError(error, showAlert?, customMessage?)` from `src/utils/errorHandlers.ts`.
+- **Do** use `withErrorHandling(action, setLoading, errorMessage?)` for UI actions that toggle loading.
+- **Do not** swallow errors silently when a failure affects user flow; report to Sentry via `handleError`.
+
+### Enriching errors (debuggability)
+- When catching an error that depends on tab/page context, attach minimal extra info to the `Error` object and then call `handleError`.
+  - Example pattern already used: attach `tabUrl` for Sentry context enrichment.
+- Prefer adding small structured context fields over logging large blobs.
+
+### Sentry usage
+- Sentry capture is centralized via `src/utils/sentryCapturer.ts`.
+- **Do not** create additional Sentry clients or global init code in random places.
+
+### i18n (Chrome extension localization)
+- **In React**: use `useTranslation()` and call `t('key')`.
+- **Outside React**: use `getLocalizedMessage('key')`.
+- Message keys are defined by `public/_locales/en/messages.json`.
+- **Do not** hardcode user-facing strings in business logic when an i18n key exists or should exist.
+
+### When adding new user-facing text
+- Add a key to `public/_locales/en/messages.json` first (and optionally propagate later).
+- Use that key in UI and error messages (`t(...)` / `getLocalizedMessage(...)`).
+
+
