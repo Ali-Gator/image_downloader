@@ -4,24 +4,24 @@ overview: "Слить два плана в один master: подключить
 todos:
   - id: move-wall-js
     content: Переместить `src/utils/wall.2.1.2.js` → `public/wall.2.1.2.js` и подключить в `page.html` максимально рано; добавить типы `window.paywall`.
-    status: pending
+    status: completed
   - id: manifest-external-connectable
     content: В `src/manifest.ts` добавить `externally_connectable.matches` для `onlineapp.pro/stream/live`.
-    status: pending
+    status: completed
   - id: background-external-handlers
     content: В `src/background/index.ts` добавить `onConnectExternal`/`onMessageExternal`, storage adapter (sync), `getUserId()` и ключи `user_id` + `pw-711-visitor-id`.
-    status: pending
+    status: completed
     dependencies:
       - manifest-external-connectable
   - id: new-install-date
     content: В `src/background/index.ts` на `onInstalled.reason==='install'` сохранить `installDate` в `chrome.storage.sync`.
-    status: pending
+    status: completed
   - id: pageurl-pipeline
     content: Прокинуть `pageUrl` из `content-script` → popup → page и сохранить в store (обновить `GrabImagesResponse`).
-    status: pending
+    status: completed
   - id: gate-and-limit
     content: Реализовать gate `showMonetizationUI=isNew && countryMatch`, учёт 10 уникальных pageUrl после success, баннер после 10-го, paywall на 11-й клик (single+bulk).
-    status: pending
+    status: completed
     dependencies:
       - move-wall-js
       - background-external-handlers
@@ -29,12 +29,12 @@ todos:
       - pageurl-pipeline
   - id: ui-counter-and-banner
     content: "Добавить в Header `MonetizationStatus`: счётчик до лимита и баннер+Upgrade после 10-го, рендер только при `showMonetizationUI`."
-    status: pending
+    status: completed
     dependencies:
       - gate-and-limit
   - id: plan-cleanup
     content: Удалить `.cursor/plans/tiered_ui_only_new+tier1_ccc07ffb.plan.md` после переноса содержания/требований в master план.
-    status: pending
+    status: completed
 ---
 
 # Monetize: NEW+Tier1 + counter + post-10 banner (unified)
@@ -137,11 +137,3 @@ flowchart TD
   gate -->|allow| download[Download]
   gate -->|limitReached_and_unpaid| paywall[paywall.open_on_11th]
 ```
-
-
-
-## Тест-план (ручной)
-
-- OLD или non-Tier1: UI без счётчика/баннера, download без ограничений.
-- NEW+Tier1:
-- на 1–10 уникальных страницах: счётчик уменьшается, скачивание работает.
