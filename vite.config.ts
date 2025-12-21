@@ -9,7 +9,7 @@ import manifest from './src/manifest';
 
 export default defineConfig({
   build: {
-    sourcemap: true, // Source map generation must be turned on
+    sourcemap: false,
     emptyOutDir: true,
     outDir: 'build',
     rollupOptions: {
