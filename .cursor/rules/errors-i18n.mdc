@@ -1,3 +1,14 @@
+---
+description: "Centralized error handling, Sentry capture, and Chrome i18n conventions (useTranslation/getLocalizedMessage)."
+globs:
+  - "src/utils/errorHandlers.ts"
+  - "src/utils/sentryCapturer.ts"
+  - "src/utils/useTranslation.tsx"
+  - "public/_locales/**"
+  - "src/**"
+alwaysApply: false
+---
+
 ## Errors, Sentry, and i18n
 
 ### Error handling (centralize it)
@@ -23,5 +34,4 @@
 ### When adding new user-facing text
 - Add a key to `public/_locales/en/messages.json` first (and optionally propagate later).
 - Use that key in UI and error messages (`t(...)` / `getLocalizedMessage(...)`).
-
 

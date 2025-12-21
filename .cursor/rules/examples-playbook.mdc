@@ -1,3 +1,8 @@
+---
+description: "Concrete examples for common changes (new message action, background proxy fetch, persisted setting, UI component, i18n)."
+alwaysApply: false
+---
+
 ## Examples playbook (pattern-match these)
 
 ### Example 1: Add a new popup → content script action
@@ -45,5 +50,4 @@
 - **Rules**:
   - Do not hardcode user-facing strings when they should be localizable.
   - Prefer passing localized strings into `handleError(..., showAlert=true, customMessage)`.
-
 

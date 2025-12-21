@@ -1,3 +1,8 @@
+---
+description: "TypeScript/ESLint/Prettier conventions for this codebase (imports, strict TS, formatting)."
+alwaysApply: true
+---
+
 ## TypeScript / ESLint / Prettier conventions
 
 ### TypeScript
@@ -40,5 +45,4 @@
 - No unused locals/params (use `_` prefix for intentionally unused params; ESLint ignores `^_`).
 - Imports are ordered and use aliases.
 - No direct edits in `build/`.
-
 

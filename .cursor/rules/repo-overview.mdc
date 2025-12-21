@@ -1,3 +1,8 @@
+---
+description: "Repo map and key architecture entrypoints for this MV3 extension."
+alwaysApply: true
+---
+
 ## Repo overview (read this first)
 
 ### What this repo is
@@ -36,5 +41,4 @@ Configured in `tsconfig.json` and `vite.config.ts`:
 ### When adding new functionality
 - **Prefer** extending existing helpers (`@utils/*`) and types (`@types/*`) rather than introducing new ad-hoc logic.
 - **Keep contracts explicit**: if a message crosses boundaries (popup/page/content/background), it should have a typed payload and a stable `MessageActionType`.
-
 

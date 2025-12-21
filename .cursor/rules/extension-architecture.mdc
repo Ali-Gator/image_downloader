@@ -1,3 +1,15 @@
+---
+description: "Chrome MV3 boundaries and messaging conventions (popup/content-script/background/page) for this extension."
+globs:
+  - "src/background/**"
+  - "src/contentScript/**"
+  - "src/types/**"
+  - "src/utils/contentScriptUtils.ts"
+  - "src/utils/messaging.ts"
+  - "src/manifest.ts"
+alwaysApply: false
+---
+
 ## Chrome MV3 architecture & messaging rules
 
 ### MV3 constraints (non-negotiable)
@@ -38,5 +50,4 @@ Background uses `chrome.declarativeNetRequest.updateSessionRules` and includes c
 - Add/extend a `MessageActionType` value and a typed message interface in `src/types/index.ts`.
 - Implement handler in the appropriate boundary (content/background).
 - In UI, call the wrapper (`sendMessageToContentScript`) and handle `null` (not loaded / not supported) explicitly.
-
 

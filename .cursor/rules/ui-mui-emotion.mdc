@@ -1,3 +1,12 @@
+---
+description: "React UI conventions: MUI theme usage and preferred styling patterns (styled + styles.ts)."
+globs:
+  - "src/components/**"
+  - "src/containers/**"
+  - "src/theme/**"
+alwaysApply: false
+---
+
 ## UI conventions (React + MUI + Emotion)
 
 ### Theme usage
@@ -30,5 +39,4 @@
   - notistack snackbars for transient notifications
   - `alert(...)` only via `handleError(..., showAlert=true)` when you must block
 - Always handle unsupported pages gracefully (web store, internal URLs, file URLs).
-
 

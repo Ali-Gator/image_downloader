@@ -1,3 +1,15 @@
+---
+description: "Mermaid architecture diagram and navigation pointers for the main MV3 flow."
+globs:
+  - "src/background/**"
+  - "src/contentScript/**"
+  - "src/types/**"
+  - "src/utils/**"
+  - "src/components/**"
+  - "src/containers/**"
+alwaysApply: false
+---
+
 ## Extension architecture flow (MV3)
 
 ### Message/data flow
@@ -23,5 +35,4 @@ sequenceDiagram
 - **Content script handlers**: `src/contentScript/content-script.ts`
 - **Background privileged work (downloads/CORS/DNR rules)**: `src/background/index.ts`
 - **Message enums and payload types**: `src/types/index.ts`
-
 
