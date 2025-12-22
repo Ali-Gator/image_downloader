@@ -49,6 +49,9 @@ export * from './imagePreview';
 // Re-export content script utilities
 export * from './contentScriptUtils';
 
+// Re-export Monetize helpers
+export * from './monetization';
+
 // Re-export ZIP archive utilities
 export * from './zipArchive';
 

@@ -283,5 +283,17 @@
   },
   "local_files_not_supported": {
     "message": "Local files are not supported. Upload the file to a website first."
+  },
+  "monetize_free_counter": {
+    "message": "Free: $1/10"
+  },
+  "monetize_free_limit_reached": {
+    "message": "Free limit reached. Upgrade to continue."
+  },
+  "upgrade_btn": {
+    "message": "Upgrade"
+  },
+  "monetize_unlimited": {
+    "message": "Unlimited"
   }
 }

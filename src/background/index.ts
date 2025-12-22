@@ -39,6 +39,189 @@ const REFERRER_RULE_ID = 842751963;
 const downloadFilenamesMap: Record<number, string> = {};
 
 /**
+ * Monetize (Paywall) external messaging support (as required by Monetize).
+ */
+const connectedPorts = new Set<chrome.runtime.Port>();
+
+chrome.runtime.onConnectExternal.addListener((port) => {
+  if (
+    port.sender?.url &&
+    (port.sender.url.includes('onlineapp.pro') ||
+      port.sender.url.includes('onlineapp.live') ||
+      port.sender.url.includes('onlineapp.stream'))
+  ) {
+    connectedPorts.add(port);
+
+    port.onDisconnect.addListener(() => {
+      connectedPorts.delete(port);
+    });
+  } else {
+    console.warn('Connection attempt from unauthorized domain:', port.sender?.url);
+    port.disconnect();
+  }
+});
+
+function notifyConnectedClients(notification: unknown) {
+  connectedPorts.forEach((port) => {
+    try {
+      port.postMessage(notification);
+    } catch (error) {
+      console.error('Error sending notification to port:', error);
+      connectedPorts.delete(port);
+    }
+  });
+}
+
+function getUserId(callback: (userId: string) => void) {
+  chrome.storage.sync.get(['user_id'], (result) => {
+    if (result.user_id) {
+      callback(result.user_id as string);
+    } else {
+      const userId = crypto.randomUUID();
+      chrome.storage.sync.set({ user_id: userId, ['pw-711-visitor-id']: userId }, () => {
+        callback(userId);
+      });
+    }
+  });
+}
+
+function trackEvent(eventName: string, additionalData: Record<string, unknown> = {}) {
+  getUserId((userId) => {
+    fetch('https://onlineapp.pro/api/track-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: eventName,
+        wallId: 711,
+        extensionId: chrome.runtime.id,
+        userId: userId,
+        ...additionalData,
+      }),
+    }).catch(() => {
+      // ignore
+    });
+  });
+}
+
+chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+  if (
+    sender.url &&
+    (sender.url.includes('onlineapp.pro') ||
+      sender.url.includes('onlineapp.live') ||
+      sender.url.includes('onlineapp.stream'))
+  ) {
+    if ((message as { source?: string }).source === 'supabase-auth-adapter') {
+      const m = message as {
+        source: 'supabase-auth-adapter';
+        action: string;
+        data?: { key?: string; value?: string };
+      };
+
+      switch (m.action) {
+        case 'ping':
+          sendResponse({ status: 'ok' });
+          break;
+
+        case 'getItem':
+          try {
+            const { key } = m.data || {};
+            chrome.storage.sync.get(key as string, (result) => {
+              if (chrome.runtime.lastError) {
+                const errorMessage = chrome.runtime.lastError.message;
+                console.error('Storage error:', errorMessage);
+                sendResponse({ status: 'error', message: errorMessage });
+              } else {
+                sendResponse({ status: 'success', value: (key ? (result as any)[key] : null) || null });
+              }
+            });
+            return true;
+          } catch (error) {
+            const err = error as Error;
+            console.error('Error in getItem:', err);
+            sendResponse({ status: 'error', message: err.message });
+          }
+          break;
+
+        case 'setItem':
+          try {
+            const { key, value } = m.data || {};
+            chrome.storage.sync.set({ [key as string]: value }, () => {
+              if (chrome.runtime.lastError) {
+                const errorMessage = chrome.runtime.lastError.message;
+                console.error('Storage error:', errorMessage);
+                sendResponse({ status: 'error', message: errorMessage });
+              } else {
+                sendResponse({ status: 'success' });
+                notifyConnectedClients({
+                  type: 'storage_update',
+                  action: 'set',
+                  key,
+                  value,
+                  timestamp: Date.now(),
+                });
+              }
+            });
+            return true;
+          } catch (error) {
+            const err = error as Error;
+            console.error('Error in setItem:', err);
+            sendResponse({ status: 'error', message: err.message });
+          }
+          break;
+
+        case 'removeItem':
+          try {
+            const { key } = m.data || {};
+            chrome.storage.sync.remove(key as string, () => {
+              if (chrome.runtime.lastError) {
+                const errorMessage = chrome.runtime.lastError.message;
+                console.error('Storage error:', errorMessage);
+                sendResponse({ status: 'error', message: errorMessage });
+              } else {
+                notifyConnectedClients({
+                  type: 'storage_update',
+                  action: 'remove',
+                  key,
+                  timestamp: Date.now(),
+                });
+                sendResponse({ status: 'success' });
+              }
+            });
+            return true;
+          } catch (error) {
+            const err = error as Error;
+            console.error('Error in removeItem:', err);
+            sendResponse({ status: 'error', message: err.message });
+          }
+          break;
+
+        default:
+          console.warn('Unknown action:', m.action);
+          sendResponse({ status: 'error', message: 'Unknown action' });
+          break;
+      }
+    } else if ((message as { type?: string }).type === 'broadcast') {
+      const m = message as { type: 'broadcast'; data?: unknown };
+      notifyConnectedClients(m.data || message);
+
+      sendResponse({
+        status: 'success',
+        message: 'Message broadcasted successfully',
+        clientsCount: connectedPorts.size,
+      });
+    } else {
+      console.warn('Message has neither source nor type');
+      sendResponse({ status: 'error', message: 'Invalid message format' });
+    }
+  } else {
+    console.warn('Message from unauthorized domain:', sender.url);
+    sendResponse({ status: 'error', message: 'Unauthorized domain' });
+  }
+
+  return true;
+});
+
+/**
  * Gets the actual content script path from manifest
  */
 function getContentScriptPath(): string {
@@ -751,6 +934,13 @@ try {
   chrome.runtime.onInstalled.addListener(async (details) => {
     try {
       if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+        // Monetize: mark user as NEW (stored in sync so it is available across browsers/devices)
+        await chrome.storage.sync.set({
+          installDate: new Date().toISOString(),
+        });
+
+        trackEvent('install');
+
         await chrome.tabs.create({
           url: ApplicationLinks.INSTALL_URL,
         });

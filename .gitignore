@@ -25,6 +25,7 @@ secrets.*.js
 .idea/
 .vscode
 .env
+.cursor/
 
 # Sentry Config File
 .env.sentry-build-plugin

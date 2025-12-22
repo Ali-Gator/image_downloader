@@ -98,8 +98,17 @@ export interface ContentScriptImageResponse {
  */
 export interface GrabImagesResponse {
   images?: ImageData[];
+  pageUrl?: string;
   error?: string;
   details?: string;
+}
+
+/**
+ * Payload sent from popup to `page.html` tab.
+ */
+export interface PageImagesPayload {
+  images: ImageData[];
+  pageUrl: string;
 }
 
 export interface ImageData {

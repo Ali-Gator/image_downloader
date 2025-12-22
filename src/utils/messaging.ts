@@ -1,15 +1,15 @@
-import { ImageData } from '@types';
+import { ImageData, PageImagesPayload } from '@types';
 import { getLocalizedMessage, handleError, MessageResponse } from '@utils';
 
 /**
  * Sends image data to an active tab and handles the response
  * @param tabId The ID of the tab to send images to
- * @param images Array of image data to send
+ * @param payload Images payload to send (includes source page URL)
  * @returns Promise that resolves to true if successful, false if there was an error
  */
-export const sendImagesToTab = async (tabId: number, images: ImageData[]): Promise<boolean> => {
+export const sendImagesToTab = async (tabId: number, payload: PageImagesPayload): Promise<boolean> => {
   try {
-    const response = await chrome.tabs.sendMessage(tabId, images);
+    const response = await chrome.tabs.sendMessage(tabId, payload);
     if (response === MessageResponse.OK) {
       await chrome.tabs.update(tabId, { active: true });
       return true;
@@ -31,19 +31,22 @@ export const sendImagesToTab = async (tabId: number, images: ImageData[]): Promi
  * Sets up a listener for image data from popup
  * @param setImages Function to set images in state
  * @param setIsLoading Function to set loading state
+ * @param setPageUrl Function to set source page URL in state
  * @returns A cleanup function to remove the listener
  */
 export const setupImageListener = (
   setImages: (images: ImageData[]) => void,
   setIsLoading: (isLoading: boolean) => void,
+  setPageUrl: (pageUrl: string | null) => void,
 ): (() => void) => {
   const listener = (
-    images: ImageData[],
+    payload: PageImagesPayload,
     _: chrome.runtime.MessageSender,
     sendResponse: (response: unknown) => void,
   ) => {
-    if (Array.isArray(images) && images.length > 0) {
-      setImages(images);
+    if (payload && Array.isArray(payload.images) && payload.images.length > 0) {
+      setImages(payload.images);
+      setPageUrl(payload.pageUrl);
       setIsLoading(false);
       sendResponse(MessageResponse.OK);
       return true;

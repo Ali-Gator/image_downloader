@@ -2,7 +2,9 @@ import { useCallback } from 'react';
 
 import { useSnackbar } from 'notistack';
 
-import { downloadImageWithConversion, useTranslation } from '../utils';
+import { useImageStore } from '@store';
+
+import { downloadImageWithConversion, maybeOpenPaywallOn11thClick, recordSuccessfulDownloadPageUrl, useTranslation } from '../utils';
 import { NOTIFICATION_DURATION, NotificationType } from './constants';
 
 /**
@@ -11,6 +13,7 @@ import { NOTIFICATION_DURATION, NotificationType } from './constants';
 export const useImageOperations = (src: string, fileName: string, imageId?: string) => {
   const { enqueueSnackbar } = useSnackbar();
   const { t } = useTranslation();
+  const pageUrl = useImageStore((s) => s.pageUrl);
 
   /**
    * Shows notification for different download states
@@ -63,17 +66,25 @@ export const useImageOperations = (src: string, fileName: string, imageId?: stri
    */
   const handleDownload = useCallback(async () => {
     try {
+      const gate = await maybeOpenPaywallOn11thClick({ pageUrl });
+      if (gate.blocked) return;
+
       // Show notification about download start
       showNotification(NotificationType.INFO);
 
       // Use unified download with conversion function
       await downloadImageWithConversion({ src, filename: fileName, id: imageId });
 
+      // Count only after a successful download
+      if (gate.eligibility.showMonetizationUI) {
+        await recordSuccessfulDownloadPageUrl(pageUrl);
+      }
+
       showNotification(NotificationType.SUCCESS);
     } catch (error) {
       showNotification(NotificationType.ERROR);
     }
-  }, [src, fileName, imageId, showNotification]);
+  }, [src, fileName, imageId, showNotification, pageUrl]);
 
   return { handleCopyUrl, handleDownload };
 };

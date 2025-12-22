@@ -39,6 +39,9 @@ export interface ImageState {
   filteredImages: ImageData[];
   selectedImages: ImageData[];
 
+  // Source page URL (where images were collected)
+  pageUrl: string | null;
+
   // UI state
   isLoading: boolean;
   isGridView: boolean;
@@ -53,6 +56,7 @@ export interface ImageState {
   setImages: (images: ImageData[]) => void;
   setFilteredImages: (images: ImageData[]) => void;
   setSelectedImages: (images: ImageData[]) => void;
+  setPageUrl: (pageUrl: string | null) => void;
   toggleSelectImage: (image: ImageData) => void;
   selectAll: () => void;
   deselectAll: () => void;

@@ -3,7 +3,12 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { RatingWidget } from '@components';
 import { DownloadButton, Header, HelpText, ReportBugLink } from '@components/Popup/components';
 import { useImageStore, useRatingStore } from '@store';
-import { GrabImagesMessage, GrabImagesResponse, ImageData, MessageActionType } from '@types';
+import {
+  GrabImagesMessage,
+  GrabImagesResponse,
+  MessageActionType,
+  PageImagesPayload,
+} from '@types';
 import {
   ConnectionName,
   handleError,
@@ -41,7 +46,7 @@ export const Popup: React.FC = () => {
   }, []);
 
   const openImagesPage = useCallback(
-    async (images: ImageData[]) => {
+    async (payload: PageImagesPayload) => {
       const tab = await chrome.tabs.create({
         url: 'page.html',
         active: false,
@@ -49,7 +54,7 @@ export const Popup: React.FC = () => {
 
       setTimeout(async () => {
         if (tab.id) {
-          const success = await sendImagesToTab(tab.id, images);
+          const success = await sendImagesToTab(tab.id, payload);
           if (!success) {
             handleError(new Error(t('failed_to_send_images')), true);
           }
@@ -113,7 +118,7 @@ export const Popup: React.FC = () => {
         if (!response) {
           throw new Error(
             t('content_script_not_loaded') +
-              ' Please refresh the page and try again. If the problem persists, the website may be blocking extensions.',
+              ' If the problem persists, the website may be blocking extensions.',
           );
         }
 
@@ -128,7 +133,12 @@ export const Popup: React.FC = () => {
           );
         }
 
-        openImagesPage(response.images);
+        const pageUrl = response.pageUrl ?? tab.url;
+        if (!pageUrl) {
+          throw new Error(t('tab_url_unavailable'));
+        }
+
+        openImagesPage({ images: response.images, pageUrl });
       },
       setIsLoading,
       '',

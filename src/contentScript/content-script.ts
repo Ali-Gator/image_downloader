@@ -189,7 +189,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
       const MAX_FINAL_IMAGES = 200;
       const finalImages = filteredImages.slice(0, MAX_FINAL_IMAGES);
 
-      sendResponse({ images: finalImages });
+      sendResponse({ images: finalImages, pageUrl: window.location.href });
       return true; // Указываем, что ответ будет асинхронным
     }
   } catch (error) {

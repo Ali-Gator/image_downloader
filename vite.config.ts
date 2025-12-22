@@ -39,6 +39,9 @@ export default defineConfig({
       org: 'blockdev',
       project: 'id',
       telemetry: false,
+      sourcemaps: {
+        disable: true,
+      },
     }),
   ],
 });

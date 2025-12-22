@@ -52,3 +52,30 @@ export const SelectAllContainer = styled('div')(({ theme }) => ({
     padding: 0,
   },
 }));
+
+export const MonetizationStatusContainer = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  color: theme.palette.common.white,
+}));
+
+export const MonetizationBadge = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  backgroundColor: 'rgba(255, 255, 255, 0.12)',
+  borderRadius: theme.spacing(0.5),
+  padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
+  whiteSpace: 'nowrap',
+}));
+
+export const MonetizationBanner = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  backgroundColor: 'rgba(0, 0, 0, 0.25)',
+  border: '1px solid rgba(255, 255, 255, 0.25)',
+  borderRadius: theme.spacing(0.75),
+  padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
+  whiteSpace: 'nowrap',
+}));
