@@ -87,7 +87,7 @@
     "message": "List"
   },
   "filter_text": {
-    "message": "Filter..."
+    "message": "Filter by name..."
   },
   "quality_filter_all": {
     "message": "Any quality"

@@ -87,7 +87,7 @@
     "message": "Список"
   },
   "filter_text": {
-    "message": "Фильтр..."
+    "message": "Фильтр по имени..."
   },
   "quality_filter_all": {
     "message": "Любое качество"
