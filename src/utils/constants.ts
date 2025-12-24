@@ -227,3 +227,5 @@ export const SENTRY_FILTER_ERRORS = [
   'extensionssettings policy',
   'cannot be scripted due to an extensionssettings policy',
 ];
+
+export const PAYWALL_ID = '711';

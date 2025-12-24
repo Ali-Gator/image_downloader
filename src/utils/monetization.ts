@@ -1,10 +1,18 @@
+import { PAYWALL_ID } from './constants';
 import { handleError } from './errorHandlers';
 
 const USED_PAGE_URLS_KEY = 'usedPageUrls';
 const LIMIT_REACHED_AT_KEY = 'limitReachedAt';
 const PAYWALL_VISIBILITY_OFF_KEY = 'paywallVisibilityOff';
 
-const PAYWALL_ID = '711';
+export function getCustomerPortalUrl(paywallId: string = PAYWALL_ID): string {
+  const safePaywallId = encodeURIComponent(paywallId);
+  return `https://onlineapp.pro/paywall/${safePaywallId}/customer-portal/get`;
+}
+
+export function getCustomerPortalSupportUrl(paywallId: string = PAYWALL_ID): string {
+  return `${getCustomerPortalUrl(paywallId)}?tab=support`;
+}
 
 type PaywallVisibilityStatusReason =
   | 'active-payment-found'
@@ -60,6 +68,11 @@ export type MonetizationEligibility = {
   countryMatch: boolean;
   paid: boolean;
   showMonetizationUI: boolean;
+};
+
+export type MonetizationEligibilityWithUser = {
+  eligibility: MonetizationEligibility;
+  user: PaywallUser | null;
 };
 
 async function getPaywallVisibilityOff(): Promise<boolean> {
@@ -130,10 +143,38 @@ async function safeGetPaywallUser(): Promise<PaywallUser | null> {
   }
 }
 
+export async function getMonetizationEligibilityWithUser(): Promise<MonetizationEligibilityWithUser> {
+  const [visibilityOff, isNew, user] = await Promise.all([
+    getPaywallVisibilityOff(),
+    getIsNewUser(),
+    safeGetPaywallUser(),
+  ]);
+
+  const countryMatch = Boolean(user?.countryMatch);
+  const paid = Boolean(user?.paid);
+
+  // UI should not show for paid users (they have a dedicated account menu).
+  const showMonetizationUI = !visibilityOff && isNew && countryMatch && !paid;
+
+  return {
+    eligibility: {
+      isNew,
+      countryMatch,
+      paid,
+      showMonetizationUI,
+    },
+    user,
+  };
+}
+
 function getVisibilityStatusReason(error: unknown): PaywallVisibilityStatusReason | undefined {
-  if (!error || typeof error !== 'object') return undefined;
+  if (!error || typeof error !== 'object') {
+    return undefined;
+  }
+
   const e = error as { visibility_status_reason?: unknown };
   const reason = e.visibility_status_reason;
+
   return typeof reason === 'string' ? (reason as PaywallVisibilityStatusReason) : undefined;
 }
 
@@ -150,12 +191,17 @@ function shouldAllowAccessForReason(reason: PaywallVisibilityStatusReason | unde
 
 export async function openPaywallForPurchase(): Promise<PaywallOpenOutcome> {
   await ensurePaywallReady();
+
   const sdk = window.paywall;
-  if (!sdk?.open) return { ok: false, outcome: 'unavailable' };
+
+  if (!sdk?.open) {
+    return { ok: false, outcome: 'unavailable' };
+  }
 
   try {
     // Important: keep correct `this` binding for SDK methods (they rely on internal `this.*`).
     await sdk.open({ resolveEvent: 'success-purchase' });
+
     return { ok: true, outcome: 'success-purchase' };
   } catch (error) {
     const reason = getVisibilityStatusReason(error);
@@ -172,29 +218,8 @@ export async function openPaywallForPurchase(): Promise<PaywallOpenOutcome> {
 }
 
 export async function getMonetizationEligibility(): Promise<MonetizationEligibility> {
-  const visibilityOff = await getPaywallVisibilityOff();
-  const isNew = await getIsNewUser();
-
-  const user = await safeGetPaywallUser();
-  const countryMatch = Boolean(user?.countryMatch);
-
-  const paid = Boolean(user?.paid);
-
-  if (visibilityOff) {
-    return {
-      isNew,
-      countryMatch,
-      paid,
-      showMonetizationUI: false,
-    };
-  }
-
-  return {
-    isNew,
-    countryMatch,
-    paid,
-    showMonetizationUI: isNew && countryMatch,
-  };
+  const { eligibility } = await getMonetizationEligibilityWithUser();
+  return eligibility;
 }
 
 export async function getMonetizationLimitState(): Promise<MonetizationLimitState> {
@@ -271,10 +296,6 @@ export async function maybeOpenPaywallOn11thClick(params: { pageUrl: string | nu
 
   // If we can't determine pageUrl, do not block and do not count.
   if (!params.pageUrl) {
-    return { blocked: false, eligibility, limit };
-  }
-
-  if (eligibility.paid) {
     return { blocked: false, eligibility, limit };
   }
 

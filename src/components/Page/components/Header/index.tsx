@@ -1,7 +1,8 @@
-import { ChangeEvent, FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FC, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DownloadIcon from '@mui/icons-material/Download';
-import { Button, Checkbox, Typography } from '@mui/material';
+import { Button, Checkbox, Menu, MenuItem, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import { useImageStore, useSettingsStore } from '@store';
@@ -15,10 +16,14 @@ import {
   MonetizationStatusContainer,
   SelectAllContainer,
   TitleContainer,
+  UserAvatar,
+  UserMenuIconButton,
 } from './styles';
 import {
   downloadImagesWithConversion,
-  getMonetizationEligibility,
+  getCustomerPortalSupportUrl,
+  getCustomerPortalUrl,
+  getMonetizationEligibilityWithUser,
   getMonetizationLimitState,
   handleError,
   maybeOpenPaywallOn11thClick,
@@ -39,11 +44,13 @@ export const Header: FC = () => {
   const [paid, setPaid] = useState(false);
   const [usedCount, setUsedCount] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [userMenuAnchorEl, setUserMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   const refreshMonetizationState = useCallback(async () => {
     try {
-      const [eligibility, limit] = await Promise.all([
-        getMonetizationEligibility(),
+      const [{ eligibility, user }, limit] = await Promise.all([
+        getMonetizationEligibilityWithUser(),
         getMonetizationLimitState(),
       ]);
 
@@ -51,6 +58,11 @@ export const Header: FC = () => {
       setPaid(eligibility.paid);
       setUsedCount(limit.usedCount);
       setLimitReached(limit.limitReached);
+
+      const maybeAvatar = user?.user?.avatar;
+      setAvatarUrl(
+        typeof maybeAvatar === 'string' && maybeAvatar.trim().length > 0 ? maybeAvatar : '',
+      );
     } catch (error) {
       handleError(error);
     }
@@ -62,7 +74,10 @@ export const Header: FC = () => {
 
   // Keep UI in sync when local storage changes (successful downloads update usedPageUrls/limitReachedAt)
   useEffect(() => {
-    const listener: Parameters<typeof chrome.storage.onChanged.addListener>[0] = (changes, area) => {
+    const listener: Parameters<typeof chrome.storage.onChanged.addListener>[0] = (
+      changes,
+      area,
+    ) => {
       if (area !== 'local') return;
       if (changes.usedPageUrls || changes.limitReachedAt || changes.paywallVisibilityOff) {
         refreshMonetizationState().catch(handleError);
@@ -146,16 +161,6 @@ export const Header: FC = () => {
   const monetizationNode = useMemo(() => {
     if (!showMonetizationUI) return null;
 
-    if (paid) {
-      return (
-        <MonetizationStatusContainer>
-          <MonetizationBadge>
-            <Typography variant="body2">{t('monetize_unlimited')}</Typography>
-          </MonetizationBadge>
-        </MonetizationStatusContainer>
-      );
-    }
-
     if (limitReached) {
       return (
         <MonetizationStatusContainer>
@@ -180,11 +185,23 @@ export const Header: FC = () => {
     return (
       <MonetizationStatusContainer>
         <MonetizationBadge>
-          <Typography variant="body2">{t('monetize_free_counter', usedCount.toString())}</Typography>
+          <Typography variant="body2">
+            {t('monetize_free_counter', usedCount.toString())}
+          </Typography>
         </MonetizationBadge>
       </MonetizationStatusContainer>
     );
-  }, [limitReached, paid, refreshMonetizationState, showMonetizationUI, t, usedCount]);
+  }, [limitReached, refreshMonetizationState, showMonetizationUI, t, usedCount]);
+
+  const isUserMenuOpen = Boolean(userMenuAnchorEl);
+
+  const handleUserMenuOpen = useCallback((e: MouseEvent<HTMLElement>) => {
+    setUserMenuAnchorEl(e.currentTarget);
+  }, []);
+
+  const handleUserMenuClose = useCallback(() => {
+    setUserMenuAnchorEl(null);
+  }, []);
 
   const selectedCount = selectedImages.length;
   const totalCount = filteredImages.length;
@@ -224,6 +241,50 @@ export const Header: FC = () => {
         </Button>
 
         <SettingsButton />
+
+        {paid ? (
+          <>
+            <UserMenuIconButton
+              onClick={handleUserMenuOpen}
+              aria-label={t('manage_subscription')}
+              aria-controls={isUserMenuOpen ? 'user-menu' : undefined}
+              aria-haspopup="menu"
+              aria-expanded={isUserMenuOpen ? 'true' : undefined}
+            >
+              <UserAvatar src={avatarUrl || undefined}>
+                <AccountCircleIcon fontSize="small" />
+              </UserAvatar>
+            </UserMenuIconButton>
+
+            <Menu
+              id="user-menu"
+              anchorEl={userMenuAnchorEl}
+              open={isUserMenuOpen}
+              onClose={handleUserMenuClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+              <MenuItem
+                component="a"
+                href={getCustomerPortalUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleUserMenuClose}
+              >
+                {t('manage_subscription')}
+              </MenuItem>
+              <MenuItem
+                component="a"
+                href={getCustomerPortalSupportUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleUserMenuClose}
+              >
+                {t('contact_us')}
+              </MenuItem>
+            </Menu>
+          </>
+        ) : null}
       </ControlsContainer>
     </HeaderContainer>
   );

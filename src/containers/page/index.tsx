@@ -5,7 +5,7 @@ import { SnackbarProvider } from 'notistack';
 import { createRoot } from 'react-dom/client';
 
 import { ErrorBoundary, Page } from '@components';
-import { DOMLocalization, setupGlobalErrorHandlers } from '@utils';
+import { DOMLocalization, PAYWALL_ID, setupGlobalErrorHandlers } from '@utils';
 
 import theme from '../../theme';
 
@@ -47,7 +47,7 @@ async function loadMonetizeSdk(): Promise<void> {
 (async () => {
   try {
     await loadMonetizeSdk();
-    window.paywall?.init('711');
+    window.paywall?.init(PAYWALL_ID);
   } catch {
     // Intentionally ignore: OLD/non-Tier1 users should not be impacted by SDK init issues.
   }

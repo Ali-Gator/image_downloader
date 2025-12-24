@@ -293,7 +293,10 @@
   "upgrade_btn": {
     "message": "Upgrade"
   },
-  "monetize_unlimited": {
-    "message": "Unlimited"
+  "manage_subscription": {
+    "message": "Manage Subscription"
+  },
+  "contact_us": {
+    "message": "Contact Us"
   }
 }

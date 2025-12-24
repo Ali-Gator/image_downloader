@@ -107,6 +107,21 @@
   "filter_by_quality_text": {
     "message": "Фильтр по качеству"
   },
+  "monetize_free_counter": {
+    "message": "Бесплатно: $1/10"
+  },
+  "monetize_free_limit_reached": {
+    "message": "Лимит бесплатных загрузок исчерпан. Обновитесь, чтобы продолжить."
+  },
+  "upgrade_btn": {
+    "message": "Обновить"
+  },
+  "manage_subscription": {
+    "message": "Управление подпиской"
+  },
+  "contact_us": {
+    "message": "Связаться с нами"
+  },
   "of_text": {
     "message": "из"
   },

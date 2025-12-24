@@ -1,3 +1,4 @@
+import { Avatar, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 import { gradients } from '@theme';
@@ -78,4 +79,16 @@ export const MonetizationBanner = styled('div')(({ theme }) => ({
   borderRadius: theme.spacing(0.75),
   padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
   whiteSpace: 'nowrap',
+}));
+
+export const UserMenuIconButton = styled(IconButton)(({ theme }) => ({
+  padding: 0,
+  marginLeft: theme.spacing(0.5),
+}));
+
+export const UserAvatar = styled(Avatar)(({ theme }) => ({
+  width: 40,
+  height: 40,
+  backgroundColor: 'rgba(255, 255, 255, 0.12)',
+  color: theme.palette.common.white,
 }));
