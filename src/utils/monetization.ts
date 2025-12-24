@@ -14,6 +14,33 @@ export function getCustomerPortalSupportUrl(paywallId: string = PAYWALL_ID): str
   return `${getCustomerPortalUrl(paywallId)}?tab=support`;
 }
 
+export async function ensureMonetizeSdkLoaded(): Promise<void> {
+  // If already loaded (production via <script src="/wall.2.1.2.js">), do nothing.
+  if (window.paywall) return;
+
+  await new Promise<void>((resolve) => {
+    try {
+      const existing = document.querySelector('script[data-monetize-wall-sdk="1"]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(), { once: true });
+        existing.addEventListener('error', () => resolve(), { once: true });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.dataset.monetizeWallSdk = '1';
+      script.async = false;
+      script.type = 'text/javascript';
+      script.src = chrome.runtime.getURL('wall.2.1.2.js');
+      script.onload = () => resolve();
+      script.onerror = () => resolve();
+      document.head.prepend(script);
+    } catch {
+      resolve();
+    }
+  });
+}
+
 type PaywallVisibilityStatusReason =
   | 'active-payment-found'
   | 'openings-trial'
@@ -24,29 +51,7 @@ type PaywallVisibilityStatusReason =
   | 'error';
 
 async function ensurePaywallReady(): Promise<void> {
-  if (!window.paywall) {
-    await new Promise<void>((resolve) => {
-      try {
-        const existing = document.querySelector('script[data-monetize-wall-sdk="1"]');
-        if (existing) {
-          existing.addEventListener('load', () => resolve(), { once: true });
-          existing.addEventListener('error', () => resolve(), { once: true });
-          return;
-        }
-
-        const script = document.createElement('script');
-        script.dataset.monetizeWallSdk = '1';
-        script.async = false;
-        script.type = 'text/javascript';
-        script.src = chrome.runtime.getURL('wall.2.1.2.js');
-        script.onload = () => resolve();
-        script.onerror = () => resolve();
-        document.head.prepend(script);
-      } catch {
-        resolve();
-      }
-    });
-  }
+  await ensureMonetizeSdkLoaded();
 
   try {
     const initResult = window.paywall?.init?.(PAYWALL_ID);
@@ -306,7 +311,7 @@ export async function maybeOpenPaywallOn11thClick(params: { pageUrl: string | nu
   // Limit reached and unpaid -> open paywall on click (11th+)
   const result = await openPaywallForPurchase();
 
-  // If Monetize prevented opening because user already has access (active payment / trial / etc),
+  // If Monetize prevented opening because user already has access (active payment / trial / etc.),
   // do not block the download.
   if (!result.ok && result.outcome === 'prevented' && shouldAllowAccessForReason(result.reason)) {
     return { blocked: false, eligibility, limit };
