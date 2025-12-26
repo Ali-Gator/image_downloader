@@ -4,6 +4,7 @@ import { handleError } from './errorHandlers';
 const USED_PAGE_URLS_KEY = 'usedPageUrls';
 const LIMIT_REACHED_AT_KEY = 'limitReachedAt';
 const PAYWALL_VISIBILITY_OFF_KEY = 'paywallVisibilityOff';
+const MONETIZATION_REFRESH_AT_KEY = 'monetizationRefreshAt';
 
 export function getCustomerPortalUrl(paywallId: string = PAYWALL_ID): string {
   const safePaywallId = encodeURIComponent(paywallId);
@@ -87,6 +88,14 @@ async function getPaywallVisibilityOff(): Promise<boolean> {
   } catch (error) {
     handleError(error);
     return false;
+  }
+}
+
+async function touchMonetizationRefresh(): Promise<void> {
+  try {
+    await chrome.storage.local.set({ [MONETIZATION_REFRESH_AT_KEY]: new Date().toISOString() });
+  } catch (error) {
+    handleError(error);
   }
 }
 
@@ -207,6 +216,7 @@ export async function openPaywallForPurchase(): Promise<PaywallOpenOutcome> {
     // Important: keep correct `this` binding for SDK methods (they rely on internal `this.*`).
     await sdk.open({ resolveEvent: 'success-purchase' });
 
+    await touchMonetizationRefresh();
     return { ok: true, outcome: 'success-purchase' };
   } catch (error) {
     const reason = getVisibilityStatusReason(error);
@@ -214,6 +224,9 @@ export async function openPaywallForPurchase(): Promise<PaywallOpenOutcome> {
     // "Normal" prevention cases should not be reported as errors.
     // We only capture truly technical problems.
     if (reason && reason !== 'error') {
+      // Even if paywall opening is prevented (active payment / trial / etc.),
+      // the UI might need a refresh to reflect the latest access state.
+      await touchMonetizationRefresh();
       return { ok: false, outcome: 'prevented', reason };
     }
 
@@ -311,10 +324,17 @@ export async function maybeOpenPaywallOn11thClick(params: { pageUrl: string | nu
   // Limit reached and unpaid -> open paywall on click (11th+)
   const result = await openPaywallForPurchase();
 
+  // Successful purchase -> allow this click and return fresh eligibility so caller can avoid counting.
+  if (result.ok && result.outcome === 'success-purchase') {
+    const nextEligibility = await getMonetizationEligibility();
+    return { blocked: false, eligibility: nextEligibility, limit };
+  }
+
   // If Monetize prevented opening because user already has access (active payment / trial / etc.),
   // do not block the download.
   if (!result.ok && result.outcome === 'prevented' && shouldAllowAccessForReason(result.reason)) {
-    return { blocked: false, eligibility, limit };
+    const nextEligibility = await getMonetizationEligibility();
+    return { blocked: false, eligibility: nextEligibility, limit };
   }
 
   // Otherwise block this click (user closed paywall or paywall unavailable), consistent with UX:

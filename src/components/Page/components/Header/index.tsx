@@ -79,7 +79,12 @@ export const Header: FC = () => {
       area,
     ) => {
       if (area !== 'local') return;
-      if (changes.usedPageUrls || changes.limitReachedAt || changes.paywallVisibilityOff) {
+      if (
+        changes.usedPageUrls ||
+        changes.limitReachedAt ||
+        changes.paywallVisibilityOff ||
+        changes.monetizationRefreshAt
+      ) {
         refreshMonetizationState().catch(handleError);
       }
     };
