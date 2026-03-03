@@ -26,7 +26,7 @@ const manifest: ManifestV3Export = {
     type: 'module',
   },
   externally_connectable: {
-    matches: ['https://onlineapp.pro/*', 'https://onlineapp.stream/*', 'https://onlineapp.live/*'],
+    matches: ['https://appbox.space/*'],
   },
   permissions: ['activeTab', 'tabs', 'storage', 'downloads', 'declarativeNetRequest', 'scripting'],
   host_permissions: ['<all_urls>'],
@@ -57,7 +57,7 @@ const manifest: ManifestV3Export = {
     page: 'options.html',
     open_in_tab: true,
   },
-  key: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAid7c58IHBXEtwm6MCTdKuQIQ5eX3cXVor9a+dq4+NXvjQmlcK4se3wTCayUvW3RcBmP4DbWk+d1IlpwLfcJArrE13hLT+DZOQRo4W+pf20Z/lCsSkWCX9pri9pJDVNpdZub6SFrl5YdAUHYs5FW/JRMYWbycCGYx/rATWAHoSsM118V+A8CTC4RwO4L2+M6E6ehJNU1AbptsH24handeca3JSl5zThlZybXHXI7c4OVxEaLth4TryJhe/rQUya2+LcVbzcpY9t5pBRdWTO0B56ZH5ruYjrNF3K9oZzN0nahB36gXAb2rin73qFvVwHR6DplacVg9ROoCw1crqiTP8wIDAQAB"
+  key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAid7c58IHBXEtwm6MCTdKuQIQ5eX3cXVor9a+dq4+NXvjQmlcK4se3wTCayUvW3RcBmP4DbWk+d1IlpwLfcJArrE13hLT+DZOQRo4W+pf20Z/lCsSkWCX9pri9pJDVNpdZub6SFrl5YdAUHYs5FW/JRMYWbycCGYx/rATWAHoSsM118V+A8CTC4RwO4L2+M6E6ehJNU1AbptsH24handeca3JSl5zThlZybXHXI7c4OVxEaLth4TryJhe/rQUya2+LcVbzcpY9t5pBRdWTO0B56ZH5ruYjrNF3K9oZzN0nahB36gXAb2rin73qFvVwHR6DplacVg9ROoCw1crqiTP8wIDAQAB',
 };
 
 export default manifest;

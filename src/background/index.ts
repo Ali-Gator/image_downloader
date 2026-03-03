@@ -44,12 +44,7 @@ const downloadFilenamesMap: Record<number, string> = {};
 const connectedPorts = new Set<chrome.runtime.Port>();
 
 chrome.runtime.onConnectExternal.addListener((port) => {
-  if (
-    port.sender?.url &&
-    (port.sender.url.includes('onlineapp.pro') ||
-      port.sender.url.includes('onlineapp.live') ||
-      port.sender.url.includes('onlineapp.stream'))
-  ) {
+  if (port.sender?.url && port.sender.url.includes('appbox.space')) {
     connectedPorts.add(port);
 
     port.onDisconnect.addListener(() => {
@@ -60,6 +55,22 @@ chrome.runtime.onConnectExternal.addListener((port) => {
     port.disconnect();
   }
 });
+
+function trackEvent(eventName: string, additionalData = {}) {
+  getUserId((userId: string) => {
+    fetch('https://appbox.space/api/track-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: eventName,
+        wallId: 711,
+        extensionId: chrome.runtime.id,
+        userId: userId,
+        ...additionalData,
+      }),
+    });
+  });
+}
 
 function notifyConnectedClients(notification: unknown) {
   connectedPorts.forEach((port) => {
@@ -75,7 +86,7 @@ function notifyConnectedClients(notification: unknown) {
 function getUserId(callback: (userId: string) => void) {
   chrome.storage.sync.get(['user_id'], (result) => {
     if (result.user_id) {
-      callback(result.user_id as string);
+      callback(result.user_id);
     } else {
       const userId = crypto.randomUUID();
       chrome.storage.sync.set({ user_id: userId, ['pw-711-visitor-id']: userId }, () => {
@@ -85,67 +96,37 @@ function getUserId(callback: (userId: string) => void) {
   });
 }
 
-function trackEvent(eventName: string, additionalData: Record<string, unknown> = {}) {
-  getUserId((userId) => {
-    fetch('https://onlineapp.pro/api/track-event', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event: eventName,
-        wallId: 711,
-        extensionId: chrome.runtime.id,
-        userId: userId,
-        ...additionalData,
-      }),
-    }).catch(() => {
-      // ignore
-    });
-  });
-}
-
 chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
-  if (
-    sender.url &&
-    (sender.url.includes('onlineapp.pro') ||
-      sender.url.includes('onlineapp.live') ||
-      sender.url.includes('onlineapp.stream'))
-  ) {
-    if ((message as { source?: string }).source === 'supabase-auth-adapter') {
-      const m = message as {
-        source: 'supabase-auth-adapter';
-        action: string;
-        data?: { key?: string; value?: string };
-      };
-
-      switch (m.action) {
+  if (sender.url && sender.url.includes('appbox.space')) {
+    if (message.source === 'supabase-auth-adapter') {
+      switch (message.action) {
         case 'ping':
           sendResponse({ status: 'ok' });
           break;
 
         case 'getItem':
           try {
-            const { key } = m.data || {};
-            chrome.storage.sync.get(key as string, (result) => {
+            const { key } = message.data;
+            chrome.storage.sync.get(key, (result) => {
               if (chrome.runtime.lastError) {
                 const errorMessage = chrome.runtime.lastError.message;
                 console.error('Storage error:', errorMessage);
                 sendResponse({ status: 'error', message: errorMessage });
               } else {
-                sendResponse({ status: 'success', value: (key ? (result as any)[key] : null) || null });
+                sendResponse({ status: 'success', value: result[key] || null });
               }
             });
             return true;
           } catch (error) {
-            const err = error as Error;
-            console.error('Error in getItem:', err);
-            sendResponse({ status: 'error', message: err.message });
+            console.error('Error in getItem:', error);
+            sendResponse({ status: 'error', message: (error as Error)?.message });
           }
           break;
 
         case 'setItem':
           try {
-            const { key, value } = m.data || {};
-            chrome.storage.sync.set({ [key as string]: value }, () => {
+            const { key, value } = message.data;
+            chrome.storage.sync.set({ [key]: value }, () => {
               if (chrome.runtime.lastError) {
                 const errorMessage = chrome.runtime.lastError.message;
                 console.error('Storage error:', errorMessage);
@@ -163,16 +144,15 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
             });
             return true;
           } catch (error) {
-            const err = error as Error;
-            console.error('Error in setItem:', err);
-            sendResponse({ status: 'error', message: err.message });
+            console.error('Error in setItem:', error);
+            sendResponse({ status: 'error', message: (error as Error)?.message });
           }
           break;
 
         case 'removeItem':
           try {
-            const { key } = m.data || {};
-            chrome.storage.sync.remove(key as string, () => {
+            const { key } = message.data;
+            chrome.storage.sync.remove(key, () => {
               if (chrome.runtime.lastError) {
                 const errorMessage = chrome.runtime.lastError.message;
                 console.error('Storage error:', errorMessage);
@@ -189,20 +169,18 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
             });
             return true;
           } catch (error) {
-            const err = error as Error;
-            console.error('Error in removeItem:', err);
-            sendResponse({ status: 'error', message: err.message });
+            console.error('Error in removeItem:', error);
+            sendResponse({ status: 'error', message: (error as Error)?.message });
           }
           break;
 
         default:
-          console.warn('Unknown action:', m.action);
+          console.warn('Unknown action:', message.action);
           sendResponse({ status: 'error', message: 'Unknown action' });
           break;
       }
-    } else if ((message as { type?: string }).type === 'broadcast') {
-      const m = message as { type: 'broadcast'; data?: unknown };
-      notifyConnectedClients(m.data || message);
+    } else if (message.type === 'broadcast') {
+      notifyConnectedClients(message.data || message);
 
       sendResponse({
         status: 'success',

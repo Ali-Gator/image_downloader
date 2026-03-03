@@ -8,7 +8,7 @@ const MONETIZATION_REFRESH_AT_KEY = 'monetizationRefreshAt';
 
 export function getCustomerPortalUrl(paywallId: string = PAYWALL_ID): string {
   const safePaywallId = encodeURIComponent(paywallId);
-  return `https://onlineapp.pro/paywall/${safePaywallId}/customer-portal/get`;
+  return `https://appbox.space/paywall/${safePaywallId}/customer-portal/get`;
 }
 
 export function getCustomerPortalSupportUrl(paywallId: string = PAYWALL_ID): string {
@@ -16,7 +16,7 @@ export function getCustomerPortalSupportUrl(paywallId: string = PAYWALL_ID): str
 }
 
 export async function ensureMonetizeSdkLoaded(): Promise<void> {
-  // If already loaded (production via <script src="/wall.2.1.2.js">), do nothing.
+  // If already loaded (production via <script src="/wall.2.1.3.js">), do nothing.
   if (window.paywall) return;
 
   await new Promise<void>((resolve) => {
@@ -32,7 +32,7 @@ export async function ensureMonetizeSdkLoaded(): Promise<void> {
       script.dataset.monetizeWallSdk = '1';
       script.async = false;
       script.type = 'text/javascript';
-      script.src = chrome.runtime.getURL('wall.2.1.2.js');
+      script.src = chrome.runtime.getURL('wall.2.1.3.js');
       script.onload = () => resolve();
       script.onerror = () => resolve();
       document.head.prepend(script);
