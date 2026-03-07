@@ -21,16 +21,16 @@ Chrome Extension (Manifest V3) built with Vite + React 18 + TypeScript. Uses `@c
 
 ### Extension components
 
-| File/Dir | Role |
-|---|---|
-| `src/background/index.ts` | Service worker — CORS bypass via `declarativeNetRequest`, download filename handling, paywall messaging |
-| `src/contentScript/content-script.ts` | Injected into all pages — scrapes DOM images, relays fetch requests, health checks |
-| `src/containers/popup/` | Entry point for `popup.html` (main extension popup) |
-| `src/containers/page/` | Entry point for `page.html` (full-tab image viewer) |
-| `src/containers/options/` | Entry point for `options.html` (settings page) |
-| `src/components/` | Shared React UI components (Popup, Page, OptionsPage, etc.) |
-| `src/store/` | Zustand stores persisted to `chrome.storage.local` |
-| `src/manifest.ts` | Extension manifest (version pulled from `package.json`) |
+| File/Dir                              | Role                                                                                                    |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `src/background/index.ts`             | Service worker — CORS bypass via `declarativeNetRequest`, download filename handling, paywall messaging |
+| `src/contentScript/content-script.ts` | Injected into all pages — scrapes DOM images, relays fetch requests, health checks                      |
+| `src/containers/popup/`               | Entry point for `popup.html` (main extension popup)                                                     |
+| `src/containers/page/`                | Entry point for `page.html` (full-tab image viewer)                                                     |
+| `src/containers/options/`             | Entry point for `options.html` (settings page)                                                          |
+| `src/components/`                     | Shared React UI components (Popup, Page, OptionsPage, etc.)                                             |
+| `src/store/`                          | Zustand stores persisted to `chrome.storage.local`                                                      |
+| `src/manifest.ts`                     | Extension manifest (version pulled from `package.json`)                                                 |
 
 ### Message flow
 
@@ -41,6 +41,7 @@ Chrome Extension (Manifest V3) built with Vite + React 18 + TypeScript. Uses `@c
 ### State management
 
 Three Zustand stores in `src/store/`, all persisted via `chromeStorage` adapter (falls back to `localStorage` via `fallbackStorage.ts`):
+
 - `useImageStore` — current page's image list and selection state
 - `useSettingsStore` — download options (folder, rename pattern, conversion, zip)
 - `useRatingStore` — rating reminder state
@@ -50,6 +51,7 @@ Settings are also read directly from `chrome.storage.local` in the background sc
 ### Path aliases
 
 Configured in `vite.config.ts` and `tsconfig.json`:
+
 - `@utils` → `src/utils`
 - `@components` → `src/components`
 - `@types` → `src/types`

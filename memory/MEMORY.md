@@ -10,7 +10,7 @@ Full architecture: `docs/plan/PROJECT.md`
 `docs/plan/PLAN.md` — master plan. 7 tasks:
 
 | Task     | File                                                                               | Status      |
-|----------|------------------------------------------------------------------------------------|-------------|
+| -------- | ---------------------------------------------------------------------------------- | ----------- |
 | TASK-0   | `TASK-0-TEST-SETUP.md` — Vitest + Chrome API mocks                                 | Not started |
 | TASK-0.5 | `TASK-0.5-SENTRY-FILTER.md` — Fix Sentry filter bypass (-70% noise)                | Not started |
 | TASK-1   | `TASK-1-DOWNLOAD.md` — DownloadResult type, debugLogger, bulk error visibility     | Not started |

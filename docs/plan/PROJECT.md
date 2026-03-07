@@ -5,7 +5,7 @@
 ## Stack
 
 | Layer          | Technology                                                                      |
-|----------------|---------------------------------------------------------------------------------|
+| -------------- | ------------------------------------------------------------------------------- |
 | Build          | Vite 3 + `@crxjs/vite-plugin` (handles manifest + entry points automatically)   |
 | Language       | TypeScript 5, React 18                                                          |
 | State          | Zustand 5, persisted via `chromeStorage` adapter (`src/store/chromeStorage.ts`) |
@@ -17,7 +17,7 @@
 ## Entry Points
 
 | File                                  | Description                                                                                                                                                            |
-|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/background/index.ts`             | Service worker. CORS bypass via `declarativeNetRequest`. Download filename handling. Paywall messaging relay. **Cannot use path aliases — use relative imports only.** |
 | `src/contentScript/content-script.ts` | Injected into all pages. Scrapes DOM images on `GRAB_IMAGES` message. Also handles `FETCH_IMAGE_AS_DATA_URL` and `HEALTH_CHECK`.                                       |
 | `src/containers/popup/index.tsx`      | `popup.html` — single button that triggers image grab and opens `page.html`                                                                                            |

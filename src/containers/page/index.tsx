@@ -5,7 +5,12 @@ import { SnackbarProvider } from 'notistack';
 import { createRoot } from 'react-dom/client';
 
 import { ErrorBoundary, Page } from '@components';
-import { DOMLocalization, ensureMonetizeSdkLoaded, PAYWALL_ID, setupGlobalErrorHandlers } from '@utils';
+import {
+  DOMLocalization,
+  ensureMonetizeSdkLoaded,
+  PAYWALL_ID,
+  setupGlobalErrorHandlers,
+} from '@utils';
 
 import theme from '../../theme';
 

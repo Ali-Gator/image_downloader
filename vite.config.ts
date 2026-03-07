@@ -18,12 +18,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.{ts,tsx}'],
-      exclude: [
-        'src/**/*.d.ts',
-        'src/__tests__/**',
-        'src/containers/**',
-        'src/theme/**',
-      ],
+      exclude: ['src/**/*.d.ts', 'src/__tests__/**', 'src/containers/**', 'src/theme/**'],
       // thresholds: { lines: 80, functions: 80 }, // enable once coverage is sufficient
     },
   },

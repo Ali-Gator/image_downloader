@@ -278,9 +278,10 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
                 (downloadId) => {
                   if (chrome.runtime.lastError) {
                     const rawMessage = chrome.runtime.lastError.message?.trim();
-                    const errorMessage = rawMessage && rawMessage.length > 0
-                      ? rawMessage
-                      : 'Unknown Chrome runtime error (downloads API)';
+                    const errorMessage =
+                      rawMessage && rawMessage.length > 0
+                        ? rawMessage
+                        : 'Unknown Chrome runtime error (downloads API)';
 
                     const enrichedError = new Error(
                       `Download failed via fallback: ${errorMessage}`,
@@ -344,9 +345,10 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
         (downloadId) => {
           if (chrome.runtime.lastError) {
             const rawMessage = chrome.runtime.lastError.message?.trim();
-            const errorMessage = rawMessage && rawMessage.length > 0
-              ? rawMessage
-              : 'Unknown Chrome downloads API error';
+            const errorMessage =
+              rawMessage && rawMessage.length > 0
+                ? rawMessage
+                : 'Unknown Chrome downloads API error';
 
             if (!isRetry) {
               // If this is the first attempt and it failed, try with a generic name

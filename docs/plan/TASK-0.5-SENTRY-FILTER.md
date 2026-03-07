@@ -14,7 +14,7 @@ which is called from `handleError()`.
 **However, 3 out of 5 code paths to Sentry bypass `handleError()` entirely:**
 
 | Code path                                           | File                         | Goes through filter?      |
-|-----------------------------------------------------|------------------------------|---------------------------|
+| --------------------------------------------------- | ---------------------------- | ------------------------- |
 | `handleError(error)`                                | `errorHandlers.ts:27`        | Yes                       |
 | `withErrorHandling(action)`                         | `errorHandlers.ts:60`        | Yes (calls `handleError`) |
 | `setupGlobalErrorHandlers()` → `unhandledrejection` | `errorHandlers.ts:82-88`     | **NO**                    |
@@ -96,15 +96,15 @@ export const SENTRY_FILTER_ERRORS = [
   // ... existing entries ...
 
   // Add these:
-  'cannot excute script on this site',    // typo in Chrome error message (yes, Chrome has this typo)
-  'cannot execute script on this site',   // correct spelling variant
-  'tab creation is restricted',           // sidebar mode
-  'tabs cannot be edited right now',      // user dragging tab
-  'unable to create writable file',       // Chrome IO error
-  'unable to create sequential file',     // Chrome IO error
-  'io error',                             // generic Chrome storage IO
-  'access denied',                        // Chrome file lock
-  'frame with id 0',                      // already in filter, but check exact match
+  'cannot excute script on this site', // typo in Chrome error message (yes, Chrome has this typo)
+  'cannot execute script on this site', // correct spelling variant
+  'tab creation is restricted', // sidebar mode
+  'tabs cannot be edited right now', // user dragging tab
+  'unable to create writable file', // Chrome IO error
+  'unable to create sequential file', // Chrome IO error
+  'io error', // generic Chrome storage IO
+  'access denied', // Chrome file lock
+  'frame with id 0', // already in filter, but check exact match
 ];
 ```
 
@@ -127,7 +127,9 @@ describe('captureException', () => {
   });
 
   it('does not send "receiving end does not exist" errors', () => {
-    const result = captureException(new Error('Could not establish connection. Receiving end does not exist.'));
+    const result = captureException(
+      new Error('Could not establish connection. Receiving end does not exist.'),
+    );
     expect(result).toBeNull();
   });
 
@@ -150,8 +152,7 @@ describe('handleError', () => {
   });
 
   it('calls alert when showAlert=true', () => {
-    vi.spyOn(window, 'alert').mockImplementation(() => {
-    });
+    vi.spyOn(window, 'alert').mockImplementation(() => {});
     handleError(new Error('Real error'), true, 'Custom message');
     expect(window.alert).toHaveBeenCalledWith('Custom message');
   });

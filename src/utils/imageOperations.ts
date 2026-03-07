@@ -4,7 +4,12 @@ import { useSnackbar } from 'notistack';
 
 import { useImageStore } from '@store';
 
-import { downloadImageWithConversion, maybeOpenPaywallOn11thClick, recordSuccessfulDownloadPageUrl, useTranslation } from '../utils';
+import {
+  downloadImageWithConversion,
+  maybeOpenPaywallOn11thClick,
+  recordSuccessfulDownloadPageUrl,
+  useTranslation,
+} from '../utils';
 import { NOTIFICATION_DURATION, NotificationType } from './constants';
 
 /**

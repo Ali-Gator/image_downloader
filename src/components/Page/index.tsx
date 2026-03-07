@@ -31,7 +31,10 @@ export const Page: FC = () => {
       if (!data || typeof data !== 'object') return;
       if (data.type !== 'state') return;
 
-      const state = data.state as { visibility_status?: unknown; visibility_status_reason?: unknown };
+      const state = data.state as {
+        visibility_status?: unknown;
+        visibility_status_reason?: unknown;
+      };
       const visibilityStatus = state?.visibility_status;
       const visibilityReason = state?.visibility_status_reason;
 

@@ -7,7 +7,10 @@ import { getLocalizedMessage, handleError, MessageResponse } from '@utils';
  * @param payload Images payload to send (includes source page URL)
  * @returns Promise that resolves to true if successful, false if there was an error
  */
-export const sendImagesToTab = async (tabId: number, payload: PageImagesPayload): Promise<boolean> => {
+export const sendImagesToTab = async (
+  tabId: number,
+  payload: PageImagesPayload,
+): Promise<boolean> => {
   try {
     const response = await chrome.tabs.sendMessage(tabId, payload);
     if (response === MessageResponse.OK) {

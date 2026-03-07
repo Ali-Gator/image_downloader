@@ -1,6 +1,7 @@
 # TASK-4 — Performance API Image Detection (Flutter Web + Universal)
 
 ## Context Files
+
 Paste before starting: `docs/plan/PROJECT.md`
 Prerequisite: TASK-0 complete (Vitest). TASK-2 recommended first (this task touches same content-script code).
 
@@ -18,12 +19,12 @@ The **Performance API** (`window.performance.getEntriesByType('resource')`) is a
 different and complementary data source compared to DOM scanning. It records every network request
 the browser made for this page, regardless of how the resource was used:
 
-| DOM scanning finds | Performance API finds additionally |
-|---|---|
-| `<img>` elements in DOM right now | Images that were loaded then removed from DOM (SPA navigation) |
-| Inline `style="background-image"` | Images loaded from CSS stylesheets |
-| `data-src` / `srcset` attributes | Images loaded via fetch/XHR (Flutter, canvas apps, JS galleries) |
-| — | Preloaded/prefetched images (`<link rel="preload">`) |
+| DOM scanning finds                | Performance API finds additionally                               |
+| --------------------------------- | ---------------------------------------------------------------- |
+| `<img>` elements in DOM right now | Images that were loaded then removed from DOM (SPA navigation)   |
+| Inline `style="background-image"` | Images loaded from CSS stylesheets                               |
+| `data-src` / `srcset` attributes  | Images loaded via fetch/XHR (Flutter, canvas apps, JS galleries) |
+| —                                 | Preloaded/prefetched images (`<link rel="preload">`)             |
 
 **This should always run as a complementary pass**, not only for Flutter. It catches real gaps even
 on regular websites.
@@ -243,7 +244,11 @@ If TASK-3 is not yet done, `seenUrls`, `cachedImages`, `cacheTimestamp` need to 
 In the `collectImages()` function (or `GRAB_IMAGES` handler if TASK-3 not done), after the DOM scan:
 
 ```ts
-import { scanPerformanceEntries, performanceUrlsToImageData, isCanvasHeavyApp } from '../utils/performanceImageScanner';
+import {
+  scanPerformanceEntries,
+  performanceUrlsToImageData,
+  isCanvasHeavyApp,
+} from '../utils/performanceImageScanner';
 
 // After the <img> DOM loop completes:
 const perfUrls = scanPerformanceEntries({ includeXhr: isCanvasHeavyApp() });
@@ -287,7 +292,9 @@ Find where `image.width` and `image.height` are rendered and add a guard:
 ```tsx
 const hasDimensions = image.width > 0 && image.height > 0;
 // Replace the dimension display with:
-{hasDimensions ? `${image.width} × ${image.height}` : t('dimensions_unknown')}
+{
+  hasDimensions ? `${image.width} × ${image.height}` : t('dimensions_unknown');
+}
 ```
 
 Add i18n key `dimensions_unknown` = `"Unknown size"` to `public/_locales/en/messages.json`
@@ -310,7 +317,10 @@ import {
 } from '../performanceImageScanner';
 
 describe('isFlutterApp', () => {
-  afterEach(() => { document.body.innerHTML = ''; document.head.innerHTML = ''; });
+  afterEach(() => {
+    document.body.innerHTML = '';
+    document.head.innerHTML = '';
+  });
 
   it('returns false on regular page', () => {
     expect(isFlutterApp()).toBe(false);
@@ -330,7 +340,9 @@ describe('isFlutterApp', () => {
 });
 
 describe('isCanvasHeavyApp', () => {
-  afterEach(() => { document.body.innerHTML = ''; });
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
 
   it('returns false when more images than canvases', () => {
     document.body.innerHTML = '<img/><img/><img/><canvas/>';
@@ -382,7 +394,9 @@ describe('scanPerformanceEntries', () => {
     vi.spyOn(window.performance, 'getEntriesByType').mockReturnValue([
       { name: 'https://ex.com/flutter-asset.jpg', initiatorType: 'xmlhttprequest' },
     ] as unknown as PerformanceResourceTiming[]);
-    expect(scanPerformanceEntries({ includeXhr: true })).toContain('https://ex.com/flutter-asset.jpg');
+    expect(scanPerformanceEntries({ includeXhr: true })).toContain(
+      'https://ex.com/flutter-asset.jpg',
+    );
   });
 
   it('excludes non-image URLs', () => {
@@ -449,14 +463,14 @@ describe('applyFilters — unknown dimension images', () => {
 
 ## Manual E2E Checklist
 
-| Site | What to verify |
-|---|---|
-| portocupecoy.com (Flutter) | Extension shows images (from Performance API), not 0 results |
-| Any CanvasKit Flutter app | Images detected via XHR-initiated performance entries |
-| Wikipedia (regular) | No extra duplicate images; count same as before |
-| Site with CSS background images in stylesheet | Background images now appear (css-initiator entries) |
-| BBC / NYT (srcset + img) | Performance entries add 0 duplicates (already in DOM scan) |
-| Site with preloaded images | `<link rel="preload" as="image">` resources appear |
+| Site                                          | What to verify                                               |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| portocupecoy.com (Flutter)                    | Extension shows images (from Performance API), not 0 results |
+| Any CanvasKit Flutter app                     | Images detected via XHR-initiated performance entries        |
+| Wikipedia (regular)                           | No extra duplicate images; count same as before              |
+| Site with CSS background images in stylesheet | Background images now appear (css-initiator entries)         |
+| BBC / NYT (srcset + img)                      | Performance entries add 0 duplicates (already in DOM scan)   |
+| Site with preloaded images                    | `<link rel="preload" as="image">` resources appear           |
 
 ## Acceptance Criteria
 
@@ -474,6 +488,7 @@ describe('applyFilters — unknown dimension images', () => {
 ## What `isFlutterApp()` Is Needed For
 
 Not for activating the Performance API scan (that always runs), but for:
+
 1. Deciding whether to include `xmlhttprequest`/`fetch` initiator types in the scan
 2. Passing `includeXhr: true` to `observeNewPerformanceEntries()` in the PerformanceObserver
 3. Potentially showing a hint in the UI ("Flutter app detected — scanning network activity")

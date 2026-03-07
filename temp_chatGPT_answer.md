@@ -17,9 +17,9 @@ Increase retention, ratings, and revenue by:
 
 Primary KPI:
 
-* Reduce “doesn’t work” complaints by 70%
-* Increase rating toward 4.3+
-* Improve paid conversion
+- Reduce “doesn’t work” complaints by 70%
+- Increase rating toward 4.3+
+- Improve paid conversion
 
 ---
 
@@ -29,18 +29,18 @@ Primary KPI:
 
 Users report:
 
-* “Download button isn’t working”
-* “Nothing happens”
-* “Downloading doesn’t start”
+- “Download button isn’t working”
+- “Nothing happens”
+- “Downloading doesn’t start”
 
 Likely causes:
 
-* MV3 service worker termination
-* chrome.downloads API failure
-* Missing permissions
-* Blob URL issues
-* CORS restrictions
-* Silent promise rejection
+- MV3 service worker termination
+- chrome.downloads API failure
+- Missing permissions
+- Blob URL issues
+- CORS restrictions
+- Silent promise rejection
 
 ---
 
@@ -50,11 +50,12 @@ Likely causes:
 
 Refactor download logic so that:
 
-* Every download request:
+- Every download request:
 
-  * Returns a resolved success state
-  * Or returns a structured error object
-* No silent failures allowed
+  - Returns a resolved success state
+  - Or returns a structured error object
+
+- No silent failures allowed
 
 Use structured result pattern:
 
@@ -72,17 +73,18 @@ Use structured result pattern:
 
 Add centralized logging utility:
 
-* Logs:
+- Logs:
 
-  * download start
-  * download success
-  * download failure
-  * error stack
-  * URL attempted
-  * file name
-  * site domain
-* Logs stored temporarily in local storage
-* Add “Export Debug Log” button in settings
+  - download start
+  - download success
+  - download failure
+  - error stack
+  - URL attempted
+  - file name
+  - site domain
+
+- Logs stored temporarily in local storage
+- Add “Export Debug Log” button in settings
 
 ---
 
@@ -90,12 +92,13 @@ Add centralized logging utility:
 
 If using Manifest V3:
 
-* Ensure background service worker is not relied upon for long-running download logic
-* Move critical logic to:
+- Ensure background service worker is not relied upon for long-running download logic
+- Move critical logic to:
 
-  * content script OR
-  * use chrome.downloads directly from extension context
-* Verify no race condition between popup close and download trigger
+  - content script OR
+  - use chrome.downloads directly from extension context
+
+- Verify no race condition between popup close and download trigger
 
 ---
 
@@ -113,22 +116,25 @@ Fallback strategy:
 
 ## Acceptance Criteria
 
-* Clicking Download always results in:
+- Clicking Download always results in:
 
-  * A visible browser download OR
-  * A visible error notification
-* No silent failures
-* Error log captures at least:
+  - A visible browser download OR
+  - A visible error notification
 
-  * URL
-  * domain
-  * error stack
-* Tested successfully on:
+- No silent failures
+- Error log captures at least:
 
-  * Static website
-  * React SPA
-  * Flutter Web site
-* 0 uncaught promise rejections in console
+  - URL
+  - domain
+  - error stack
+
+- Tested successfully on:
+
+  - Static website
+  - React SPA
+  - Flutter Web site
+
+- 0 uncaught promise rejections in console
 
 ---
 
@@ -138,9 +144,9 @@ Fallback strategy:
 
 Users complain:
 
-* Downloads previews instead of originals
-* Low resolution images
-* Only thumbnails detected
+- Downloads previews instead of originals
+- Low resolution images
+- Only thumbnails detected
 
 ---
 
@@ -152,13 +158,13 @@ When parsing images:
 
 Extract from:
 
-* img.src
-* img.srcset (select highest resolution candidate)
-* data-src
-* data-original
-* data-lazy
-* background-image (computed style)
-* picture > source
+- img.src
+- img.srcset (select highest resolution candidate)
+- data-src
+- data-original
+- data-lazy
+- background-image (computed style)
+- picture > source
 
 ---
 
@@ -166,14 +172,15 @@ Extract from:
 
 Implement URL normalization strategy:
 
-* Remove common resize params:
+- Remove common resize params:
 
-  * ?w=
-  * ?width=
-  * ?size=
-  * &quality=
-* Detect CDN patterns
-* Attempt highest-resolution srcset candidate
+  - ?w=
+  - ?width=
+  - ?size=
+  - &quality=
+
+- Detect CDN patterns
+- Attempt highest-resolution srcset candidate
 
 ---
 
@@ -181,9 +188,9 @@ Implement URL normalization strategy:
 
 If multiple URLs available:
 
-* Prefer largest resolution
-* Use naturalWidth/naturalHeight if available
-* Sort descending by size
+- Prefer largest resolution
+- Use naturalWidth/naturalHeight if available
+- Sort descending by size
 
 ---
 
@@ -191,23 +198,26 @@ If multiple URLs available:
 
 If enabled:
 
-* Aggressively attempt URL reconstruction
-* Remove resizing query params
+- Aggressively attempt URL reconstruction
+- Remove resizing query params
 
 ---
 
 ## Acceptance Criteria
 
-* On test page with thumbnails + originals:
+- On test page with thumbnails + originals:
 
-  * Extension downloads highest resolution version
-* On sites using lazy loading:
+  - Extension downloads highest resolution version
 
-  * Images are detected correctly
-* On srcset-based pages:
+- On sites using lazy loading:
 
-  * Largest resolution candidate is selected
-* Resolution difference verified manually in test
+  - Images are detected correctly
+
+- On srcset-based pages:
+
+  - Largest resolution candidate is selected
+
+- Resolution difference verified manually in test
 
 ---
 
@@ -217,10 +227,10 @@ If enabled:
 
 Fails on:
 
-* React
-* Flutter Web
-* Infinite scroll pages
-* Dynamically injected content
+- React
+- Flutter Web
+- Infinite scroll pages
+- Dynamically injected content
 
 ---
 
@@ -228,11 +238,11 @@ Fails on:
 
 ### 1. Add MutationObserver
 
-* Observe DOM changes
-* Re-scan for images on:
+- Observe DOM changes
+- Re-scan for images on:
 
-  * node insert
-  * attribute change
+  - node insert
+  - attribute change
 
 Debounce scan for performance.
 
@@ -242,8 +252,8 @@ Debounce scan for performance.
 
 Manual trigger:
 
-* Forces fresh scan
-* Clears cached results
+- Forces fresh scan
+- Clears cached results
 
 ---
 
@@ -251,22 +261,22 @@ Manual trigger:
 
 Wait:
 
-* DOMContentLoaded
-*
-  * small delay (e.g. 500–1000ms)
-* Optional: wait until network idle
+- DOMContentLoaded
+- - small delay (e.g. 500–1000ms)
+- Optional: wait until network idle
 
 ---
 
 ## Acceptance Criteria
 
-* Works on:
+- Works on:
 
-  * React SPA
-  * Infinite scroll page
-  * Flutter Web demo site
-* New images added dynamically are detected
-* Rescan button works reliably
+  - React SPA
+  - Infinite scroll page
+  - Flutter Web demo site
+
+- New images added dynamically are detected
+- Rescan button works reliably
 
 ---
 
@@ -286,21 +296,21 @@ Before uninstall redirect, show modal:
 
 Checkbox options:
 
-* Download didn’t start
-* Couldn’t get original size
-* Limit reached
-* Doesn’t work on specific site
-* Other
+- Download didn’t start
+- Couldn’t get original size
+- Limit reached
+- Doesn’t work on specific site
+- Other
 
 If user selects:
 
-* “Doesn’t work on specific site” → auto capture domain
-* “Download didn’t start” → offer “Send debug report”
+- “Doesn’t work on specific site” → auto capture domain
+- “Download didn’t start” → offer “Send debug report”
 
 ---
 
 ## Acceptance Criteria
 
-* Domain auto-collected
-* Debug logs exportable
-* Survey responses structured
+- Domain auto-collected
+- Debug logs exportable
+- Survey responses structured

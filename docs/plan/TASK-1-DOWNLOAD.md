@@ -1,6 +1,7 @@
 # TASK-1 — Download Reliability & Error Visibility
 
 ## Context Files
+
 Paste before starting: `docs/plan/PROJECT.md`
 Prerequisite: TASK-0 complete (Vitest running).
 
@@ -20,6 +21,7 @@ Adjust the implementation plan below based on what you find.
 ## Problems (from code review)
 
 ### P1 — Bulk download errors are silently swallowed
+
 **File**: `src/utils/downloadWithConversion.ts:122`
 
 ```ts
@@ -32,12 +34,13 @@ Adjust the implementation plan below based on what you find.
 When downloading 10 images and 3 fail, the user sees no indication of partial failure.
 
 ### P2 — False success tracking
+
 **File**: `src/utils/downloadWithConversion.ts:85-88`
 
 ```ts
 // Current — called even in the final unconfirmed fallback:
 await downloadImage({ src, filename });
-useRatingStore.getState().setHasSuccessfulDownload(true);  // <-- not confirmed
+useRatingStore.getState().setHasSuccessfulDownload(true); // <-- not confirmed
 ```
 
 `downloadImage` resolves when `chrome.downloads.download` callback fires, but that doesn't confirm
@@ -45,9 +48,11 @@ the file was actually written to disk. The rating store should only be updated w
 confidence of success (i.e., when `downloadId` is returned by the API).
 
 ### P3 — No debug log
+
 No way to diagnose user-reported failures without access to their browser console.
 
 ### P4 — `chrome.runtime.lastError` empty message edge case
+
 **File**: `src/utils/downloadHelpers.ts:345-349`
 
 Handles empty `lastError.message` but the raw message trimming could still produce misleading logs.
@@ -76,11 +81,11 @@ Interface:
 
 ```ts
 interface DebugLogEntry {
-  ts: number;           // Date.now()
+  ts: number; // Date.now()
   level: 'info' | 'warn' | 'error';
-  context: string;      // e.g. 'download', 'grab_images'
+  context: string; // e.g. 'download', 'grab_images'
   message: string;
-  data?: Record<string, unknown>;  // url, domain, filename, errorStack, etc.
+  data?: Record<string, unknown>; // url, domain, filename, errorStack, etc.
 }
 ```
 
@@ -96,6 +101,7 @@ export const debugLogger = {
 ```
 
 Implementation notes:
+
 - `log()` must be fire-and-forget (synchronous signature, async internally) — do not await in hot paths
 - Cap at 100 entries using `slice(-100)` before storing
 - `chrome.storage.local` is only available in extension context; wrap in `try/catch` with silent fallback for tests
@@ -106,6 +112,7 @@ Implementation notes:
 Change return type from `Promise<void>` to `Promise<DownloadResult>`.
 
 Key changes:
+
 - When `chrome.downloads.download` callback fires with a valid `downloadId`, log success via `debugLogger.log('info', 'download', 'Download started', { url, filename, downloadId })`
 - When it fails, log error via `debugLogger.log('error', 'download', message, { url, filename, errorCode })`
 - Return `{ success: true, downloadId }` or `{ success: false, errorCode, errorMessage }`
@@ -117,6 +124,7 @@ Key changes:
 Change return type to `Promise<DownloadResult>`.
 
 Key changes:
+
 - Call `downloadImage(...)` and capture the result
 - Only call `useRatingStore.getState().setHasSuccessfulDownload(true)` when `result.success === true`
 - Return the `DownloadResult` up the call chain
@@ -127,6 +135,7 @@ Key changes:
 Change to track and return structured results.
 
 Key changes:
+
 - Accumulate results: `const results: DownloadResult[] = []`
 - In the `catch` block: push `{ success: false, errorMessage: String(error) }` to results AND call `debugLogger.log('error', 'download', 'Bulk download item failed', { src: image.src, error: String(error) })`
 - Return `{ successCount, failCount, totalCount }` (extend or replace current return type)
@@ -135,6 +144,7 @@ Key changes:
 ### Step 6 — Update `useImageOperations` in `src/utils/imageOperations.ts`
 
 The `handleDownload` hook currently shows a generic error snackbar. After this change:
+
 - For single download: behavior unchanged (success/error snackbar)
 - For bulk download callers (in `Page` component): pass the failure count up so the caller can show "Downloaded 7/10 images. 3 failed."
 
@@ -147,6 +157,7 @@ Notification message pattern: `t('bulk_download_partial', { success: 7, total: 1
 **File**: `src/components/OptionsPage/index.tsx` (or the appropriate sub-component)
 
 Add a button in the OptionsPage that:
+
 1. Calls `debugLogger.export()`
 2. Creates a `Blob` from the JSON string
 3. Triggers a download via `URL.createObjectURL` + anchor click pattern (not `chrome.downloads` — simpler)

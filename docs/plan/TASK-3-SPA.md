@@ -1,6 +1,7 @@
 # TASK-3 — SPA / Dynamic Content Support
 
 ## Context Files
+
 Paste before starting: `docs/plan/PROJECT.md`
 Prerequisite: TASK-0 complete. TASK-2 recommended first (this task calls the same image collection logic).
 
@@ -44,11 +45,13 @@ Currently the image collection logic is inlined inside the `GRAB_IMAGES` message
 Extract it into a standalone function `collectImages(): ImageData[]` so it can be called from multiple places (handler, MutationObserver, rescan).
 
 The function signature:
+
 ```ts
-function collectImages(): { images: ImageData[]; pageUrl: string }
+function collectImages(): { images: ImageData[]; pageUrl: string };
 ```
 
 This is a refactor only — do not change the logic. The handler becomes:
+
 ```ts
 if (message.action === MessageActionType.GRAB_IMAGES) {
   sendResponse(collectImages());
@@ -111,6 +114,7 @@ if (document.readyState === 'loading') {
 ```
 
 Notes:
+
 - 800ms delay after DOMContentLoaded gives most SPA frameworks time to render initial content
 - 500ms debounce prevents excessive rescans during rapid DOM changes (infinite scroll)
 - `attributeFilter` limits observer to image-related attributes only — avoids performance hit from class/style changes
@@ -134,6 +138,7 @@ if (message.action === MessageActionType.GRAB_IMAGES) {
 ```
 
 **`RESCAN_IMAGES` always bypasses cache:**
+
 ```ts
 if (message.action === MessageActionType.RESCAN_IMAGES) {
   const result = collectImages();
@@ -151,6 +156,7 @@ if (message.action === MessageActionType.RESCAN_IMAGES) {
 Add a refresh/rescan button next to the existing toolbar actions.
 
 Behavior:
+
 1. User clicks "Rescan page"
 2. Popup sends `RESCAN_IMAGES` to content script of the originating tab
 3. Response merges with (or replaces) the current image list
@@ -159,6 +165,7 @@ Behavior:
 **Note on tab identity**: The Page component (`page.html`) is a separate tab — it does not have a reference to the original tab that was being scraped. The tab ID must be stored in the `imageStore` alongside `pageUrl`.
 
 Update `useImageStore` in `src/store/imageStore.ts` and `src/store/types.ts`:
+
 - Add `sourceTabId: number | null` to `ImageState`
 - Populate it in the Popup before calling `openImagesPage`:
   ```ts
@@ -170,7 +177,7 @@ Update `useImageStore` in `src/store/imageStore.ts` and `src/store/types.ts`:
   export interface PageImagesPayload {
     images: ImageData[];
     pageUrl: string;
-    sourceTabId: number;  // add this
+    sourceTabId: number; // add this
   }
   ```
 
@@ -190,13 +197,10 @@ const handleRescan = useCallback(async () => {
     );
     if (response?.images) {
       // Merge: add new images not already in the list (by src)
-      const existingSrcs = new Set(useImageStore.getState().images.map(img => img.src));
-      const newImages = response.images.filter(img => !existingSrcs.has(img.src));
+      const existingSrcs = new Set(useImageStore.getState().images.map((img) => img.src));
+      const newImages = response.images.filter((img) => !existingSrcs.has(img.src));
       if (newImages.length > 0) {
-        useImageStore.getState().setImages([
-          ...useImageStore.getState().images,
-          ...newImages,
-        ]);
+        useImageStore.getState().setImages([...useImageStore.getState().images, ...newImages]);
         showNotification(`Found ${newImages.length} new image(s)`);
       } else {
         showNotification('No new images found');
@@ -282,13 +286,13 @@ describe('imageStore sourceTabId', () => {
 
 ## Manual E2E Checklist
 
-| Scenario | Steps | Expected |
-|---|---|---|
-| React SPA (e.g., create-react-app) | Open app, wait 2s, click extension | Images from rendered DOM detected |
-| Infinite scroll | Open page, scroll to bottom, click "Rescan" | New images added to existing list |
-| Image count improves | Compare count before/after on SPA | Count >= before |
-| "Rescan" spinner | Click rescan on slow page | Button shows loading state |
-| Rescan on tab that was closed | Close original tab, click rescan | Graceful error / no crash |
+| Scenario                           | Steps                                       | Expected                          |
+| ---------------------------------- | ------------------------------------------- | --------------------------------- |
+| React SPA (e.g., create-react-app) | Open app, wait 2s, click extension          | Images from rendered DOM detected |
+| Infinite scroll                    | Open page, scroll to bottom, click "Rescan" | New images added to existing list |
+| Image count improves               | Compare count before/after on SPA           | Count >= before                   |
+| "Rescan" spinner                   | Click rescan on slow page                   | Button shows loading state        |
+| Rescan on tab that was closed      | Close original tab, click rescan            | Graceful error / no crash         |
 
 ## Acceptance Criteria
 

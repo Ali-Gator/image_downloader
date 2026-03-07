@@ -137,13 +137,16 @@ global.chrome = {
   },
   declarativeNetRequest: {
     getSessionRules: vi.fn(async () => []),
-    updateSessionRules: vi.fn(async () => {
-    }),
+    updateSessionRules: vi.fn(async () => {}),
     RuleActionType: { MODIFY_HEADERS: 'modifyHeaders' },
     HeaderOperation: { SET: 'set' },
     ResourceType: {
-      IMAGE: 'image', MEDIA: 'media', XMLHTTPREQUEST: 'xmlhttprequest',
-      OTHER: 'other', MAIN_FRAME: 'main_frame', SUB_FRAME: 'sub_frame',
+      IMAGE: 'image',
+      MEDIA: 'media',
+      XMLHTTPREQUEST: 'xmlhttprequest',
+      OTHER: 'other',
+      MAIN_FRAME: 'main_frame',
+      SUB_FRAME: 'sub_frame',
     },
   },
 } as unknown as typeof chrome;

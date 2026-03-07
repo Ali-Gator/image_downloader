@@ -20,20 +20,27 @@ declare global {
     /** ISO timestamp when user was created */
     created_at: string;
   }
-   
+
   interface Balance {
     /** Type of tokens (e.g., 'standard', 'advanced') */
     type: string;
     /** Amount of balance remaining */
     count: number;
   }
-   
+
   interface Purchase {
     /** ID of the purchase/subscription */
-    id: string
+    id: string;
     /** Current status of the purchase/subscription */
-    status: 'active' | 'paid' | 'pending' | 'unpaid' | 'canceled' |
-            'incomplete_expired' | 'past_due' | 'incomplete';
+    status:
+      | 'active'
+      | 'paid'
+      | 'pending'
+      | 'unpaid'
+      | 'canceled'
+      | 'incomplete_expired'
+      | 'past_due'
+      | 'incomplete';
     /** ISO timestamp when current billing period started */
     current_period_start: string;
     /** ISO timestamp when current billing period ends */
@@ -44,9 +51,9 @@ declare global {
     canceled_at?: string;
     /** ISO timestamp when subscription was created */
     created: string;
-    unit_amount: number
-    interval: string
-    currency: string
+    unit_amount: number;
+    interval: string;
+    currency: string;
     /** ISO timestamp when subscription ended, if applicable */
     ended_at?: string;
   }
