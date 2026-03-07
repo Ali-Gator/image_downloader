@@ -3,11 +3,30 @@ import { resolve } from 'path';
 import { crx } from '@crxjs/vite-plugin';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 import manifest from './src/manifest';
 
 export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['src/__tests__/setup.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['node_modules', 'build'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.d.ts',
+        'src/__tests__/**',
+        'src/containers/**',
+        'src/theme/**',
+      ],
+      // thresholds: { lines: 80, functions: 80 }, // enable once coverage is sufficient
+    },
+  },
   build: {
     sourcemap: false,
     emptyOutDir: true,

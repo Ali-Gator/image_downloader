@@ -1,6 +1,7 @@
 # TASK-0 — Test Infrastructure Setup
 
 ## Context Files
+
 Paste before starting: `docs/plan/PROJECT.md`
 
 ## Problem
@@ -23,6 +24,7 @@ yarn add -D vitest @vitest/coverage-v8 jsdom @testing-library/react @testing-lib
 ```
 
 Notes:
+
 - `@vitest/coverage-v8` — V8-based coverage (no instrumentation overhead)
 - `jsdom` — for content script and DOM utility tests
 - `@testing-library/react` — for React component tests (future tasks)
@@ -36,26 +38,49 @@ Add a `test` block to the existing `vite.config.ts`. Do not replace existing con
 // Add inside defineConfig({...}):
 test: {
   globals: true,
-  environment: 'jsdom',
-  setupFiles: ['src/__tests__/setup.ts'],
-  include: ['src/**/*.{test,spec}.{ts,tsx}'],
-  exclude: ['node_modules', 'build'],
-  coverage: {
+    environment
+:
+  'jsdom',
+    setupFiles
+:
+  ['src/__tests__/setup.ts'],
+    include
+:
+  ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude
+:
+  ['node_modules', 'build'],
+    coverage
+:
+  {
     provider: 'v8',
-    reporter: ['text', 'lcov'],
-    include: ['src/**/*.{ts,tsx}'],
-    exclude: [
+      reporter
+  :
+    ['text', 'lcov'],
+      include
+  :
+    ['src/**/*.{ts,tsx}'],
+      exclude
+  :
+    [
       'src/**/*.d.ts',
       'src/__tests__/**',
       'src/containers/**',   // entry points — tested via E2E
       'src/theme/**',
     ],
-    thresholds: {
+      thresholds
+  :
+    {
       lines: 80,
-      functions: 80,
-    },
-  },
-},
+        functions
+    :
+      80,
+    }
+  ,
+  }
+,
+}
+,
 ```
 
 ### Step 3 — Create setup file `src/__tests__/setup.ts`
@@ -86,7 +111,10 @@ global.chrome = {
   storage: {
     local: {
       get: vi.fn((keys, cb) => cb({})),
-      set: vi.fn((data, cb) => { Object.assign(chromeStorageData, data); cb?.(); }),
+      set: vi.fn((data, cb) => {
+        Object.assign(chromeStorageData, data);
+        cb?.();
+      }),
       remove: vi.fn((keys, cb) => cb?.()),
     },
     sync: {
@@ -109,7 +137,8 @@ global.chrome = {
   },
   declarativeNetRequest: {
     getSessionRules: vi.fn(async () => []),
-    updateSessionRules: vi.fn(async () => {}),
+    updateSessionRules: vi.fn(async () => {
+    }),
     RuleActionType: { MODIFY_HEADERS: 'modifyHeaders' },
     HeaderOperation: { SET: 'set' },
     ResourceType: {
@@ -157,25 +186,29 @@ Run `yarn test` — all 3 tests must pass.
 ### Step 6 — Update `tsconfig.json` for test types
 
 Add to `compilerOptions`:
+
 ```json
 "types": ["vitest/globals", "chrome"]
 ```
 
 Or create `src/__tests__/vitest.d.ts`:
+
 ```ts
 /// <reference types="vitest/globals" />
 ```
 
 ## Acceptance Criteria
 
-- [ ] `yarn test` runs and exits 0
-- [ ] `yarn test:coverage` runs and shows coverage report
-- [ ] All 3 smoke tests pass
-- [ ] No TypeScript errors in test files (`yarn build` still passes)
-- [ ] `vi.fn()` is available globally in test files without import
+- [x] `yarn test` runs and exits 0
+- [x] `yarn test:coverage` runs and shows coverage report
+- [x] All 3 smoke tests pass
+- [x] No TypeScript errors in test files (`yarn build` still passes)
+- [x] `vi.fn()` is available globally in test files without import
 
 ## Notes
 
 - Do not add `@types/jest` — conflicts with Vitest globals
-- Chrome API mock in setup.ts is intentionally minimal; extend per-test with `vi.mocked(chrome.X.Y).mockReturnValue(...)`
-- Tests for `src/background/index.ts` are harder to unit-test (side effects on module load); skip for now, cover via integration tests in later tasks
+- Chrome API mock in setup.ts is intentionally minimal; extend per-test with
+  `vi.mocked(chrome.X.Y).mockReturnValue(...)`
+- Tests for `src/background/index.ts` are harder to unit-test (side effects on module load); skip for now, cover via
+  integration tests in later tasks

@@ -10,7 +10,10 @@
       "mcp__sentry__search_events",
       "mcp__sentry__find_projects",
       "WebFetch",
-      "Bash(npx skills:*)"
+      "Bash(npx skills:*)",
+      "Bash(yarn test:*)",
+      "Bash(yarn test:coverage:*)",
+      "Bash(npx tsc:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
