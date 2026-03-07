@@ -240,6 +240,17 @@ export const SENTRY_FILTER_ERRORS = [
   'this page cannot be scripted',
   'extensionssettings policy',
   'cannot be scripted due to an extensionssettings policy',
+  // Chrome script injection errors (typo is in Chrome itself)
+  'cannot excute script on this site',
+  'cannot execute script on this site',
+  // Chrome tab/window state errors
+  'tab creation is restricted',
+  'tabs cannot be edited right now',
+  // Chrome IO errors
+  'unable to create writable file',
+  'unable to create sequential file',
+  'io error',
+  'access denied',
 ];
 
 export const PAYWALL_ID = '711';

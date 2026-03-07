@@ -13,7 +13,10 @@
       "Bash(npx skills:*)",
       "Bash(yarn test:*)",
       "Bash(yarn test:coverage:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(yarn build:*)",
+      "Bash(npx vitest:*)",
+      "mcp__ide__getDiagnostics"
     ]
   },
   "enableAllProjectMcpServers": true,
