@@ -1,6 +1,8 @@
 import { ImageCandidate, ImageData, MessageActionType } from '../types';
 import { ContentScriptConstants, handleError, PlaceholderImages } from '../utils';
+import { scanBackgroundImages } from '../utils/backgroundImageScanner';
 import { getSmartFileName } from '../utils/fileUtils';
+import { getBestSrcFromElement, getPictureSourceUrl, isPlaceholderDataUrl, } from '../utils/imageSrcExtractor';
 import { blobToDataUrl } from '../utils/imageUtils';
 
 /**
@@ -16,7 +18,7 @@ const isValidImage = (url: string): boolean => {
   if (
     !url ||
     url.trim() === '' ||
-    url.startsWith(PlaceholderImages.DATA_GIF) ||
+    isPlaceholderDataUrl(url) ||
     url.includes(PlaceholderImages.SPACER_GIF)
   ) {
     return false;
@@ -137,38 +139,55 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
       const seenUrls = new Set<string>();
 
       for (const img of imagesToProcess) {
-        // Проверяем, является ли изображение допустимым и достаточно большим
-        const isValid = isValidImage(img.src);
+        const bestSrc = getPictureSourceUrl(img) ?? getBestSrcFromElement(img);
+
+        const isValid = isValidImage(bestSrc);
         const isBigEnough =
           img.naturalWidth > PlaceholderImages.MIN_SIZE_PX &&
           img.naturalHeight > PlaceholderImages.MIN_SIZE_PX;
 
-        // Пропускаем невалидные изображения и дубликаты
-        if (!isValid || !isBigEnough || seenUrls.has(img.src)) {
+        if (!isValid || !isBigEnough || seenUrls.has(bestSrc)) {
           continue;
         }
 
-        // Добавляем URL в множество просмотренных
-        seenUrls.add(img.src);
+        seenUrls.add(bestSrc);
+        // Also track original src to avoid duplicates when both resolve to same image
+        if (img.src) seenUrls.add(img.src);
 
-        // Создаем объект изображения с именем файла для поиска
         const imageCandidate: ImageCandidate = {
-          id: generateImageId(img.src, img.naturalWidth, img.naturalHeight),
-          src: img.src,
+          id: generateImageId(bestSrc, img.naturalWidth, img.naturalHeight),
+          src: bestSrc,
           alt: img.alt || '',
           width: img.naturalWidth,
           height: img.naturalHeight,
           aspectRatio: img.naturalWidth / img.naturalHeight,
           filename: '',
           fileSize: estimateImageSize(img),
-          qualityScore: 0, // Default quality score
+          qualityScore: 0,
         };
 
-        // Генерируем умное имя файла, которое будет использоваться всеми компонентами
         imageCandidate.filename = getSmartFileName(imageCandidate);
-
-        // Добавляем изображение в список кандидатов
         candidateImages.push(imageCandidate);
+      }
+
+      // Collect background images
+      const bgImages = scanBackgroundImages(PlaceholderImages.MIN_SIZE_PX);
+      for (const bg of bgImages) {
+        if (!isValidImage(bg.url) || seenUrls.has(bg.url)) continue;
+        seenUrls.add(bg.url);
+        const bgCandidate: ImageCandidate = {
+          id: generateImageId(bg.url, bg.width, bg.height),
+          src: bg.url,
+          alt: '',
+          width: bg.width,
+          height: bg.height,
+          aspectRatio: bg.height > 0 ? bg.width / bg.height : 0,
+          filename: '',
+          fileSize: 0,
+          qualityScore: 0,
+        };
+        bgCandidate.filename = getSmartFileName(bgCandidate);
+        candidateImages.push(bgCandidate);
       }
 
       // Sort images by size (area) - larger images first
@@ -178,16 +197,15 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
         return areaB - areaA;
       });
 
-      // Remove quality score from final results as it's not part of ImageData type
-      const filteredImages: ImageData[] = candidateImages.map((candidate) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { qualityScore, ...imageData } = candidate;
-        return imageData;
-      });
-
       // Limit final results to prevent UI overload and memory issues
       const MAX_FINAL_IMAGES = 200;
-      const finalImages = filteredImages.slice(0, MAX_FINAL_IMAGES);
+      const finalImages: ImageData[] = candidateImages
+        .slice(0, MAX_FINAL_IMAGES)
+        .map((candidate) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { qualityScore, ...imageData } = candidate;
+          return imageData;
+        });
 
       sendResponse({ images: finalImages, pageUrl: window.location.href });
       return true; // Указываем, что ответ будет асинхронным

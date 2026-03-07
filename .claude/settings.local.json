@@ -18,9 +18,12 @@
       "Bash(npx vitest:*)",
       "mcp__ide__getDiagnostics",
       "Bash(yarn format:*)",
-      "Bash(yarn add:*)"
+      "Bash(yarn add:*)",
+      "Bash(grep:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["sentry"]
+  "enabledMcpjsonServers": [
+    "sentry"
+  ]
 }
