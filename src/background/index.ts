@@ -330,6 +330,23 @@ async function diagnoseContentScript() {
     const isAvailable = await isContentScriptAvailable(tabId);
 
     if (!isAvailable) {
+      // Skip injection for unsupported URLs (chrome://, chrome-extension://, etc.)
+      if (tab.url) {
+        const lowerUrl = tab.url.toLowerCase();
+        const unsupportedProtocols = [
+          'chrome:',
+          'chrome-extension:',
+          'moz-extension:',
+          'edge:',
+          'file:',
+          'about:',
+          'data:',
+        ];
+        if (unsupportedProtocols.some((p) => lowerUrl.startsWith(p))) {
+          return;
+        }
+      }
+
       // Content script недоступен - логируем это
       const diagnosticError = new Error('Content script not available on active tab');
       Object.assign(diagnosticError, {

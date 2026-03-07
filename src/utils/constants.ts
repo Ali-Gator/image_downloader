@@ -216,9 +216,23 @@ export const ContentScriptConstants = {
 };
 
 export const SENTRY_FILTER_ERRORS = [
-  // Too generic: replace with precise Chrome messaging cases
-  'cannot access',
+  // Chrome internal pages — content scripts cannot access these
+  'cannot access a chrome://',
+  'cannot access contents of url "chrome',
+  // Chrome messaging — expected when content script or SW not ready
+  'receiving end does not exist',
+  'could not establish connection',
+  // Chrome window/tab context — expected in background or headless contexts
+  'no current window',
+  // Generic Chrome API error — not actionable
+  'unknown error.',
+  // Paywall SDK / Chrome SW unavailable
+  'no sw',
+  // Chrome fetch blocked by Safe Browsing or browser policy
+  'blocked',
+  // Extension store pages
   'extensions gallery',
+  // Chrome internal messaging edge cases
   'frame with id 0',
   'no tab with id:',
   'the browser is shutting down',
