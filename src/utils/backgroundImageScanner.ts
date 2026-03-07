@@ -11,7 +11,7 @@ const BG_SELECTORS = [
   '.card-image',
 ].join(', ');
 
-const MAX_RESULTS = 50;
+const MAX_RESULTS = 200;
 
 export interface BackgroundImageInfo {
   url: string;

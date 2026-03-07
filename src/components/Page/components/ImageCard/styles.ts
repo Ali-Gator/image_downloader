@@ -177,6 +177,7 @@ export const listImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   flexDirection: 'row',
   alignItems: 'center',
   padding: theme.spacing(CARD_STYLES.COMMON.PADDING),
+  marginBottom: theme.spacing(2),
   gap: theme.spacing(2),
   cursor: 'default',
 

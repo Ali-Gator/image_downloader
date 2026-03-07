@@ -2,7 +2,11 @@ import { ImageCandidate, ImageData, MessageActionType } from '../types';
 import { ContentScriptConstants, handleError, PlaceholderImages } from '../utils';
 import { scanBackgroundImages } from '../utils/backgroundImageScanner';
 import { getSmartFileName } from '../utils/fileUtils';
-import { getBestSrcFromElement, getPictureSourceUrl, isPlaceholderDataUrl, } from '../utils/imageSrcExtractor';
+import {
+  getBestSrcFromElement,
+  getPictureSourceUrl,
+  isPlaceholderDataUrl,
+} from '../utils/imageSrcExtractor';
 import { blobToDataUrl } from '../utils/imageUtils';
 
 /**
@@ -131,7 +135,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
       const allImgElements = Array.from(document.getElementsByTagName('img'));
 
       // Limit processing to avoid memory issues - process in batches
-      const MAX_IMAGES_TO_PROCESS = 500;
+      const MAX_IMAGES_TO_PROCESS = 2000;
       const imagesToProcess = allImgElements.slice(0, MAX_IMAGES_TO_PROCESS);
 
       // Сразу отфильтровываем и создаем объекты с нужными свойствами
@@ -198,7 +202,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
       });
 
       // Limit final results to prevent UI overload and memory issues
-      const MAX_FINAL_IMAGES = 200;
+      const MAX_FINAL_IMAGES = 2000;
       const finalImages: ImageData[] = candidateImages
         .slice(0, MAX_FINAL_IMAGES)
         .map((candidate) => {

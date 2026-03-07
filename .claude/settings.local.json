@@ -19,11 +19,10 @@
       "mcp__ide__getDiagnostics",
       "Bash(yarn format:*)",
       "Bash(yarn add:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(yarn lint:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "sentry"
-  ]
+  "enabledMcpjsonServers": ["sentry"]
 }
