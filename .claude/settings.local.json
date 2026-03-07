@@ -5,7 +5,12 @@
       "Bash(ls:*)",
       "mcp__sentry__find_organizations",
       "mcp__sentry__search_issues",
-      "mcp__sentry__get_issue_details"
+      "mcp__sentry__get_issue_details",
+      "WebSearch",
+      "mcp__sentry__search_events",
+      "mcp__sentry__find_projects",
+      "WebFetch",
+      "Bash(npx skills:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
