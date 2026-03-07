@@ -6,6 +6,7 @@ import {
   getBestSrcFromElement,
   getPictureSourceUrl,
   isPlaceholderDataUrl,
+  normalizeImageUrl,
 } from '../utils/imageSrcExtractor';
 import { blobToDataUrl } from '../utils/imageUtils';
 
@@ -172,6 +173,35 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
 
         imageCandidate.filename = getSmartFileName(imageCandidate);
         candidateImages.push(imageCandidate);
+      }
+
+      // Collect SVG elements with data-src (lazy-loaded external SVGs)
+      const svgElements = document.querySelectorAll('svg[data-src]');
+      for (const svg of svgElements) {
+        const rawSrc = svg.getAttribute('data-src');
+        if (!rawSrc) continue;
+        const src = normalizeImageUrl(rawSrc);
+        if (!isValidImage(src) || seenUrls.has(src)) continue;
+        seenUrls.add(src);
+
+        const width = svg.getAttribute('width');
+        const height = svg.getAttribute('height');
+        const w = parseInt(width || '0', 10) || 200;
+        const h = parseInt(height || '0', 10) || 200;
+
+        const svgCandidate: ImageCandidate = {
+          id: generateImageId(src, w, h),
+          src,
+          alt: svg.getAttribute('aria-label') || '',
+          width: w,
+          height: h,
+          aspectRatio: h > 0 ? w / h : 0,
+          filename: '',
+          fileSize: 0,
+          qualityScore: 0,
+        };
+        svgCandidate.filename = getSmartFileName(svgCandidate);
+        candidateImages.push(svgCandidate);
       }
 
       // Collect background images
