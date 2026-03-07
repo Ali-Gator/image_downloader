@@ -16,7 +16,9 @@
       "Bash(npx tsc:*)",
       "Bash(yarn build:*)",
       "Bash(npx vitest:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(yarn format:*)",
+      "Bash(yarn add:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

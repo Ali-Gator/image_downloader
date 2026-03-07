@@ -202,14 +202,24 @@ Background images with `width: 0, height: 0` will sort after real images (they s
 
 **3d. Keep all existing limits** (MAX_IMAGES_TO_PROCESS=500, MAX_FINAL_IMAGES=200).
 
-### Step 4 — Update `isValidImage` to also filter data-gif srcset results
+### Step 4 — Update `isValidImage` to filter placeholder data URLs by length
 
-The `parseSrcset` output could potentially produce data URLs. Add a check:
+The `parseSrcset` output could potentially produce data URLs. Current code already filters all `data:image/gif;base64` URLs, but this is too aggressive — legitimate inline GIF/SVG images would be lost. Instead, filter by **URL length**: real placeholder data URLs are very short (~70–150 chars), while actual images are thousands of chars long.
+
+Replace the blanket `data:image/gif` check with a length-based helper:
 
 ```ts
-if (url.startsWith('data:image/gif')) return false;
-if (url.startsWith('data:image/svg+xml')) return false; // SVG placeholders
+const MAX_PLACEHOLDER_DATA_URL_LENGTH = 200;
+
+const isPlaceholderDataUrl = (url: string): boolean => {
+  return (
+    (url.startsWith('data:image/gif') || url.startsWith('data:image/svg+xml')) &&
+    url.length < MAX_PLACEHOLDER_DATA_URL_LENGTH
+  );
+};
 ```
+
+Use `isPlaceholderDataUrl(url)` in `isValidImage` instead of the current `url.startsWith(PlaceholderImages.DATA_GIF)` check. This preserves filtering of 1x1 spacer GIFs and empty SVG placeholders while keeping legitimate inline images.
 
 ## Tests to Write
 
