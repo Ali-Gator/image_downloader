@@ -39,13 +39,13 @@ export const DimensionsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(0.35),
-  flexWrap: 'wrap',
+  flexWrap: 'nowrap',
+  overflow: 'hidden',
   width: '100%',
   justifyContent: 'flex-start',
   marginTop: 0,
 
   '.list-mode &': {
-    flexWrap: 'nowrap',
     gap: theme.spacing(0.5),
   },
 }));

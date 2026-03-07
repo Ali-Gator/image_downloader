@@ -104,12 +104,10 @@ const commonImageStyles = {
 // ===== GRID MODE STYLES =====
 const gridImageContainerStyles = (theme: Theme) => ({
   position: 'relative',
-  flex: '1 0 auto',
-  minHeight: theme.spacing(CARD_STYLES.GRID.IMAGE_CONTAINER_MIN_HEIGHT),
+  height: theme.spacing(CARD_STYLES.GRID.IMAGE_CONTAINER_MIN_HEIGHT),
   display: 'flex',
   alignItems: 'center',
   marginBottom: theme.spacing(0.5),
-  // No need for top margin since action bar is absolutely positioned
 });
 
 const gridImageStyles = (theme: Theme) => ({
@@ -162,7 +160,6 @@ export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
     objectFit: 'contain',
   },
 
-  // Compact info container
   '& .dimensions-container': {
     justifyContent: 'flex-start',
     flexWrap: 'wrap',

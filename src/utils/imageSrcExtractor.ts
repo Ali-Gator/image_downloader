@@ -113,16 +113,37 @@ export function getPictureSourceUrl(img: HTMLImageElement): string | null {
 }
 
 /**
- * Removes common CDN resize parameters from a URL.
+ * Known image optimizer paths where resize params are functional, not decorative.
+ * Stripping them would break the URL or return a different/broken image.
+ */
+const IMAGE_OPTIMIZER_PATHS = ['/_next/image', '/_vercel/image'];
+
+/**
+ * Resolves relative URLs to absolute and removes common CDN resize parameters.
+ * Skips param stripping for known image optimizers (Next.js, Vercel) where
+ * query params are required for the image to load.
  */
 export function normalizeImageUrl(url: string): string {
   try {
-    const parsed = new URL(url);
-    for (const key of [...parsed.searchParams.keys()]) {
-      if (RESIZE_PARAMS.has(key.toLowerCase())) {
-        parsed.searchParams.delete(key);
+    // Resolve relative URLs against the current page
+    const baseUrl =
+      typeof document !== 'undefined'
+        ? document.baseURI
+        : typeof location !== 'undefined'
+          ? location.href
+          : undefined;
+    const parsed = new URL(url, baseUrl);
+
+    // Don't strip params from image optimizer endpoints
+    const isOptimizer = IMAGE_OPTIMIZER_PATHS.some((p) => parsed.pathname.startsWith(p));
+    if (!isOptimizer) {
+      for (const key of [...parsed.searchParams.keys()]) {
+        if (RESIZE_PARAMS.has(key.toLowerCase())) {
+          parsed.searchParams.delete(key);
+        }
       }
     }
+
     return parsed.toString();
   } catch {
     return url;
