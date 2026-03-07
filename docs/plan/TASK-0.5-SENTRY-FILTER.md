@@ -1,6 +1,7 @@
 # TASK-0.5 — Fix Sentry Error Filter Bypass
 
 ## Context Files
+
 Paste before starting: `docs/plan/PROJECT.md`
 No prerequisites — can be done independently at any time.
 
@@ -12,13 +13,13 @@ which is called from `handleError()`.
 
 **However, 3 out of 5 code paths to Sentry bypass `handleError()` entirely:**
 
-| Code path | File | Goes through filter? |
-|---|---|---|
-| `handleError(error)` | `errorHandlers.ts:27` | Yes |
-| `withErrorHandling(action)` | `errorHandlers.ts:60` | Yes (calls `handleError`) |
-| `setupGlobalErrorHandlers()` → `unhandledrejection` | `errorHandlers.ts:82-88` | **NO** |
-| `setupGlobalErrorHandlers()` → `error` event | `errorHandlers.ts:90-94` | **NO** |
-| `ErrorBoundary.componentDidCatch` | `ErrorBoundary/index.tsx:25` | **NO** |
+| Code path                                           | File                         | Goes through filter?      |
+|-----------------------------------------------------|------------------------------|---------------------------|
+| `handleError(error)`                                | `errorHandlers.ts:27`        | Yes                       |
+| `withErrorHandling(action)`                         | `errorHandlers.ts:60`        | Yes (calls `handleError`) |
+| `setupGlobalErrorHandlers()` → `unhandledrejection` | `errorHandlers.ts:82-88`     | **NO**                    |
+| `setupGlobalErrorHandlers()` → `error` event        | `errorHandlers.ts:90-94`     | **NO**                    |
+| `ErrorBoundary.componentDidCatch`                   | `ErrorBoundary/index.tsx:25` | **NO**                    |
 
 This means browser-level unhandled errors (which include many of the filtered patterns like
 "Blocked", "No current window", "receiving end does not exist") are sent to Sentry unfiltered.
@@ -79,6 +80,7 @@ export function handleError(error: unknown, showAlert = false, customMessage?: s
 ### Option B: Wrap all `captureException` call sites
 
 Add `shouldIgnoreError` checks before each direct `captureException` call in:
+
 - `errorHandlers.ts:87` (unhandledrejection)
 - `errorHandlers.ts:93` (error event)
 - `ErrorBoundary/index.tsx:25`
@@ -148,7 +150,8 @@ describe('handleError', () => {
   });
 
   it('calls alert when showAlert=true', () => {
-    vi.spyOn(window, 'alert').mockImplementation(() => {});
+    vi.spyOn(window, 'alert').mockImplementation(() => {
+    });
     handleError(new Error('Real error'), true, 'Custom message');
     expect(window.alert).toHaveBeenCalledWith('Custom message');
   });
@@ -157,12 +160,12 @@ describe('handleError', () => {
 
 ## Acceptance Criteria
 
-- [ ] `captureException` checks `shouldIgnoreError` before sending to Sentry
-- [ ] All 3 bypass paths (unhandledrejection, error event, ErrorBoundary) are now filtered
-- [ ] Missing filter patterns added to `SENTRY_FILTER_ERRORS`
-- [ ] Unit tests verify filtered errors return `null`
-- [ ] Unit tests verify real errors are still sent
-- [ ] `yarn build` passes
+- [x] `captureException` checks `shouldIgnoreError` before sending to Sentry
+- [x] All 3 bypass paths (unhandledrejection, error event, ErrorBoundary) are now filtered
+- [x] Missing filter patterns added to `SENTRY_FILTER_ERRORS`
+- [x] Unit tests verify filtered errors return `null`
+- [x] Unit tests verify real errors are still sent
+- [x] `yarn build` passes
 - [ ] After deploy: Sentry error count drops by ~70% within 24 hours
 
 ## Estimated Impact

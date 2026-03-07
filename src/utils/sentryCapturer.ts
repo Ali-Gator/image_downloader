@@ -9,6 +9,7 @@ import {
   Scope,
 } from '@sentry/browser';
 
+import { SENTRY_FILTER_ERRORS } from './constants';
 import packageData from '../../package.json';
 
 const isDev: boolean = process.env.NODE_ENV == 'development';
@@ -34,8 +35,17 @@ const client = new BrowserClient({
 const scope = new Scope();
 scope.setClient(client);
 
+function shouldIgnoreError(errorMessage: string): boolean {
+  const lower = errorMessage.toLowerCase();
+  return SENTRY_FILTER_ERRORS.some((substr) => lower.includes(substr));
+}
+
 // Function to capture exceptions
 export const captureException = (error: Error, errorInfo?: ErrorInfo) => {
+  if (shouldIgnoreError(error.message || '')) {
+    return null;
+  }
+
   // Set additional context to help with debugging
   scope.setTag('error.type', error.name);
   scope.setTag('handled', 'true');
