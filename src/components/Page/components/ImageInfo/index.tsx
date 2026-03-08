@@ -37,22 +37,20 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
 
   // Хуки всегда вызываются, даже если image не найден
   const isListMode = !isGridView;
-  const emptyStr = '';
-  const defaultSrc = '';
-  const defaultFileName = '';
 
   // Безопасно извлекаем значения, используя дефолтные, если image не найден
-  const src = image?.src || defaultSrc;
+  const src = image?.src || '';
   const width = image?.width;
   const height = image?.height;
-  const fileName = image ? image.filename : defaultFileName;
+  const fileName = image?.filename || '';
   const formattedFileSize = image?.fileSize ? formatFileSize(image.fileSize) : null;
 
   // Используем хуки всегда, даже если image не найден
   const { handleCopyUrl, handleDownload } = useImageOperations(src, fileName);
 
   // Вычисляем свойства, основанные на извлеченных данных
-  const dimensions = width && height ? `${width} × ${height}` : emptyStr;
+  const hasDimensions = (width ?? 0) > 0 && (height ?? 0) > 0;
+  const dimensionsDisplay = hasDimensions ? `${width} × ${height}` : t('dimensions_unknown');
   const urlDisplay = getFriendlyUrlDisplay(src);
   const canOpenExternally = !src.startsWith('data:') && !src.startsWith('blob:');
   const fileExtension = getFileExtension(fileName);
@@ -60,7 +58,7 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   // Determine image quality based on dimensions
   const qualityLevel = getQualityFromDimensions(width || 0, height || 0);
 
-  const qualityLabel = qualityLevel.toUpperCase();
+  const qualityLabel = hasDimensions ? qualityLevel.toUpperCase() : '?';
 
   // Если изображение не найдено, возвращаем пустой контейнер
   if (!image) {
@@ -73,16 +71,14 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
         {fileName}
       </FileName>
 
-      {dimensions && (
-        <DimensionsContainer className="dimensions-container">
-          <Dimensions className="dimensions">{dimensions}</Dimensions>
+      <DimensionsContainer className="dimensions-container">
+        <Dimensions className="dimensions">{dimensionsDisplay}</Dimensions>
           {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
           <FileExtension className="file-extension">{fileExtension}</FileExtension>
           <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
             {qualityLabel}
           </QualityBadge>
-        </DimensionsContainer>
-      )}
+      </DimensionsContainer>
 
       {isListMode && (
         <>

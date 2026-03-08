@@ -2,6 +2,7 @@ import { ImageCandidate, ImageData, MessageActionType } from '../types';
 import { ContentScriptConstants, handleError, PlaceholderImages } from '../utils';
 import { scanBackgroundImages } from '../utils/backgroundImageScanner';
 import { getSmartFileName } from '../utils/fileUtils';
+import { generateImageId } from '../utils/idUtils';
 import {
   getBestSrcFromElement,
   getPictureSourceUrl,
@@ -9,6 +10,12 @@ import {
   normalizeImageUrl,
 } from '../utils/imageSrcExtractor';
 import { blobToDataUrl } from '../utils/imageUtils';
+import {
+  isCanvasHeavyApp,
+  observeNewPerformanceEntries,
+  performanceUrlsToImageData,
+  scanPerformanceEntries,
+} from '../utils/performanceImageScanner';
 
 /**
  * Проверяет, является ли URL допустимым изображением
@@ -42,10 +49,6 @@ const isValidImage = (url: string): boolean => {
       return false;
     }
   }
-};
-
-const generateImageId = (src: string, width: number, height: number): string => {
-  return `${src}_${width}_${height}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 };
 
 /**
@@ -111,6 +114,34 @@ async function fetchImageAsDataUrl(url: string): Promise<string | null> {
   }
 }
 
+// Module-level cache for images discovered by PerformanceObserver between scans
+let perfObserverCache: ImageCandidate[] = [];
+const perfObserverSeenUrls = new Set<string>();
+let isCanvasApp = false;
+
+// Defer DOM detection + observer setup until DOM is ready
+function initPerfObserver() {
+  isCanvasApp = isCanvasHeavyApp();
+
+  observeNewPerformanceEntries(
+    (newUrls) => {
+      const unseen = newUrls.filter((url) => !perfObserverSeenUrls.has(url));
+      if (unseen.length === 0) return;
+      for (const url of unseen) perfObserverSeenUrls.add(url);
+      performanceUrlsToImageData(unseen).then((newImages) => {
+        perfObserverCache = [...perfObserverCache, ...newImages];
+      });
+    },
+    { includeXhr: isCanvasApp },
+  );
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPerfObserver, { once: true });
+} else {
+  initPerfObserver();
+}
+
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   try {
@@ -133,116 +164,156 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
     }
 
     if (message.action === MessageActionType.GRAB_IMAGES) {
-      const allImgElements = Array.from(document.getElementsByTagName('img'));
+      // Wrap in async IIFE since the handler must return true synchronously
+      (async () => {
+        try {
+          const allImgElements = Array.from(document.getElementsByTagName('img'));
 
-      // Limit processing to avoid memory issues - process in batches
-      const MAX_IMAGES_TO_PROCESS = 2000;
-      const imagesToProcess = allImgElements.slice(0, MAX_IMAGES_TO_PROCESS);
+          // Limit processing to avoid memory issues - process in batches
+          const MAX_IMAGES_TO_PROCESS = 2000;
+          const imagesToProcess = allImgElements.slice(0, MAX_IMAGES_TO_PROCESS);
 
-      // Сразу отфильтровываем и создаем объекты с нужными свойствами
-      const candidateImages: ImageCandidate[] = [];
-      const seenUrls = new Set<string>();
+          // Сразу отфильтровываем и создаем объекты с нужными свойствами
+          const candidateImages: ImageCandidate[] = [];
+          const seenUrls = new Set<string>();
 
-      for (const img of imagesToProcess) {
-        const bestSrc = getPictureSourceUrl(img) ?? getBestSrcFromElement(img);
+          for (const img of imagesToProcess) {
+            const bestSrc = getPictureSourceUrl(img) ?? getBestSrcFromElement(img);
 
-        const isValid = isValidImage(bestSrc);
-        const isBigEnough =
-          img.naturalWidth > PlaceholderImages.MIN_SIZE_PX &&
-          img.naturalHeight > PlaceholderImages.MIN_SIZE_PX;
+            const isValid = isValidImage(bestSrc);
+            const isBigEnough =
+              img.naturalWidth > PlaceholderImages.MIN_SIZE_PX &&
+              img.naturalHeight > PlaceholderImages.MIN_SIZE_PX;
 
-        if (!isValid || !isBigEnough || seenUrls.has(bestSrc)) {
-          continue;
+            if (!isValid || !isBigEnough || seenUrls.has(bestSrc)) {
+              continue;
+            }
+
+            seenUrls.add(bestSrc);
+            // Also track original src to avoid duplicates when both resolve to same image
+            if (img.src) seenUrls.add(img.src);
+
+            const imageCandidate: ImageCandidate = {
+              id: generateImageId(bestSrc, img.naturalWidth, img.naturalHeight),
+              src: bestSrc,
+              alt: img.alt || '',
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+              aspectRatio: img.naturalWidth / img.naturalHeight,
+              filename: '',
+              fileSize: estimateImageSize(img),
+              qualityScore: 0,
+            };
+
+            imageCandidate.filename = getSmartFileName(imageCandidate);
+            candidateImages.push(imageCandidate);
+          }
+
+          // Collect SVG elements with data-src (lazy-loaded external SVGs)
+          const svgElements = document.querySelectorAll('svg[data-src]');
+          for (const svg of svgElements) {
+            const rawSrc = svg.getAttribute('data-src');
+            if (!rawSrc) continue;
+            const src = normalizeImageUrl(rawSrc);
+            if (!isValidImage(src) || seenUrls.has(src)) continue;
+            seenUrls.add(src);
+
+            const width = svg.getAttribute('width');
+            const height = svg.getAttribute('height');
+            const w = parseInt(width || '0', 10) || 200;
+            const h = parseInt(height || '0', 10) || 200;
+
+            const svgCandidate: ImageCandidate = {
+              id: generateImageId(src, w, h),
+              src,
+              alt: svg.getAttribute('aria-label') || '',
+              width: w,
+              height: h,
+              aspectRatio: h > 0 ? w / h : 0,
+              filename: '',
+              fileSize: 0,
+              qualityScore: 0,
+            };
+            svgCandidate.filename = getSmartFileName(svgCandidate);
+            candidateImages.push(svgCandidate);
+          }
+
+          // Collect background images
+          const bgImages = scanBackgroundImages(PlaceholderImages.MIN_SIZE_PX);
+          for (const bg of bgImages) {
+            if (!isValidImage(bg.url) || seenUrls.has(bg.url)) continue;
+            seenUrls.add(bg.url);
+            const bgCandidate: ImageCandidate = {
+              id: generateImageId(bg.url, bg.width, bg.height),
+              src: bg.url,
+              alt: '',
+              width: bg.width,
+              height: bg.height,
+              aspectRatio: bg.height > 0 ? bg.width / bg.height : 0,
+              filename: '',
+              fileSize: 0,
+              qualityScore: 0,
+            };
+            bgCandidate.filename = getSmartFileName(bgCandidate);
+            candidateImages.push(bgCandidate);
+          }
+
+          // Performance API scan — complementary pass for CSS/preload/XHR-loaded images
+          const { urls: perfUrls, sizeMap } = scanPerformanceEntries({ includeXhr: isCanvasApp });
+          const perfImages = await performanceUrlsToImageData(
+            perfUrls.filter((url) => !seenUrls.has(url)),
+            sizeMap,
+          );
+
+          for (const perfImage of perfImages) {
+            if (!seenUrls.has(perfImage.src)) {
+              seenUrls.add(perfImage.src);
+              candidateImages.push(perfImage);
+            }
+          }
+
+          // Drain observer cache (images caught between scans) to prevent unbounded growth
+          const observerSnapshot = perfObserverCache;
+          perfObserverCache = [];
+          for (const cachedImage of observerSnapshot) {
+            if (!seenUrls.has(cachedImage.src)) {
+              seenUrls.add(cachedImage.src);
+              candidateImages.push(cachedImage);
+            }
+          }
+
+          // Sort images by size (area) - larger images first
+          candidateImages.sort((a, b) => {
+            const areaA = a.width * a.height;
+            const areaB = b.width * b.height;
+            return areaB - areaA;
+          });
+
+          // Limit final results to prevent UI overload and memory issues
+          const MAX_FINAL_IMAGES = 2000;
+          const finalImages: ImageData[] = candidateImages
+            .slice(0, MAX_FINAL_IMAGES)
+            .map((candidate) => {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { qualityScore, ...imageData } = candidate;
+              return imageData;
+            });
+
+          sendResponse({ images: finalImages, pageUrl: window.location.href });
+        } catch (error) {
+          const contentScriptError = error instanceof Error ? error : new Error(String(error));
+          Object.assign(contentScriptError, {
+            context: ContentScriptConstants.CONTEXT.MESSAGE_HANDLER,
+            messageAction: message.action,
+          });
+          handleError(contentScriptError);
+          sendResponse({
+            error: 'An error occurred while processing the request',
+            details: error instanceof Error ? error.message : String(error),
+          });
         }
-
-        seenUrls.add(bestSrc);
-        // Also track original src to avoid duplicates when both resolve to same image
-        if (img.src) seenUrls.add(img.src);
-
-        const imageCandidate: ImageCandidate = {
-          id: generateImageId(bestSrc, img.naturalWidth, img.naturalHeight),
-          src: bestSrc,
-          alt: img.alt || '',
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-          aspectRatio: img.naturalWidth / img.naturalHeight,
-          filename: '',
-          fileSize: estimateImageSize(img),
-          qualityScore: 0,
-        };
-
-        imageCandidate.filename = getSmartFileName(imageCandidate);
-        candidateImages.push(imageCandidate);
-      }
-
-      // Collect SVG elements with data-src (lazy-loaded external SVGs)
-      const svgElements = document.querySelectorAll('svg[data-src]');
-      for (const svg of svgElements) {
-        const rawSrc = svg.getAttribute('data-src');
-        if (!rawSrc) continue;
-        const src = normalizeImageUrl(rawSrc);
-        if (!isValidImage(src) || seenUrls.has(src)) continue;
-        seenUrls.add(src);
-
-        const width = svg.getAttribute('width');
-        const height = svg.getAttribute('height');
-        const w = parseInt(width || '0', 10) || 200;
-        const h = parseInt(height || '0', 10) || 200;
-
-        const svgCandidate: ImageCandidate = {
-          id: generateImageId(src, w, h),
-          src,
-          alt: svg.getAttribute('aria-label') || '',
-          width: w,
-          height: h,
-          aspectRatio: h > 0 ? w / h : 0,
-          filename: '',
-          fileSize: 0,
-          qualityScore: 0,
-        };
-        svgCandidate.filename = getSmartFileName(svgCandidate);
-        candidateImages.push(svgCandidate);
-      }
-
-      // Collect background images
-      const bgImages = scanBackgroundImages(PlaceholderImages.MIN_SIZE_PX);
-      for (const bg of bgImages) {
-        if (!isValidImage(bg.url) || seenUrls.has(bg.url)) continue;
-        seenUrls.add(bg.url);
-        const bgCandidate: ImageCandidate = {
-          id: generateImageId(bg.url, bg.width, bg.height),
-          src: bg.url,
-          alt: '',
-          width: bg.width,
-          height: bg.height,
-          aspectRatio: bg.height > 0 ? bg.width / bg.height : 0,
-          filename: '',
-          fileSize: 0,
-          qualityScore: 0,
-        };
-        bgCandidate.filename = getSmartFileName(bgCandidate);
-        candidateImages.push(bgCandidate);
-      }
-
-      // Sort images by size (area) - larger images first
-      candidateImages.sort((a, b) => {
-        const areaA = a.width * a.height;
-        const areaB = b.width * b.height;
-        return areaB - areaA;
-      });
-
-      // Limit final results to prevent UI overload and memory issues
-      const MAX_FINAL_IMAGES = 2000;
-      const finalImages: ImageData[] = candidateImages
-        .slice(0, MAX_FINAL_IMAGES)
-        .map((candidate) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { qualityScore, ...imageData } = candidate;
-          return imageData;
-        });
-
-      sendResponse({ images: finalImages, pageUrl: window.location.href });
-      return true; // Указываем, что ответ будет асинхронным
+      })();
+      return true; // Async response
     }
   } catch (error) {
     // Отправляем ошибку в Sentry с подробным контекстом
