@@ -138,7 +138,7 @@ export const Popup: React.FC = () => {
           throw new Error(t('tab_url_unavailable'));
         }
 
-        openImagesPage({ images: response.images, pageUrl });
+        openImagesPage({ images: response.images, pageUrl, sourceTabId: tab.id! });
       },
       setIsLoading,
       '',

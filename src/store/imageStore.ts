@@ -10,6 +10,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
   filteredImages: [],
   selectedImages: [],
   pageUrl: null,
+  sourceTabId: null,
   isLoading: false,
   isGridView: true,
   filterText: '',
@@ -28,6 +29,8 @@ export const useImageStore = create<ImageState>((set, get) => ({
   setSelectedImages: (selectedImages) => set({ selectedImages }),
 
   setPageUrl: (pageUrl) => set({ pageUrl }),
+
+  setSourceTabId: (sourceTabId) => set({ sourceTabId }),
 
   toggleSelectImage: (image) => {
     const { selectedImages } = get();

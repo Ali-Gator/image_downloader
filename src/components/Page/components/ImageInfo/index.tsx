@@ -73,11 +73,11 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
 
       <DimensionsContainer className="dimensions-container">
         <Dimensions className="dimensions">{dimensionsDisplay}</Dimensions>
-          {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
-          <FileExtension className="file-extension">{fileExtension}</FileExtension>
-          <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
-            {qualityLabel}
-          </QualityBadge>
+        {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
+        <FileExtension className="file-extension">{fileExtension}</FileExtension>
+        <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
+          {qualityLabel}
+        </QualityBadge>
       </DimensionsContainer>
 
       {isListMode && (

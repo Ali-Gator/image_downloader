@@ -84,7 +84,12 @@ describe('scanPerformanceEntries', () => {
 
   it('includes img-initiated image resources always', () => {
     getEntriesByTypeSpy.mockReturnValue([
-      { name: 'https://ex.com/photo.jpg', initiatorType: 'img', transferSize: 1000, encodedBodySize: 0 },
+      {
+        name: 'https://ex.com/photo.jpg',
+        initiatorType: 'img',
+        transferSize: 1000,
+        encodedBodySize: 0,
+      },
     ] as unknown as PerformanceResourceTiming[]);
     const { urls } = scanPerformanceEntries();
     expect(urls).toContain('https://ex.com/photo.jpg');
@@ -92,7 +97,12 @@ describe('scanPerformanceEntries', () => {
 
   it('includes css-initiated image resources always', () => {
     getEntriesByTypeSpy.mockReturnValue([
-      { name: 'https://ex.com/bg.png', initiatorType: 'css', transferSize: 0, encodedBodySize: 500 },
+      {
+        name: 'https://ex.com/bg.png',
+        initiatorType: 'css',
+        transferSize: 0,
+        encodedBodySize: 500,
+      },
     ] as unknown as PerformanceResourceTiming[]);
     const { urls, sizeMap } = scanPerformanceEntries();
     expect(urls).toContain('https://ex.com/bg.png');
@@ -101,7 +111,12 @@ describe('scanPerformanceEntries', () => {
 
   it('excludes xmlhttprequest resources by default', () => {
     getEntriesByTypeSpy.mockReturnValue([
-      { name: 'https://ex.com/flutter-asset.jpg', initiatorType: 'xmlhttprequest', transferSize: 0, encodedBodySize: 0 },
+      {
+        name: 'https://ex.com/flutter-asset.jpg',
+        initiatorType: 'xmlhttprequest',
+        transferSize: 0,
+        encodedBodySize: 0,
+      },
     ] as unknown as PerformanceResourceTiming[]);
     const { urls } = scanPerformanceEntries({ includeXhr: false });
     expect(urls).toHaveLength(0);
@@ -109,7 +124,12 @@ describe('scanPerformanceEntries', () => {
 
   it('includes xmlhttprequest resources when includeXhr=true', () => {
     getEntriesByTypeSpy.mockReturnValue([
-      { name: 'https://ex.com/flutter-asset.jpg', initiatorType: 'xmlhttprequest', transferSize: 0, encodedBodySize: 0 },
+      {
+        name: 'https://ex.com/flutter-asset.jpg',
+        initiatorType: 'xmlhttprequest',
+        transferSize: 0,
+        encodedBodySize: 0,
+      },
     ] as unknown as PerformanceResourceTiming[]);
     const { urls } = scanPerformanceEntries({ includeXhr: true });
     expect(urls).toContain('https://ex.com/flutter-asset.jpg');
@@ -118,8 +138,18 @@ describe('scanPerformanceEntries', () => {
   it('excludes non-image URLs', () => {
     getEntriesByTypeSpy.mockReturnValue([
       { name: 'https://ex.com/app.js', initiatorType: 'img', transferSize: 0, encodedBodySize: 0 },
-      { name: 'https://ex.com/font.woff2', initiatorType: 'css', transferSize: 0, encodedBodySize: 0 },
-      { name: 'https://ex.com/photo.jpg', initiatorType: 'img', transferSize: 0, encodedBodySize: 0 },
+      {
+        name: 'https://ex.com/font.woff2',
+        initiatorType: 'css',
+        transferSize: 0,
+        encodedBodySize: 0,
+      },
+      {
+        name: 'https://ex.com/photo.jpg',
+        initiatorType: 'img',
+        transferSize: 0,
+        encodedBodySize: 0,
+      },
     ] as unknown as PerformanceResourceTiming[]);
     const { urls } = scanPerformanceEntries();
     expect(urls).toHaveLength(1);
@@ -128,8 +158,18 @@ describe('scanPerformanceEntries', () => {
 
   it('deduplicates URLs', () => {
     getEntriesByTypeSpy.mockReturnValue([
-      { name: 'https://ex.com/photo.jpg', initiatorType: 'img', transferSize: 0, encodedBodySize: 0 },
-      { name: 'https://ex.com/photo.jpg', initiatorType: 'img', transferSize: 0, encodedBodySize: 0 },
+      {
+        name: 'https://ex.com/photo.jpg',
+        initiatorType: 'img',
+        transferSize: 0,
+        encodedBodySize: 0,
+      },
+      {
+        name: 'https://ex.com/photo.jpg',
+        initiatorType: 'img',
+        transferSize: 0,
+        encodedBodySize: 0,
+      },
     ] as unknown as PerformanceResourceTiming[]);
     const { urls } = scanPerformanceEntries();
     expect(urls).toHaveLength(1);
@@ -137,8 +177,18 @@ describe('scanPerformanceEntries', () => {
 
   it('excludes blob and data URLs', () => {
     getEntriesByTypeSpy.mockReturnValue([
-      { name: 'blob:https://ex.com/abc123', initiatorType: 'img', transferSize: 0, encodedBodySize: 0 },
-      { name: 'data:image/png;base64,abc', initiatorType: 'img', transferSize: 0, encodedBodySize: 0 },
+      {
+        name: 'blob:https://ex.com/abc123',
+        initiatorType: 'img',
+        transferSize: 0,
+        encodedBodySize: 0,
+      },
+      {
+        name: 'data:image/png;base64,abc',
+        initiatorType: 'img',
+        transferSize: 0,
+        encodedBodySize: 0,
+      },
     ] as unknown as PerformanceResourceTiming[]);
     const { urls } = scanPerformanceEntries();
     expect(urls).toHaveLength(0);
@@ -146,8 +196,18 @@ describe('scanPerformanceEntries', () => {
 
   it('builds sizeMap from transferSize', () => {
     getEntriesByTypeSpy.mockReturnValue([
-      { name: 'https://ex.com/a.jpg', initiatorType: 'img', transferSize: 5000, encodedBodySize: 4000 },
-      { name: 'https://ex.com/b.png', initiatorType: 'img', transferSize: 0, encodedBodySize: 3000 },
+      {
+        name: 'https://ex.com/a.jpg',
+        initiatorType: 'img',
+        transferSize: 5000,
+        encodedBodySize: 4000,
+      },
+      {
+        name: 'https://ex.com/b.png',
+        initiatorType: 'img',
+        transferSize: 0,
+        encodedBodySize: 3000,
+      },
     ] as unknown as PerformanceResourceTiming[]);
     const { sizeMap } = scanPerformanceEntries();
     expect(sizeMap.get('https://ex.com/a.jpg')).toBe(5000);
@@ -171,9 +231,7 @@ describe('performanceUrlsToImageData', () => {
   }, 2000);
 
   it('generates a filename', async () => {
-    const result = await performanceUrlsToImageData(
-      ['https://ex.com/my-photo.jpg'],
-    );
+    const result = await performanceUrlsToImageData(['https://ex.com/my-photo.jpg']);
     expect(result[0].filename).toBeTruthy();
   }, 2000);
 
@@ -191,10 +249,7 @@ describe('performanceUrlsToImageData', () => {
   }, 2000);
 
   it('returns 0 fileSize when URL not in sizeMap', async () => {
-    const result = await performanceUrlsToImageData(
-      ['https://ex.com/unknown.jpg'],
-      new Map(),
-    );
+    const result = await performanceUrlsToImageData(['https://ex.com/unknown.jpg'], new Map());
     expect(result[0].fileSize).toBe(0);
   }, 2000);
 });

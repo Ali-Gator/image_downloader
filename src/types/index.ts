@@ -7,6 +7,7 @@ export enum MessageActionType {
   GRAB_IMAGES = 'grabImages',
   FETCH_IMAGE_AS_DATA_URL = 'fetchImageAsDataUrl',
   CONVERT_IMAGE_ELEMENT = 'convertImageElement',
+  RESCAN_IMAGES = 'rescanImages',
   HEALTH_CHECK = 'healthCheck',
 }
 
@@ -62,6 +63,14 @@ export interface ConvertImageElementMessage {
 }
 
 /**
+ * Interface for the rescanImages message
+ * Used to request content script to rescan the page for new images
+ */
+export interface RescanImagesMessage {
+  action: MessageActionType.RESCAN_IMAGES;
+}
+
+/**
  * Interface for the health check message
  * Used to check if content script is available
  */
@@ -74,6 +83,7 @@ export interface HealthCheckMessage {
  */
 export type ContentScriptMessage =
   | GrabImagesMessage
+  | RescanImagesMessage
   | FetchImageAsDataUrlMessage
   | ConvertImageElementMessage
   | HealthCheckMessage;
@@ -109,6 +119,7 @@ export interface GrabImagesResponse {
 export interface PageImagesPayload {
   images: ImageData[];
   pageUrl: string;
+  sourceTabId: number;
 }
 
 export interface ImageData {

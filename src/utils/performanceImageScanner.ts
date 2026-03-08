@@ -124,9 +124,7 @@ export async function performanceUrlsToImageData(
 
   for (let i = 0; i < urls.length; i += PROBE_BATCH_SIZE) {
     const batch = urls.slice(i, i + PROBE_BATCH_SIZE);
-    const dims = await Promise.all(
-      batch.map((url) => probeImageDimensions(url, PROBE_TIMEOUT_MS)),
-    );
+    const dims = await Promise.all(batch.map((url) => probeImageDimensions(url, PROBE_TIMEOUT_MS)));
 
     for (let j = 0; j < batch.length; j++) {
       const url = batch[j];

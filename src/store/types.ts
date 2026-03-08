@@ -42,6 +42,9 @@ export interface ImageState {
   // Source page URL (where images were collected)
   pageUrl: string | null;
 
+  // Tab ID of the page where images were collected (for rescan)
+  sourceTabId: number | null;
+
   // UI state
   isLoading: boolean;
   isGridView: boolean;
@@ -57,6 +60,7 @@ export interface ImageState {
   setFilteredImages: (images: ImageData[]) => void;
   setSelectedImages: (images: ImageData[]) => void;
   setPageUrl: (pageUrl: string | null) => void;
+  setSourceTabId: (tabId: number | null) => void;
   toggleSelectImage: (image: ImageData) => void;
   selectAll: () => void;
   deselectAll: () => void;

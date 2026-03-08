@@ -1,11 +1,13 @@
-import { FC, SyntheticEvent, useState } from 'react';
+import { FC, SyntheticEvent, useCallback, useState } from 'react';
 
 import GridViewIcon from '@mui/icons-material/GridView';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import {
   Button,
   Checkbox,
+  CircularProgress,
   Divider,
   FormControl,
   FormControlLabel,
@@ -17,10 +19,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { useSnackbar } from 'notistack';
 
 import { RatingWidget } from '@components';
 import { useImageStore } from '@store';
-import { QualityLevel, SortOption, useTranslation } from '@utils';
+import { GrabImagesResponse, MessageActionType } from '@types';
+import { QualityLevel, SortOption, sendMessageToContentScript, useTranslation } from '@utils';
 
 import {
   ControlItem,
@@ -40,7 +44,9 @@ import {
 
 export const Toolbar: FC = () => {
   const { t } = useTranslation();
+  const { enqueueSnackbar } = useSnackbar();
   const {
+    sourceTabId,
     filterText,
     setFilterText,
     qualityFilters,
@@ -53,6 +59,38 @@ export const Toolbar: FC = () => {
     isGridView,
     setIsGridView,
   } = useImageStore();
+
+  const [isRescanning, setIsRescanning] = useState(false);
+
+  const handleRescan = useCallback(async () => {
+    if (!sourceTabId) return;
+
+    setIsRescanning(true);
+    try {
+      const response = await sendMessageToContentScript<GrabImagesResponse>(
+        sourceTabId,
+        { action: MessageActionType.RESCAN_IMAGES },
+        10000,
+      );
+      if (response?.images) {
+        const { images, setImages } = useImageStore.getState();
+        const existingSrcs = new Set(images.map((img) => img.src));
+        const newImages = response.images.filter((img) => !existingSrcs.has(img.src));
+        if (newImages.length > 0) {
+          setImages([...images, ...newImages]);
+          enqueueSnackbar(t('rescan_found_new', newImages.length.toString()), {
+            variant: 'success',
+          });
+        } else {
+          enqueueSnackbar(t('rescan_no_new'), { variant: 'info' });
+        }
+      } else {
+        enqueueSnackbar(t('rescan_tab_closed'), { variant: 'warning' });
+      }
+    } finally {
+      setIsRescanning(false);
+    }
+  }, [sourceTabId, enqueueSnackbar, t]);
 
   // Size filter popover state
   const [sizeAnchorEl, setSizeAnchorEl] = useState<HTMLElement | null>(null);
@@ -310,6 +348,22 @@ export const Toolbar: FC = () => {
               {t('reset_btn')}
             </Button>
           </ControlItem>
+
+          {sourceTabId && (
+            <ControlItem>
+              <Button
+                startIcon={
+                  isRescanning ? <CircularProgress size={18} color="inherit" /> : <RefreshIcon />
+                }
+                variant="outlined"
+                onClick={handleRescan}
+                disabled={isRescanning}
+                title={t('rescan_button')}
+              >
+                {t('rescan_button')}
+              </Button>
+            </ControlItem>
+          )}
         </ControlsRow>
       </LeftSection>
 

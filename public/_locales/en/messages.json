@@ -301,5 +301,17 @@
   },
   "contact_us": {
     "message": "Contact Us"
+  },
+  "rescan_button": {
+    "message": "Rescan page"
+  },
+  "rescan_found_new": {
+    "message": "Found $1 new image(s)"
+  },
+  "rescan_no_new": {
+    "message": "No new images found"
+  },
+  "rescan_tab_closed": {
+    "message": "Could not rescan — the original tab may have been closed"
   }
 }

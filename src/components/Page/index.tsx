@@ -8,15 +8,15 @@ import { setupImageListener } from '@utils';
 import { PageContainer } from './styles';
 
 export const Page: FC = () => {
-  const { setImages, setIsLoading, setPageUrl, isLoading } = useImageStore();
+  const { setImages, setIsLoading, setPageUrl, setSourceTabId, isLoading } = useImageStore();
 
   useEffect(() => {
-    const removeListener = setupImageListener(setImages, setIsLoading, setPageUrl);
+    const removeListener = setupImageListener(setImages, setIsLoading, setPageUrl, setSourceTabId);
 
     return () => {
       removeListener();
     };
-  }, [setImages, setIsLoading, setPageUrl]);
+  }, [setImages, setIsLoading, setPageUrl, setSourceTabId]);
 
   useEffect(() => {
     const allowedOrigins = new Set([
