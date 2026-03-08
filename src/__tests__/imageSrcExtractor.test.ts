@@ -53,8 +53,10 @@ describe('normalizeImageUrl', () => {
     expect(normalizeImageUrl(url)).toBe('https://cdn.ex.com/img.jpg?token=abc123');
   });
 
-  it('returns original URL if parsing fails', () => {
-    expect(normalizeImageUrl('not-a-url')).toBe('not-a-url');
+  it('resolves relative URL against base', () => {
+    const result = normalizeImageUrl('relative-path');
+    expect(result).toContain('relative-path');
+    expect(result).toMatch(/^https?:\/\//);
   });
 
   it('removes trailing ? when all params removed', () => {
