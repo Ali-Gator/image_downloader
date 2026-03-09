@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 
 import { useSnackbar } from 'notistack';
 
-import { useImageStore } from '@store';
+import { useImageStore, useRatingStore, useSettingsStore } from '@store';
 
 import {
   downloadImageWithConversion,
@@ -77,8 +77,15 @@ export const useImageOperations = (src: string, fileName: string, imageId?: stri
       // Show notification about download start
       showNotification(NotificationType.INFO);
 
+      // Refresh settings before download
+      await useSettingsStore.getState().refreshSettings();
+
       // Use unified download with conversion function
-      await downloadImageWithConversion({ src, filename: fileName, id: imageId });
+      const result = await downloadImageWithConversion({ src, filename: fileName, id: imageId });
+
+      if (result.success) {
+        useRatingStore.getState().setHasSuccessfulDownload(true);
+      }
 
       // Count only after a successful download
       if (gate.eligibility.showMonetizationUI) {

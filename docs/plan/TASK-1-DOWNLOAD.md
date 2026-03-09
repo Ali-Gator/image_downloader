@@ -26,7 +26,9 @@ Adjust the implementation plan below based on what you find.
 
 ```ts
 // Current — error is caught but user gets no feedback:
-} catch (error) {
+} catch
+(error)
+{
   // Remove all console.log and console.warn except for real errors (console.error)
 }
 ```
@@ -113,7 +115,8 @@ Change return type from `Promise<void>` to `Promise<DownloadResult>`.
 
 Key changes:
 
-- When `chrome.downloads.download` callback fires with a valid `downloadId`, log success via `debugLogger.log('info', 'download', 'Download started', { url, filename, downloadId })`
+- When `chrome.downloads.download` callback fires with a valid `downloadId`, log success via
+  `debugLogger.log('info', 'download', 'Download started', { url, filename, downloadId })`
 - When it fails, log error via `debugLogger.log('error', 'download', message, { url, filename, errorCode })`
 - Return `{ success: true, downloadId }` or `{ success: false, errorCode, errorMessage }`
 - Do NOT change the 3-level fallback logic — it already exists and works
@@ -137,7 +140,8 @@ Change to track and return structured results.
 Key changes:
 
 - Accumulate results: `const results: DownloadResult[] = []`
-- In the `catch` block: push `{ success: false, errorMessage: String(error) }` to results AND call `debugLogger.log('error', 'download', 'Bulk download item failed', { src: image.src, error: String(error) })`
+- In the `catch` block: push `{ success: false, errorMessage: String(error) }` to results AND call
+  `debugLogger.log('error', 'download', 'Bulk download item failed', { src: image.src, error: String(error) })`
 - Return `{ successCount, failCount, totalCount }` (extend or replace current return type)
 - Call `setHasSuccessfulDownload(true)` only if `successCount > 0`
 
@@ -146,11 +150,14 @@ Key changes:
 The `handleDownload` hook currently shows a generic error snackbar. After this change:
 
 - For single download: behavior unchanged (success/error snackbar)
-- For bulk download callers (in `Page` component): pass the failure count up so the caller can show "Downloaded 7/10 images. 3 failed."
+- For bulk download callers (in `Page` component): pass the failure count up so the caller can show "Downloaded 7/10
+  images. 3 failed."
 
-Check `src/components/Page/components/Toolbar/index.tsx` and `src/components/Page/index.tsx` — find where bulk download is triggered and update the success notification to include failure count when `failCount > 0`.
+Check `src/components/Page/components/Toolbar/index.tsx` and `src/components/Page/index.tsx` — find where bulk download
+is triggered and update the success notification to include failure count when `failCount > 0`.
 
-Notification message pattern: `t('bulk_download_partial', { success: 7, total: 10 })` — add this key to `public/_locales/en/messages.json` and any other locale files present.
+Notification message pattern: `t('bulk_download_partial', { success: 7, total: 10 })` — add this key to
+`public/_locales/en/messages.json` only.
 
 ### Step 7 — Add "Export Debug Log" to Options page
 
@@ -172,11 +179,16 @@ The button should also show an entry count: "Export debug log (23 entries)".
 
 ```ts
 describe('debugLogger', () => {
-  it('stores a log entry', async () => { ... })
-  it('caps at 100 entries', async () => { ... })
-  it('export returns valid JSON', async () => { ... })
-  it('clear removes all entries', async () => { ... })
-  it('does not throw when chrome.storage unavailable', async () => { ... })
+  it('stores a log entry', async () => { ...
+  })
+  it('caps at 100 entries', async () => { ...
+  })
+  it('export returns valid JSON', async () => { ...
+  })
+  it('clear removes all entries', async () => { ...
+  })
+  it('does not throw when chrome.storage unavailable', async () => { ...
+  })
 })
 ```
 
@@ -184,11 +196,16 @@ describe('debugLogger', () => {
 
 ```ts
 describe('downloadImage', () => {
-  it('returns { success: true, downloadId } when chrome.downloads.download succeeds', async () => { ... })
-  it('retries with generic filename when first attempt fails', async () => { ... })
-  it('tries CORS fallback when both filename attempts fail', async () => { ... })
-  it('returns { success: false } when all methods fail', async () => { ... })
-  it('logs error to debugLogger on failure', async () => { ... })
+  it('returns { success: true, downloadId } when chrome.downloads.download succeeds', async () => { ...
+  })
+  it('retries with generic filename when first attempt fails', async () => { ...
+  })
+  it('tries CORS fallback when both filename attempts fail', async () => { ...
+  })
+  it('returns { success: false } when all methods fail', async () => { ...
+  })
+  it('logs error to debugLogger on failure', async () => { ...
+  })
 })
 ```
 
@@ -196,10 +213,14 @@ describe('downloadImage', () => {
 
 ```ts
 describe('downloadImagesWithConversion', () => {
-  it('returns correct successCount and failCount', async () => { ... })
-  it('does not call setHasSuccessfulDownload when all fail', async () => { ... })
-  it('calls setHasSuccessfulDownload when at least one succeeds', async () => { ... })
-  it('logs failures to debugLogger', async () => { ... })
+  it('returns correct successCount and failCount', async () => { ...
+  })
+  it('does not call setHasSuccessfulDownload when all fail', async () => { ...
+  })
+  it('calls setHasSuccessfulDownload when at least one succeeds', async () => { ...
+  })
+  it('logs failures to debugLogger', async () => { ...
+  })
 })
 ```
 

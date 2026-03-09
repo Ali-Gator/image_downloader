@@ -1,4 +1,5 @@
 export { ConvertOptions } from './ConvertOptions';
+export { DebugLogExport } from './DebugLogExport';
 export { DownloadOptions } from './DownloadOptions';
 export { FolderField } from './FolderField';
 export { InfoTooltip } from './InfoIcon';

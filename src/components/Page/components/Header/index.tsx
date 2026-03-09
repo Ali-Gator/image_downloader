@@ -139,7 +139,7 @@ export const Header: FC = () => {
         : undefined;
 
       // Use unified bulk download with conversion function
-      const { successCount, totalCount } = await downloadImagesWithConversion(
+      const { successCount, failCount, totalCount } = await downloadImagesWithConversion(
         selectedImages,
         onProgress,
       );
@@ -151,9 +151,18 @@ export const Header: FC = () => {
       }
 
       // Show completion notification
-      const completionMessage = createZipArchive
-        ? t('download_complete_text')
-        : `${t('download_complete_text')}: ${successCount}/${totalCount}`;
+      let completionMessage: string;
+      if (createZipArchive) {
+        completionMessage = t('download_complete_text');
+      } else if (failCount > 0) {
+        completionMessage = t('bulk_download_partial', [
+          successCount.toString(),
+          totalCount.toString(),
+          failCount.toString(),
+        ]);
+      } else {
+        completionMessage = `${t('download_complete_text')}: ${successCount}/${totalCount}`;
+      }
 
       const variant =
         successCount === totalCount ? NotificationType.SUCCESS : NotificationType.WARNING;

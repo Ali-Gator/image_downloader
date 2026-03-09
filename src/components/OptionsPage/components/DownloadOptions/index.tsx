@@ -2,6 +2,7 @@ import { FC } from 'react';
 
 import {
   ConvertOptions,
+  DebugLogExport,
   FolderField,
   InfoMessage,
   OptionsHeader,
@@ -21,6 +22,7 @@ export const DownloadOptions: FC = () => {
       <ZipArchiveOption />
       <ResetButton />
       <InfoMessage />
+      <DebugLogExport />
     </StyledContainer>
   );
 };

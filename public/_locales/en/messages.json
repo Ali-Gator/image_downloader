@@ -313,5 +313,11 @@
   },
   "rescan_tab_closed": {
     "message": "Could not rescan — the original tab may have been closed"
+  },
+  "bulk_download_partial": {
+    "message": "Downloaded $1/$2 images. $3 failed."
+  },
+  "export_debug_log": {
+    "message": "Export debug log"
   }
 }

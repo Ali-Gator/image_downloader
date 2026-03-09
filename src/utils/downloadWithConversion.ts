@@ -1,12 +1,13 @@
 import { shouldConvertImage, updateFileExtension } from '@utils/imageFormats';
 
+import { debugLogger } from './debugLogger';
 import { getImageSrcFromDOM } from './domImageUtils';
 import { downloadImage } from './downloadHelpers';
 import { convertImageElementToFormat } from './imageConverter';
 import { updateFilenameExtensionFromDataUrl } from './imageUtils';
 import { createAndDownloadZipArchive } from './zipArchive';
 import { useRatingStore, useSettingsStore } from '../store';
-import { ImageData } from '../types';
+import { BulkDownloadResult, DownloadResult, ImageData } from '../types';
 
 /**
  * Downloads an image with conversion if needed
@@ -20,14 +21,13 @@ export const downloadImageWithConversion = async (
   options?: {
     skipConversion?: boolean;
   },
-): Promise<void> => {
+): Promise<DownloadResult> => {
   const { skipConversion = false } = options || {};
   const { src, filename, id } = image;
 
-  // Force refresh settings from storage to get latest values
-  await useSettingsStore.getState().refreshSettings();
+  debugLogger.log('info', 'download', 'Download initiated', { src, filename, id });
 
-  // Get conversion settings (fresh read each time)
+  // Read conversion settings (caller is responsible for refreshSettings before calling)
   const { convertFrom, convertTo } = useSettingsStore.getState();
 
   // Check if conversion is needed
@@ -45,14 +45,10 @@ export const downloadImageWithConversion = async (
           const convertedDataUrl = await convertImageElementToFormat(imgElement, convertTo);
           const newFilename = updateFileExtension(filename, convertTo);
 
-          await downloadImage({
+          return await downloadImage({
             src: convertedDataUrl,
             filename: newFilename,
           });
-
-          // Уведомляем store об успешной загрузке
-          useRatingStore.getState().setHasSuccessfulDownload(true);
-          return;
         } catch (conversionError) {
           // Remove all console.log and console.warn except for real errors (console.error)
         }
@@ -68,24 +64,17 @@ export const downloadImageWithConversion = async (
         ? updateFilenameExtensionFromDataUrl(filename, originalSrc)
         : filename;
 
-      await downloadImage({
+      return await downloadImage({
         src: originalSrc,
         filename: correctedFilename,
       });
-
-      // Уведомляем store об успешной загрузке
-      useRatingStore.getState().setHasSuccessfulDownload(true);
-      return;
     }
   } catch (domError) {
     // Remove all console.log and console.warn except for real errors (console.error)
   }
 
   // Fallback to original download
-  await downloadImage({ src, filename });
-
-  // Уведомляем store об успешной загрузке
-  useRatingStore.getState().setHasSuccessfulDownload(true);
+  return await downloadImage({ src, filename });
 };
 
 /**
@@ -97,7 +86,7 @@ export const downloadImageWithConversion = async (
 export const downloadImagesWithConversion = async (
   images: ImageData[],
   onProgress?: (current: number, total: number) => void,
-): Promise<{ successCount: number; totalCount: number }> => {
+): Promise<BulkDownloadResult> => {
   // Force refresh settings from storage to get latest values
   await useSettingsStore.getState().refreshSettings();
 
@@ -106,7 +95,8 @@ export const downloadImagesWithConversion = async (
 
   // If ZIP archive is enabled and we have multiple images, create ZIP
   if (createZipArchive && images.length > 0) {
-    return await createAndDownloadZipArchive(images, onProgress);
+    const zipResult = await createAndDownloadZipArchive(images, onProgress);
+    return { ...zipResult, failCount: zipResult.totalCount - zipResult.successCount };
   }
 
   // Otherwise, download images individually (original behavior)
@@ -116,17 +106,22 @@ export const downloadImagesWithConversion = async (
   for (let i = 0; i < images.length; i++) {
     const image = images[i];
     try {
-      await downloadImageWithConversion(image);
-      successCount++;
+      const result = await downloadImageWithConversion(image);
+      if (result.success) {
+        successCount++;
+      }
     } catch (error) {
-      // Remove all console.log and console.warn except for real errors (console.error)
+      debugLogger.log('error', 'download', 'Bulk download item failed', {
+        src: image.src,
+        error: String(error),
+      });
     }
   }
 
-  // Уведомляем store о успешных загрузках
+  // Notify store about successful downloads
   if (successCount > 0) {
     useRatingStore.getState().setHasSuccessfulDownload(true);
   }
 
-  return { successCount, totalCount };
+  return { successCount, failCount: totalCount - successCount, totalCount };
 };

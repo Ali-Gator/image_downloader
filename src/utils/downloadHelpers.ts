@@ -4,8 +4,9 @@
 
 import { handleError } from '@utils/errorHandlers';
 
-import { MessageActionType } from '../types';
+import { DownloadResult, MessageActionType } from '../types';
 import { DEFAULT_DOWNLOAD_OPTIONS, DownloadConstants } from './constants';
+import { debugLogger } from './debugLogger';
 import { updateFilenameExtensionFromDataUrl } from './imageUtils';
 
 /**
@@ -198,7 +199,10 @@ const createFallbackFilename = (originalFilename: string, imageUrl: string): str
  * @param image Image object with src and filename
  * @returns Promise that resolves when the download completes
  */
-export const downloadImage = (image: { src: string; filename: string }): Promise<void> => {
+export const downloadImage = (image: {
+  src: string;
+  filename: string;
+}): Promise<DownloadResult> => {
   if (!image.src || !image.filename) {
     return Promise.reject(new Error('Invalid image source or filename'));
   }
@@ -225,8 +229,8 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
     filename: string,
     isRetry = false,
     useFallback = false,
-  ): Promise<void> => {
-    return new Promise<void>((resolve, reject) => {
+  ): Promise<DownloadResult> => {
+    return new Promise<DownloadResult>((resolve, reject) => {
       // Check Chrome availability
       if (typeof chrome === 'undefined' || !chrome.downloads || !chrome.downloads.download) {
         // Fallback for non-Chrome browsers or environments
@@ -237,7 +241,11 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          resolve();
+          debugLogger.log('info', 'download', 'Download started (anchor fallback)', {
+            url: image.src,
+            filename,
+          });
+          resolve({ success: true });
         } catch (error) {
           reject(error);
         }
@@ -318,7 +326,12 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
                     // Continue with download even if registration fails
                   }
 
-                  resolve();
+                  debugLogger.log('info', 'download', 'Download started (CORS fallback)', {
+                    url: image.src,
+                    filename: correctedFilename,
+                    downloadId,
+                  });
+                  resolve({ success: true, downloadId });
                 },
               );
             } else if (response && response.error) {
@@ -368,12 +381,9 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
                 .then(resolve)
                 .catch((fallbackError) => {
                   // All methods failed, provide comprehensive error message
-                  const finalError = new Error(
-                    `All download methods failed. Original error: ${errorMessage}. ` +
-                      `Fallback error: ${fallbackError.message}. ` +
-                      `The image may not be accessible or the server may be blocking downloads.`,
-                  );
-                  reject(finalError);
+                  const finalMessage = `All download methods failed. Original error: ${errorMessage}. Fallback error: ${fallbackError.message}. The image may not be accessible or the server may be blocking downloads.`;
+                  debugLogger.log('error', 'download', finalMessage, { url: image.src, filename });
+                  reject(new Error(finalMessage));
                 });
             }
             return;
@@ -389,13 +399,9 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
               attemptDownload(filename, true, true)
                 .then(resolve)
                 .catch((fallbackError) => {
-                  reject(
-                    new Error(
-                      `Download failed: No download ID returned. ` +
-                        `This may be due to browser restrictions or invalid image URL. ` +
-                        `Fallback error: ${fallbackError.message}`,
-                    ),
-                  );
+                  const msg = `Download failed: No download ID returned. This may be due to browser restrictions or invalid image URL. Fallback error: ${fallbackError.message}`;
+                  debugLogger.log('error', 'download', msg, { url: image.src, filename });
+                  reject(new Error(msg));
                 });
             }
             return;
@@ -419,7 +425,12 @@ export const downloadImage = (image: { src: string; filename: string }): Promise
             // Continue with download even if registration fails
           }
 
-          resolve();
+          debugLogger.log('info', 'download', 'Download started', {
+            url: image.src,
+            filename,
+            downloadId,
+          });
+          resolve({ success: true, downloadId });
         },
       );
     });

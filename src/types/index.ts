@@ -89,6 +89,25 @@ export type ContentScriptMessage =
   | HealthCheckMessage;
 
 /**
+ * Result of a download attempt
+ */
+export interface DownloadResult {
+  success: boolean;
+  downloadId?: number;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+/**
+ * Result of a bulk download operation
+ */
+export interface BulkDownloadResult {
+  successCount: number;
+  failCount: number;
+  totalCount: number;
+}
+
+/**
  * Response from image fetch operations
  */
 export interface ImageFetchResponse {
