@@ -104,20 +104,24 @@ export async function collectImages(
     const bestSrc = getPictureSourceUrl(img) ?? getBestSrcFromElement(img);
 
     const isValid = isValidImage(bestSrc);
-    if (!isValid || isTinyImage(img.naturalWidth, img.naturalHeight) || seenUrls.has(bestSrc)) {
+    const isLazy = bestSrc !== img.src;
+    if (!isValid || (!isLazy && isTinyImage(img.naturalWidth, img.naturalHeight)) || seenUrls.has(bestSrc)) {
       continue;
     }
 
     seenUrls.add(bestSrc);
     if (img.src) seenUrls.add(img.src);
 
+    const width = isLazy ? (parseInt(img.getAttribute('width') || '0') || 0) : img.naturalWidth;
+    const height = isLazy ? (parseInt(img.getAttribute('height') || '0') || 0) : img.naturalHeight;
+
     const imageCandidate: ImageCandidate = {
-      id: generateImageId(bestSrc, img.naturalWidth, img.naturalHeight),
+      id: generateImageId(bestSrc, width, height),
       src: bestSrc,
       alt: img.alt || '',
-      width: img.naturalWidth,
-      height: img.naturalHeight,
-      aspectRatio: img.naturalWidth / img.naturalHeight,
+      width,
+      height,
+      aspectRatio: height > 0 ? width / height : 0,
       filename: '',
       fileSize: estimateImageSize(img),
       qualityScore: 0,

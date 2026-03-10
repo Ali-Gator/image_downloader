@@ -12,12 +12,12 @@ async function grabImagesFromTab(
   const result = await helperPage.evaluate(async (urlMatch: string) => {
     const tabs = await chrome.tabs.query({});
     const targetTab = tabs.find((t) => t.url?.includes(urlMatch));
-    if (!targetTab?.id) return { error: 'Tab not found', images: [] as Array<{ src: string }> };
+    if (!targetTab?.id) return { images: [] as Array<{ src: string }> };
 
     return new Promise<{ images: Array<{ src: string }>; pageUrl?: string }>((resolve) => {
       chrome.tabs.sendMessage(targetTab.id!, { action: 'grabImages' }, (response) => {
         const r = response as { images: Array<{ src: string }>; pageUrl?: string } | undefined;
-        resolve(r ?? { error: 'No response from content script', images: [] });
+        resolve(r ?? { images: [] });
       });
     });
   }, tabUrlSubstring);
@@ -80,22 +80,28 @@ test.describe('Image detection', () => {
     await helper.close();
 
     expect(result).toHaveProperty('images');
-    expect(result.images.length).toBeGreaterThanOrEqual(3);
+    expect(result.images.length).toBe(9);
 
     const srcs = result.images.map((img) => img.src);
 
     // Basic <img> should be detected
     expect(srcs.some((s) => s.includes('basic-photo'))).toBe(true);
+    expect(srcs.some((s) => s.includes('basic-icon'))).toBe(true);
 
-    // srcset: highest resolution should be selected (if implemented)
-    if (srcs.some((s) => s.includes('srcset'))) {
-      expect(srcs.some((s) => s.includes('srcset-large'))).toBe(true);
-    }
+    // srcset: highest resolution should be selected
+    expect(srcs.some((s) => s.includes('srcset-large'))).toBe(true);
+
+    // <picture>: webp source should be detected
+    expect(srcs.some((s) => s.includes('picture-webp'))).toBe(true);
 
     // Background images should be detected
-    if (srcs.some((s) => s.includes('bg-'))) {
-      expect(srcs.some((s) => s.includes('bg-hero'))).toBe(true);
-    }
+    expect(srcs.some((s) => s.includes('bg-hero'))).toBe(true);
+    expect(srcs.some((s) => s.includes('bg-card'))).toBe(true);
+
+    // Lazy-loaded images should be detected via data-src / data-lazy / data-original
+    expect(srcs.some((s) => s.includes('lazy-photo.jpg'))).toBe(true);
+    expect(srcs.some((s) => s.includes('lazy-photo-2'))).toBe(true);
+    expect(srcs.some((s) => s.includes('data-original-photo'))).toBe(true);
 
     // Tiny images should NOT be in results (filtered by all collection paths)
     expect(srcs.some((s) => s.includes('tiny-spacer'))).toBe(false);
@@ -103,7 +109,7 @@ test.describe('Image detection', () => {
 
     // Duplicates should be removed (basic-photo appears twice in HTML)
     const basicPhotoCount = srcs.filter((s) => s.includes('basic-photo')).length;
-    expect(basicPhotoCount).toBeLessThanOrEqual(1);
+    expect(basicPhotoCount).toBe(1);
 
     await testPage.close();
   });
@@ -123,11 +129,13 @@ test.describe('Image detection', () => {
 
     const srcs = result.images.map((img) => img.src);
 
-    expect(result.images.length).toBeGreaterThanOrEqual(1);
+    expect(result.images.length).toBe(5);
 
-    const fetchedImages = ['basic-photo', 'bg-hero', 'srcset-large', 'lazy-photo'];
-    const foundFetched = srcs.some((s) => fetchedImages.some((name) => s.includes(name)));
-    expect(foundFetched).toBe(true);
+    // All fetched images should be detected via Performance API
+    expect(srcs.some((s) => s.includes('basic-photo'))).toBe(true);
+    expect(srcs.some((s) => s.includes('bg-hero'))).toBe(true);
+    expect(srcs.some((s) => s.includes('srcset-large'))).toBe(true);
+    expect(srcs.some((s) => s.includes('lazy-photo'))).toBe(true);
 
     await canvasPage.close();
   });
@@ -147,11 +155,12 @@ test.describe('Image detection', () => {
 
     const srcs = result.images.map((img) => img.src);
 
-    expect(result.images.length).toBeGreaterThanOrEqual(1);
+    expect(result.images.length).toBe(4);
 
-    const flutterAssets = ['basic-photo', 'basic-icon', 'data-original-photo'];
-    const foundAssets = srcs.some((s) => flutterAssets.some((name) => s.includes(name)));
-    expect(foundAssets).toBe(true);
+    // All Flutter assets fetched via XHR should be detected
+    expect(srcs.some((s) => s.includes('basic-photo'))).toBe(true);
+    expect(srcs.some((s) => s.includes('basic-icon'))).toBe(true);
+    expect(srcs.some((s) => s.includes('data-original-photo'))).toBe(true);
 
     await flutterPage.close();
   });

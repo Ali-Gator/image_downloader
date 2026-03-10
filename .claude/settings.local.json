@@ -21,11 +21,11 @@
       "Bash(yarn add:*)",
       "Bash(grep:*)",
       "Bash(yarn lint:*)",
-      "Bash(yarn test:e2e:*)"
+      "Bash(yarn test*)",
+      "Bash(npx playwright:*)",
+      "Bash(npm run:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "sentry"
-  ]
+  "enabledMcpjsonServers": ["sentry"]
 }
