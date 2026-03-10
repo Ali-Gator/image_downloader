@@ -1,5 +1,5 @@
 import { ImageCandidate, ImageData } from '../types';
-import { PlaceholderImages } from '../utils';
+import { isTinyImage, PlaceholderImages } from '../utils';
 import { scanBackgroundImages } from '../utils/backgroundImageScanner';
 import { getSmartFileName } from '../utils/fileUtils';
 import { generateImageId } from '../utils/idUtils';
@@ -104,11 +104,7 @@ export async function collectImages(
     const bestSrc = getPictureSourceUrl(img) ?? getBestSrcFromElement(img);
 
     const isValid = isValidImage(bestSrc);
-    const isBigEnough =
-      img.naturalWidth > PlaceholderImages.MIN_SIZE_PX &&
-      img.naturalHeight > PlaceholderImages.MIN_SIZE_PX;
-
-    if (!isValid || !isBigEnough || seenUrls.has(bestSrc)) {
+    if (!isValid || isTinyImage(img.naturalWidth, img.naturalHeight) || seenUrls.has(bestSrc)) {
       continue;
     }
 

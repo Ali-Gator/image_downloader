@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Canvas App Test Page</title>
+  </head>
+  <body>
+    <h1>Canvas-Heavy App (simulates Three.js / PixiJS / game engine)</h1>
+
+    <!--
+      Canvas-heavy detection heuristic:
+        canvasCount > 0 && imgCount < 3 && canvasCount >= imgCount
+      So we need multiple canvases and few/no <img> tags.
+    -->
+    <canvas id="main-canvas" width="800" height="600"></canvas>
+    <canvas id="overlay-canvas" width="400" height="300"></canvas>
+
+    <!-- No <img> tags — images loaded only via fetch/XHR -->
+
+    <script>
+      // Draw something on canvases so they're not empty
+      const ctx1 = document.getElementById('main-canvas').getContext('2d');
+      ctx1.fillStyle = '#2a4858';
+      ctx1.fillRect(0, 0, 800, 600);
+      ctx1.fillStyle = '#fff';
+      ctx1.font = '24px sans-serif';
+      ctx1.fillText('Main Canvas', 50, 50);
+
+      const ctx2 = document.getElementById('overlay-canvas').getContext('2d');
+      ctx2.fillStyle = '#5a2858';
+      ctx2.fillRect(0, 0, 400, 300);
+
+      // Load images via fetch — these should be picked up by Performance API
+      // when includeXhr=true (canvas-heavy app mode)
+      async function loadImagesViaFetch() {
+        const urls = [
+          './images/basic-photo.jpg',
+          './images/bg-hero.jpg',
+          './images/srcset-large.jpg',
+        ];
+        for (const url of urls) {
+          try {
+            const resp = await fetch(url);
+            await resp.blob(); // consume the response so it appears in Performance entries
+          } catch (e) {
+            console.warn('Failed to fetch:', url, e);
+          }
+        }
+      }
+
+      // Also load one via XHR
+      function loadImageViaXhr(url) {
+        return new Promise((resolve) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', url);
+          xhr.responseType = 'blob';
+          xhr.onload = () => resolve(xhr.response);
+          xhr.onerror = () => resolve(null);
+          xhr.send();
+        });
+      }
+
+      loadImagesViaFetch();
+      loadImageViaXhr('./images/lazy-photo.jpg');
+    </script>
+  </body>
+</html>

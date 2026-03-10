@@ -1,3 +1,5 @@
+import { isTinyImage } from '@utils/utils';
+
 import { getSmartFileName } from './fileUtils';
 import { generateImageId } from './idUtils';
 
@@ -129,6 +131,9 @@ export async function performanceUrlsToImageData(
     for (let j = 0; j < batch.length; j++) {
       const url = batch[j];
       const { width, height } = dims[j];
+
+      if (isTinyImage(width, height)) continue;
+
       const candidate: ImageCandidate = {
         id: generateImageId(url, width, height),
         src: url,

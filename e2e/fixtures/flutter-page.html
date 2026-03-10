@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Flutter Web App Test Page</title>
+  </head>
+  <body>
+    <h1>Flutter Web App Simulation</h1>
+
+    <!--
+      Flutter detection checks:
+      1. <flt-glass-pane> element
+      2. <script src="...main.dart.js">
+      3. <script src="...flutter_service_worker">
+      We include flt-glass-pane to trigger Flutter detection.
+    -->
+    <flt-glass-pane></flt-glass-pane>
+
+    <!-- Flutter apps use canvases for rendering -->
+    <canvas id="flutter-canvas" width="1200" height="800"></canvas>
+
+    <!-- No <img> tags — Flutter renders everything on canvas -->
+
+    <!-- Simulated main.dart.js (marks page as Flutter) -->
+    <script src="./fake-main.dart.js"></script>
+
+    <script>
+      // Draw something on the Flutter canvas
+      const ctx = document.getElementById('flutter-canvas').getContext('2d');
+      ctx.fillStyle = '#0175C2'; // Flutter blue
+      ctx.fillRect(0, 0, 1200, 800);
+      ctx.fillStyle = '#fff';
+      ctx.font = '32px sans-serif';
+      ctx.fillText('Flutter Web App', 50, 50);
+
+      // In real Flutter apps, images are loaded via XHR/fetch by the Dart runtime.
+      // Simulate this with fetch calls.
+      async function loadFlutterAssets() {
+        const assets = [
+          './images/basic-photo.jpg',
+          './images/basic-icon.png',
+          './images/data-original-photo.jpg',
+        ];
+        for (const url of assets) {
+          try {
+            const resp = await fetch(url);
+            await resp.blob();
+          } catch (e) {
+            console.warn('Failed to load Flutter asset:', url, e);
+          }
+        }
+      }
+
+      loadFlutterAssets();
+    </script>
+  </body>
+</html>

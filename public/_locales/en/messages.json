@@ -309,7 +309,7 @@
     "message": "Found $1 new image(s)"
   },
   "rescan_no_new": {
-    "message": "No new images found"
+    "message": "No new images found. Try scrolling the original tab"
   },
   "rescan_tab_closed": {
     "message": "Could not rescan — the original tab may have been closed"

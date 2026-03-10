@@ -20,9 +20,12 @@
       "Bash(yarn format:*)",
       "Bash(yarn add:*)",
       "Bash(grep:*)",
-      "Bash(yarn lint:*)"
+      "Bash(yarn lint:*)",
+      "Bash(yarn test:e2e:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["sentry"]
+  "enabledMcpjsonServers": [
+    "sentry"
+  ]
 }

@@ -252,4 +252,66 @@ describe('performanceUrlsToImageData', () => {
     const result = await performanceUrlsToImageData(['https://ex.com/unknown.jpg'], new Map());
     expect(result[0].fileSize).toBe(0);
   }, 2000);
+
+  it('filters out images with known tiny dimensions (≤ 10px)', async () => {
+    // Mock Image to return specific dimensions
+    const originalImage = global.Image;
+    class MockImage {
+      width = 0;
+      height = 0;
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      private _src = '';
+
+      get naturalWidth() {
+        return this.width;
+      }
+      get naturalHeight() {
+        return this.height;
+      }
+      get src() {
+        return this._src;
+      }
+      set src(val: string) {
+        this._src = val;
+        if (!val) return;
+        // Simulate load with dimensions based on URL
+        setTimeout(() => {
+          if (val.includes('tiny')) {
+            this.width = 1;
+            this.height = 1;
+          } else if (val.includes('small-tracker')) {
+            this.width = 5;
+            this.height = 5;
+          } else {
+            this.width = 800;
+            this.height = 600;
+          }
+          this.onload?.();
+        }, 0);
+      }
+    }
+    global.Image = MockImage as unknown as typeof Image;
+
+    try {
+      const result = await performanceUrlsToImageData([
+        'https://ex.com/real-photo.jpg',
+        'https://ex.com/tiny-spacer.gif',
+        'https://ex.com/small-tracker.png',
+      ]);
+
+      // Only the real photo should remain; tiny images filtered out
+      expect(result).toHaveLength(1);
+      expect(result[0].src).toBe('https://ex.com/real-photo.jpg');
+    } finally {
+      global.Image = originalImage;
+    }
+  }, 2000);
+
+  it('keeps images with unknown dimensions (0x0 probe timeout)', async () => {
+    // Default jsdom Image doesn't load — returns 0x0
+    const result = await performanceUrlsToImageData(['https://ex.com/unknown.jpg']);
+    // 0x0 means "unknown", not "tiny" — should be kept
+    expect(result).toHaveLength(1);
+  }, 2000);
 });
