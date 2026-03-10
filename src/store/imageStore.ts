@@ -141,16 +141,10 @@ export const useImageStore = create<ImageState>((set, get) => ({
     } else if (!qualityFilters.includes(QualityLevel.ALL)) {
       // Otherwise use standard quality filters, if ALL is not selected
       filtered = filtered.filter((img) => {
-        // Performance API images have unknown dimensions — always show them
-        if (img.width === 0 && img.height === 0) return true;
-
-        // Determine image quality based on dimensions
+        // Hide images with unknown dimensions when filtering by specific quality
+        if (img.width === 0 && img.height === 0) return false;
         const imageQuality = getQualityFromDimensions(img.width, img.height);
-
-        // Check if the image matches any of the selected quality filters
-        return qualityFilters.some((filter) => {
-          return filter === imageQuality;
-        });
+        return qualityFilters.includes(imageQuality);
       });
     }
 

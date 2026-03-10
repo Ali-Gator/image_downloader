@@ -21,9 +21,9 @@
       "Bash(yarn add:*)",
       "Bash(grep:*)",
       "Bash(yarn lint:*)",
-      "Bash(yarn test*)",
       "Bash(npx playwright:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm test:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
