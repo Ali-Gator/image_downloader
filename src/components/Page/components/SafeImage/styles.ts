@@ -17,13 +17,13 @@ export const StyledPlaceholder = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   gap: theme.spacing(1),
   minHeight: 120,
-  backgroundColor: theme.palette.grey[100],
+  backgroundColor: theme.palette.background.default,
   borderRadius: theme.shape.borderRadius,
-  color: theme.palette.grey[500],
+  color: theme.palette.text.secondary,
 }));
 
 export const StyledErrorText = styled(Box)({
-  fontSize: '0.875rem',
+  fontSize: '0.8125rem',
   textAlign: 'center',
 });
 

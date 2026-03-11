@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option 1 — Light Refresh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --surface-hover: #F5F5F2;
+    --border: #E8E6E1;
+    --border-light: #F0EDE8;
+    --text-primary: #1A1A18;
+    --text-secondary: #6B6B66;
+    --text-tertiary: #9C9C96;
+    --accent: #2D5BE3;
+    --accent-light: #EBF0FD;
+    --accent-dark: #1E3FA0;
+    --accent-glow: rgba(45, 91, 227, 0.12);
+    --success: #2BA563;
+    --warning: #E5A000;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+    --font: 'DM Sans', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══ HEADER ═══ */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.92);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .header-title {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+  }
+
+  .header-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    background: var(--surface-hover);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-family: var(--font-mono);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .select-all {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+  }
+
+  .select-all:hover { background: var(--surface-hover); }
+
+  .checkbox {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .checkbox.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .checkbox.checked::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 1px;
+    width: 5px; height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 1px 3px rgba(45, 91, 227, 0.25);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-dark);
+    box-shadow: 0 2px 8px rgba(45, 91, 227, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover {
+    background: var(--surface-hover);
+    border-color: var(--border);
+  }
+
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.15s;
+  }
+
+  .icon-btn:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
+
+  .icon-btn.active {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* ═══ TOOLBAR ═══ */
+  .toolbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-light);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .search-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    min-width: 200px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .search-input:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .search-input svg { color: var(--text-tertiary); flex-shrink: 0; }
+
+  .search-input input {
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    font-size: 13px;
+    background: transparent;
+    color: var(--text-primary);
+    width: 100%;
+  }
+
+  .search-input input::placeholder { color: var(--text-tertiary); }
+
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .filter-chip:hover {
+    background: var(--surface-hover);
+  }
+
+  .filter-chip.active {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: rgba(45, 91, 227, 0.25);
+  }
+
+  .filter-chip svg { width: 14px; height: 14px; }
+
+  .dim-filter {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  .dim-input {
+    width: 52px;
+    padding: 5px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    outline: none;
+    text-align: center;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .dim-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .dim-input::placeholder { color: var(--text-tertiary); }
+
+  .toolbar-spacer { flex: 1; }
+
+  .sort-select {
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    outline: none;
+  }
+
+  /* ═══ IMAGE GRID ═══ */
+  .grid-container {
+    padding: 20px 24px;
+  }
+
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+  }
+
+  .image-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .image-card:hover {
+    border-color: var(--border);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .image-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .card-checkbox {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 2;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.8);
+    border-radius: 5px;
+    background: rgba(0,0,0,0.2);
+    backdrop-filter: blur(4px);
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+
+  .image-card:hover .card-checkbox {
+    border-color: white;
+    background: rgba(0,0,0,0.35);
+  }
+
+  .image-card.selected .card-checkbox {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .image-card.selected .card-checkbox::after {
+    content: '';
+    position: absolute;
+    left: 5px; top: 2px;
+    width: 6px; height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .card-image {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+    background: var(--bg);
+  }
+
+  .card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 2;
+  }
+
+  .image-card:hover .card-actions { opacity: 1; }
+
+  .card-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s;
+  }
+
+  .card-action-btn:hover { background: rgba(0,0,0,0.6); }
+
+  .card-info {
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-dims {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  .card-size {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  .card-type {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-tertiary);
+    background: var(--bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ═══ VIEW TOGGLE ═══ */
+  .view-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .view-toggle button {
+    width: 32px;
+    height: 30px;
+    border: none;
+    background: var(--surface);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+
+  .view-toggle button:first-child { border-right: 1px solid var(--border); }
+
+  .view-toggle button.active {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  /* ═══ LABEL ═══ */
+  .mockup-label {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-primary);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 999;
+    box-shadow: var(--shadow-lg);
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+    </div>
+    <span class="header-title">Image Downloader</span>
+    <span class="header-count">24 images</span>
+  </div>
+  <div class="header-right">
+    <label class="select-all">
+      <div class="checkbox"></div>
+      Select all
+    </label>
+    <button class="btn btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download
+    </button>
+    <button class="icon-btn" title="Settings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-input">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Filter images...">
+  </div>
+
+  <div class="filter-chip active">All sizes</div>
+  <div class="filter-chip">HD</div>
+  <div class="filter-chip">Medium</div>
+  <div class="filter-chip">Small</div>
+
+  <div class="dim-filter">
+    min
+    <input class="dim-input" placeholder="w" type="text">
+    <span>×</span>
+    <input class="dim-input" placeholder="h" type="text">
+    px
+  </div>
+
+  <div class="toolbar-spacer"></div>
+
+  <select class="sort-select">
+    <option>Sort: Default</option>
+    <option>Name A→Z</option>
+    <option>Size ↓</option>
+  </select>
+
+  <div class="view-toggle">
+    <button class="active" title="Grid">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </button>
+    <button title="List">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    </button>
+  </div>
+
+  <button class="btn btn-ghost" style="font-size: 12px;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+    Rescan
+  </button>
+</div>
+
+<!-- IMAGE GRID -->
+<div class="grid-container">
+  <div class="image-grid" id="grid"></div>
+</div>
+
+<div class="mockup-label">Option 1 — Light Refresh (same structure, new skin)</div>
+
+<script>
+const images = [
+  { w: 1920, h: 1080, size: '245 KB', type: 'PNG', color: '#C7B299' },
+  { w: 800, h: 600, size: '89 KB', type: 'JPG', color: '#8BA4B5' },
+  { w: 1200, h: 800, size: '156 KB', type: 'PNG', color: '#A3C9A8' },
+  { w: 400, h: 400, size: '34 KB', type: 'SVG', color: '#D4A5A5' },
+  { w: 1600, h: 900, size: '312 KB', type: 'JPG', color: '#9CADB7' },
+  { w: 300, h: 200, size: '22 KB', type: 'WEBP', color: '#C9B8A8' },
+  { w: 2560, h: 1440, size: '487 KB', type: 'PNG', color: '#A8B5C9' },
+  { w: 640, h: 480, size: '67 KB', type: 'JPG', color: '#B5C9A8' },
+  { w: 1024, h: 768, size: '123 KB', type: 'PNG', color: '#C9A8B5' },
+  { w: 512, h: 512, size: '45 KB', type: 'WEBP', color: '#8AAEA3' },
+  { w: 1440, h: 900, size: '198 KB', type: 'JPG', color: '#B0A090' },
+  { w: 256, h: 256, size: '15 KB', type: 'PNG', color: '#A090B0' },
+  { w: 3840, h: 2160, size: '1.2 MB', type: 'PNG', color: '#90A8B0' },
+  { w: 720, h: 480, size: '78 KB', type: 'JPG', color: '#B0C090' },
+  { w: 1080, h: 1080, size: '134 KB', type: 'PNG', color: '#C0A890' },
+  { w: 200, h: 150, size: '11 KB', type: 'GIF', color: '#90B0A8' },
+  { w: 1920, h: 1200, size: '267 KB', type: 'JPG', color: '#A89078' },
+  { w: 960, h: 640, size: '98 KB', type: 'WEBP', color: '#7890A8' },
+  { w: 480, h: 320, size: '38 KB', type: 'JPG', color: '#A8A078' },
+  { w: 1280, h: 720, size: '178 KB', type: 'PNG', color: '#9088A0' },
+  { w: 350, h: 350, size: '28 KB', type: 'SVG', color: '#80A898' },
+  { w: 2048, h: 1536, size: '390 KB', type: 'JPG', color: '#B8A898' },
+  { w: 600, h: 400, size: '56 KB', type: 'PNG', color: '#98A8B8' },
+  { w: 1366, h: 768, size: '145 KB', type: 'JPG', color: '#A8B898' },
+];
+
+const grid = document.getElementById('grid');
+const selectedIndices = [1, 4, 9];
+
+images.forEach((img, i) => {
+  const selected = selectedIndices.includes(i);
+  const card = document.createElement('div');
+  card.className = 'image-card' + (selected ? ' selected' : '');
+  card.innerHTML = `
+    <div class="card-checkbox${selected ? ' checked' : ''}"></div>
+    <div class="card-actions">
+      <button class="card-action-btn" title="Copy URL">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+      <button class="card-action-btn" title="Download">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </div>
+    <div style="background:${img.color}; height:160px; display:flex; align-items:center; justify-content:center;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+    </div>
+    <div class="card-info">
+      <span class="card-dims">${img.w}×${img.h}</span>
+      <span class="card-type">${img.type}</span>
+      <span class="card-size">${img.size}</span>
+    </div>
+  `;
+  grid.appendChild(card);
+});
+
+// Toggle selection on click
+document.querySelectorAll('.image-card').forEach(card => {
+  card.addEventListener('click', () => {
+    card.classList.toggle('selected');
+    const cb = card.querySelector('.card-checkbox');
+    cb.classList.toggle('checked');
+  });
+});
+</script>
+</body>
+</html>

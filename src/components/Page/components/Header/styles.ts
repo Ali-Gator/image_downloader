@@ -1,52 +1,65 @@
 import { Avatar, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import { gradients } from '@theme';
-
 export const HeaderContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  padding: theme.spacing(2),
-  background: gradients.primary,
-  color: theme.palette.primary.contrastText,
-  boxShadow: theme.shadows[4],
+  padding: `0 ${theme.spacing(3)}`,
+  height: 56,
+  background: theme.palette.background.paper,
+  color: theme.palette.text.primary,
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  position: 'sticky',
+  top: 0,
   zIndex: theme.zIndex.appBar,
+  backdropFilter: 'blur(12px)',
+  backgroundColor: 'rgba(255, 255, 255, 0.92)',
 }));
 
 export const LogoImage = styled('img')({
-  width: '40px',
-  height: '40px',
+  width: '28px',
+  height: '28px',
   objectFit: 'contain',
 });
 
 export const TitleContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1),
+  gap: theme.spacing(1.5),
 
-  '& svg': {
-    fontSize: 24,
+  '& .MuiTypography-root': {
+    fontSize: '0.9375rem',
+    fontWeight: 600,
+    letterSpacing: '-0.01em',
   },
 }));
 
 export const ControlsContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(2),
+  gap: theme.spacing(1),
 }));
 
 export const SelectAllContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  color: theme.palette.common.white,
-  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  borderRadius: theme.spacing(0.5),
-  padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
+  color: theme.palette.text.secondary,
+  borderRadius: theme.shape.borderRadius,
+  padding: `${theme.spacing(0.5)} ${theme.spacing(1.5)}`,
+  transition: 'background-color 0.15s',
+  cursor: 'pointer',
+  fontSize: '0.8125rem',
+
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
 
   '& label': {
     marginLeft: theme.spacing(0.5),
     cursor: 'pointer',
+    fontSize: '0.8125rem',
+    whiteSpace: 'nowrap',
   },
 
   '& .MuiCheckbox-root': {
@@ -58,27 +71,31 @@ export const MonetizationStatusContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
-  color: theme.palette.common.white,
+  color: theme.palette.text.secondary,
 }));
 
 export const MonetizationBadge = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  backgroundColor: 'rgba(255, 255, 255, 0.12)',
-  borderRadius: theme.spacing(0.5),
-  padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
+  backgroundColor: theme.palette.primary.light,
+  color: theme.palette.primary.main,
+  borderRadius: 20,
+  padding: `${theme.spacing(0.25)} ${theme.spacing(1)}`,
   whiteSpace: 'nowrap',
+  fontSize: '0.75rem',
+  fontWeight: 500,
 }));
 
 export const MonetizationBanner = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
-  backgroundColor: 'rgba(0, 0, 0, 0.25)',
-  border: '1px solid rgba(255, 255, 255, 0.25)',
-  borderRadius: theme.spacing(0.75),
+  backgroundColor: theme.palette.background.default,
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: theme.shape.borderRadius,
   padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
   whiteSpace: 'nowrap',
+  fontSize: '0.8125rem',
 }));
 
 export const UserMenuIconButton = styled(IconButton)(({ theme }) => ({
@@ -87,8 +104,10 @@ export const UserMenuIconButton = styled(IconButton)(({ theme }) => ({
 }));
 
 export const UserAvatar = styled(Avatar)(({ theme }) => ({
-  width: 40,
-  height: 40,
-  backgroundColor: 'rgba(255, 255, 255, 0.12)',
-  color: theme.palette.common.white,
+  width: 34,
+  height: 34,
+  backgroundColor: theme.palette.primary.light,
+  color: theme.palette.primary.main,
+  fontSize: '0.875rem',
+  fontWeight: 600,
 }));

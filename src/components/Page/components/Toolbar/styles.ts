@@ -6,10 +6,9 @@ export const ToolbarContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  padding: theme.spacing(2),
+  padding: `${theme.spacing(1.25)} ${theme.spacing(3)}`,
   backgroundColor: theme.palette.background.paper,
   borderBottom: `1px solid ${theme.palette.divider}`,
-  boxShadow: theme.shadows[1],
   flexWrap: 'wrap',
   gap: theme.spacing(1),
 
@@ -39,7 +38,7 @@ export const MiddleSection = styled('div')(({ theme }) => ({
 export const RightSection = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(2),
+  gap: theme.spacing(1.5),
 
   [theme.breakpoints.down('sm')]: {
     width: '100%',
@@ -50,7 +49,7 @@ export const RightSection = styled('div')(({ theme }) => ({
 
 export const ControlsRow = styled('div')(({ theme }) => ({
   display: 'flex',
-  gap: theme.spacing(2),
+  gap: theme.spacing(1.5),
   alignItems: 'center',
 
   [theme.breakpoints.down('sm')]: {
@@ -67,6 +66,7 @@ export const ControlItem = styled('div')(({ theme }) => ({
 
   '& .MuiSvgIcon-root': {
     color: theme.palette.text.secondary,
+    fontSize: '1.1rem',
   },
 
   [theme.breakpoints.down('sm')]: {
@@ -87,17 +87,21 @@ export const CounterBadge = styled('div')(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(0.5),
   padding: theme.spacing(0.5, 1),
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-  borderRadius: theme.shape.borderRadius,
+  backgroundColor: theme.palette.background.default,
+  color: theme.palette.text.secondary,
+  borderRadius: 20,
+  border: `1px solid ${theme.palette.divider}`,
+  fontFamily: '"JetBrains Mono", monospace',
+  fontSize: '0.75rem',
+  fontWeight: 500,
 
   '& .MuiSvgIcon-root': {
-    fontSize: 18,
+    fontSize: 14,
   },
 }));
 
 export const CounterText = styled('span')(() => ({
-  fontSize: '0.875rem',
+  fontSize: '0.75rem',
   whiteSpace: 'nowrap',
 }));
 
@@ -105,7 +109,9 @@ export const SortContainer = styled(ControlItem)({});
 
 export const ViewOptionsContainer = styled('div')(({ theme }) => ({
   display: 'flex',
-  gap: theme.spacing(0.5),
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: theme.shape.borderRadius,
+  overflow: 'hidden',
 }));
 
 export const ViewButton = styled('button')<ViewButtonProps>(({ theme, active }) => ({
@@ -113,19 +119,24 @@ export const ViewButton = styled('button')<ViewButtonProps>(({ theme, active }) 
   alignItems: 'center',
   justifyContent: 'center',
   padding: theme.spacing(0.5),
-  backgroundColor: active ? theme.palette.primary.main : 'transparent',
-  color: active ? theme.palette.primary.contrastText : theme.palette.text.primary,
-  border: `1px solid ${active ? theme.palette.primary.main : theme.palette.divider}`,
-  borderRadius: theme.shape.borderRadius,
+  width: 32,
+  height: 30,
+  backgroundColor: active ? theme.palette.primary.light : 'transparent',
+  color: active ? theme.palette.primary.main : theme.palette.text.secondary,
+  border: 'none',
   cursor: 'pointer',
-  transition: theme.transitions.create(['background-color', 'color', 'border-color']),
+  transition: theme.transitions.create(['background-color', 'color']),
+
+  '&:first-of-type': {
+    borderRight: `1px solid ${theme.palette.divider}`,
+  },
 
   '&:hover': {
-    backgroundColor: active ? theme.palette.primary.dark : theme.palette.action.hover,
+    backgroundColor: active ? theme.palette.primary.light : theme.palette.action.hover,
   },
 
   '& .MuiSvgIcon-root': {
-    fontSize: 20,
+    fontSize: 18,
   },
 }));
 
@@ -139,7 +150,7 @@ export const SizePopoverContent = styled('div')(({ theme }) => ({
 export const CustomDimensionsContainer = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
   padding: theme.spacing(1.5),
-  backgroundColor: theme.palette.grey[50],
+  backgroundColor: theme.palette.background.default,
   borderRadius: theme.shape.borderRadius,
   border: `1px solid ${theme.palette.divider}`,
   display: 'flex',

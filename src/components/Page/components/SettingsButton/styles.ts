@@ -7,27 +7,27 @@ interface StyledSettingsButtonProps {
 export const StyledSettingsButton = styled('button')<StyledSettingsButtonProps>(
   ({ theme, isHovered }) => ({
     minWidth: 0,
-    width: 40,
-    height: 40,
+    width: 34,
+    height: 34,
     padding: 0,
-    marginLeft: theme.spacing(1),
-    color: isHovered ? theme.palette.primary.main : theme.palette.primary.contrastText,
-    background: isHovered ? theme.palette.primary.light : theme.palette.primary.dark,
-    border: `2px solid ${isHovered ? theme.palette.primary.main : theme.palette.primary.light}`,
-    borderRadius: '50%',
+    marginLeft: theme.spacing(0.5),
+    color: isHovered ? theme.palette.primary.main : theme.palette.text.secondary,
+    background: isHovered ? theme.palette.primary.light : 'transparent',
+    border: `1px solid ${isHovered ? theme.palette.primary.main : theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    transition: 'background 0.2s, border 0.2s, color 0.2s, box-shadow 0.2s',
+    transition: 'background 0.15s, border 0.15s, color 0.15s',
 
     '&:focus': {
       outline: 'none',
-      boxShadow: `0 0 0 2px ${theme.palette.primary.main}`,
+      boxShadow: `0 0 0 3px rgba(45, 91, 227, 0.12)`,
     },
 
     '& svg': {
-      fontSize: 24,
+      fontSize: 18,
     },
   }),
 );

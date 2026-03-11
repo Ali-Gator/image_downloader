@@ -3,7 +3,6 @@ import { styled, Theme } from '@mui/material/styles';
 import { SxProps } from '@mui/system';
 
 // ===== STYLED COMPONENTS =====
-// Styled components for reuse
 export const ActionButtonsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(0.5),
@@ -14,19 +13,20 @@ export const StyledTopActionBar = styled(Box)(({ theme }) => ({
   top: 0,
   left: 0,
   right: 0,
-  height: theme.spacing(6),
   display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'center',
+  alignItems: 'flex-start',
   padding: theme.spacing(0.5),
   zIndex: 2,
-  backdropFilter: 'blur(2px)',
-  backgroundColor: 'rgba(0, 0, 0, 0.3)',
-  transition: 'opacity 0.2s ease',
+  transition: 'opacity 0.15s ease',
   opacity: 0,
+  pointerEvents: 'none',
+
+  '& > *': {
+    pointerEvents: 'auto',
+  },
 }));
 
-// Простые обертки для левой и правой частей
 export const TopBarLeftSection = styled('div')({
   display: 'flex',
   alignItems: 'center',
@@ -42,7 +42,7 @@ export const StyledImageContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   overflow: 'hidden',
-  backgroundColor: theme.palette.grey[100],
+  backgroundColor: theme.palette.background.default,
 }));
 
 export const StyledCheckboxArea = styled(Box)(({ theme }) => ({
@@ -58,14 +58,13 @@ export const StyledCheckboxArea = styled(Box)(({ theme }) => ({
 }));
 
 // ===== CONSTANTS =====
-// Constants for sizes and styles
 const CARD_STYLES = {
   GRID: {
-    IMAGE_CONTAINER_MIN_HEIGHT: 16, // Balanced height for grid view
-    IMAGE_MAX_HEIGHT: 22, // Slightly higher max height to maintain aspect ratio
-    INFO_SECTION_HEIGHT: 3, // Reduced info section height
-    ASPECT_RATIO: 1.2, // Target aspect ratio (width/height) for image container
-    TOP_BAR_HEIGHT: 6, // Height for the top action bar to fit buttons
+    IMAGE_CONTAINER_MIN_HEIGHT: 16,
+    IMAGE_MAX_HEIGHT: 22,
+    INFO_SECTION_HEIGHT: 3,
+    ASPECT_RATIO: 1.2,
+    TOP_BAR_HEIGHT: 6,
   },
   LIST: {
     IMAGE_CONTAINER_HEIGHT: 12,
@@ -81,14 +80,15 @@ const CARD_STYLES = {
 };
 
 // ===== COMMON STYLES =====
-// Base styles shared between grid and list modes
 const commonCardStyles = (theme: Theme) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: '10px',
   backgroundColor: theme.palette.background.paper,
   overflow: 'hidden',
-  boxShadow: theme.shadows[1],
-  transition: theme.transitions.create(['box-shadow', 'transform', 'border-color']),
+  boxShadow: 'none',
+  transition: theme.transitions.create(['box-shadow', 'transform', 'border-color'], {
+    duration: 200,
+  }),
   border: `1px solid ${theme.palette.divider}`,
 });
 
@@ -131,7 +131,6 @@ const listImageStyles = (theme: Theme) => ({
 });
 
 // ===== EXPORTED STYLES =====
-// Combined styles for grid mode (for use with SxProps only when needed)
 export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   ...commonCardStyles(theme),
   display: 'flex',
@@ -140,13 +139,18 @@ export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   paddingBottom: theme.spacing(0.75),
   position: 'relative',
 
+  '&:hover': {
+    borderColor: theme.palette.grey[400],
+    boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
+  },
+
   '&:hover .top-action-bar': {
     opacity: 1,
   },
 
   '&.selected': {
-    border: `2px solid ${theme.palette.primary.main}`,
-    boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
+    borderColor: theme.palette.primary.main,
+    boxShadow: `0 0 0 3px ${theme.palette.primary.light}`,
   },
 
   '.image-container': {
@@ -163,24 +167,28 @@ export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   '& .dimensions-container': {
     justifyContent: 'flex-start',
     flexWrap: 'wrap',
-    gap: theme.spacing(0.25), // Smaller gap between elements
+    gap: theme.spacing(0.25),
   },
 });
 
-// Combined styles for list mode (for use with SxProps only when needed)
 export const listImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   ...commonCardStyles(theme),
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
   padding: theme.spacing(CARD_STYLES.COMMON.PADDING),
-  marginBottom: theme.spacing(2),
+  marginBottom: theme.spacing(1.5),
   gap: theme.spacing(2),
   cursor: 'default',
 
+  '&:hover': {
+    borderColor: theme.palette.grey[400],
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+  },
+
   '&.selected': {
-    border: `2px solid ${theme.palette.primary.main}`,
-    boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
+    borderColor: theme.palette.primary.main,
+    boxShadow: `0 0 0 3px ${theme.palette.primary.light}`,
   },
 
   '.image-container': {

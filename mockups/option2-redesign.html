@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option 2 — Full Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #111110;
+    --surface: #1A1A18;
+    --surface-raised: #222220;
+    --surface-hover: #2A2A28;
+    --border: #2E2E2C;
+    --border-subtle: #252523;
+    --text: #E8E6E1;
+    --text-secondary: #8A8A85;
+    --text-muted: #5A5A56;
+    --accent: #E8FF59;
+    --accent-dim: rgba(232, 255, 89, 0.08);
+    --accent-mid: rgba(232, 255, 89, 0.15);
+    --blue: #59A3FF;
+    --blue-dim: rgba(89, 163, 255, 0.1);
+    --green: #59FFB4;
+    --red: #FF6B6B;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --font: 'Instrument Sans', -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══ HEADER ═══ */
+  .header {
+    height: 52px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 24px;
+    height: 24px;
+    background: var(--accent);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-mark svg { color: var(--bg); }
+
+  .header-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .header-separator {
+    width: 1px;
+    height: 16px;
+    background: var(--border);
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 16px;
+  }
+
+  .stat {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stat-value {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: var(--bg);
+    border: 1px solid var(--accent);
+    font-weight: 700;
+  }
+
+  .btn-accent:hover {
+    box-shadow: 0 0 20px rgba(232, 255, 89, 0.2);
+    transform: translateY(-1px);
+  }
+
+  .btn-surface {
+    background: var(--surface-raised);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  .btn-surface:hover {
+    background: var(--surface-hover);
+    border-color: #3A3A38;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: none;
+    padding: 6px 10px;
+  }
+
+  .btn-ghost:hover {
+    color: var(--text);
+    background: var(--surface-raised);
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .icon-btn:hover {
+    background: var(--surface-raised);
+    color: var(--text);
+  }
+
+  /* ═══ TOOLBAR ═══ */
+  .toolbar {
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--surface);
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 5px 12px;
+    min-width: 220px;
+    transition: all 0.15s;
+  }
+
+  .search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-dim);
+  }
+
+  .search-box svg { color: var(--text-muted); flex-shrink: 0; }
+
+  .search-box input {
+    border: none; outline: none;
+    font-family: var(--font);
+    font-size: 12px;
+    background: transparent;
+    color: var(--text);
+    width: 100%;
+  }
+
+  .search-box input::placeholder { color: var(--text-muted); }
+
+  .pill-group {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .pill {
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-right: 1px solid var(--border);
+    user-select: none;
+    letter-spacing: 0.02em;
+  }
+
+  .pill:last-child { border-right: none; }
+
+  .pill:hover { color: var(--text-secondary); background: var(--surface-raised); }
+
+  .pill.active {
+    color: var(--bg);
+    background: var(--accent);
+  }
+
+  .spacer { flex: 1; }
+
+  .dim-filter {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .dim-input {
+    width: 50px;
+    padding: 4px 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    outline: none;
+    text-align: center;
+  }
+
+  .dim-input:focus {
+    border-color: var(--accent);
+  }
+
+  .view-switch {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .view-switch button {
+    width: 30px; height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .view-switch button:first-child { border-right: 1px solid var(--border); }
+
+  .view-switch button.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  /* ═══ GRID ═══ */
+  .grid-wrap {
+    padding: 16px 20px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+    group: true;
+  }
+
+  .card:hover {
+    border-color: var(--border);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 20px var(--accent-dim);
+  }
+
+  .card-check {
+    position: absolute;
+    top: 8px; left: 8px;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 5px;
+    z-index: 3;
+    transition: all 0.15s;
+    cursor: pointer;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(8px);
+  }
+
+  .card:hover .card-check {
+    border-color: rgba(255,255,255,0.6);
+  }
+
+  .card.selected .card-check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .card.selected .card-check::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 1px;
+    width: 6px; height: 9px;
+    border: solid var(--bg);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .card-overlay {
+    position: absolute;
+    top: 0; right: 0;
+    padding: 8px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 3;
+  }
+
+  .card:hover .card-overlay { opacity: 1; }
+
+  .overlay-btn {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .overlay-btn:hover {
+    background: rgba(0,0,0,0.7);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  .card-thumb {
+    height: 155px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-thumb::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(transparent, var(--surface));
+    pointer-events: none;
+  }
+
+  .card-thumb svg {
+    opacity: 0.15;
+  }
+
+  .card-meta {
+    padding: 8px 12px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .meta-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .meta-dims {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .meta-type {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .meta-type.jpg { background: var(--blue-dim); color: var(--blue); }
+  .meta-type.webp { background: rgba(89,255,180,0.1); color: var(--green); }
+  .meta-type.gif { background: rgba(255,107,107,0.1); color: var(--red); }
+  .meta-type.svg { background: rgba(200,160,255,0.1); color: #C8A0FF; }
+
+  .meta-size {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  /* ═══ STATUS BAR ═══ */
+  .status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    height: 32px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    z-index: 100;
+  }
+
+  .status-left, .status-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    margin-right: 6px;
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .kbd {
+    font-size: 10px;
+    padding: 1px 5px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface-raised);
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  /* ═══ LABEL ═══ */
+  .mockup-label {
+    position: fixed;
+    bottom: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: var(--bg);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    z-index: 999;
+    box-shadow: 0 4px 20px rgba(232, 255, 89, 0.3);
+    letter-spacing: 0.01em;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </div>
+    <span class="header-title">Image Downloader</span>
+    <div class="header-separator"></div>
+    <div class="header-stats">
+      <span class="stat">total <span class="stat-value">24</span></span>
+      <span class="stat">selected <span class="stat-value" style="color: var(--accent)">3</span></span>
+      <span class="stat">size <span class="stat-value">2.4 MB</span></span>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-ghost">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      Rescan
+    </button>
+    <button class="btn btn-surface">Select all</button>
+    <button class="btn btn-accent">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download 3
+    </button>
+    <button class="icon-btn" title="Settings">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-box">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Filter by name or URL...">
+  </div>
+
+  <div class="pill-group">
+    <div class="pill active">ALL</div>
+    <div class="pill">HD</div>
+    <div class="pill">MED</div>
+    <div class="pill">LOW</div>
+  </div>
+
+  <div class="dim-filter">
+    min
+    <input class="dim-input" placeholder="w" type="text">
+    <span style="color: var(--text-muted);">×</span>
+    <input class="dim-input" placeholder="h" type="text">
+    px
+  </div>
+
+  <div class="spacer"></div>
+
+  <button class="btn btn-ghost" style="font-size: 11px;">
+    Sort: Default
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+
+  <div class="view-switch">
+    <button class="active" title="Grid">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </button>
+    <button title="List">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- GRID -->
+<div class="grid-wrap" style="padding-bottom: 48px;">
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="status-left">
+    <span><span class="status-dot"></span>Connected to tab</span>
+    <span>source: dribbble.com</span>
+  </div>
+  <div class="status-right">
+    <span><span class="kbd">A</span> select all</span>
+    <span><span class="kbd">D</span> download</span>
+    <span><span class="kbd">Esc</span> deselect</span>
+  </div>
+</div>
+
+<div class="mockup-label">Option 2 — Full Redesign (dark, utilitarian)</div>
+
+<script>
+const images = [
+  { w: 1920, h: 1080, size: '245 KB', type: 'PNG', color: '#2A2520' },
+  { w: 800, h: 600, size: '89 KB', type: 'JPG', color: '#1E2428' },
+  { w: 1200, h: 800, size: '156 KB', type: 'PNG', color: '#1E2820' },
+  { w: 400, h: 400, size: '34 KB', type: 'SVG', color: '#281E22' },
+  { w: 1600, h: 900, size: '312 KB', type: 'JPG', color: '#20242A' },
+  { w: 300, h: 200, size: '22 KB', type: 'WEBP', color: '#28241E' },
+  { w: 2560, h: 1440, size: '487 KB', type: 'PNG', color: '#1E2028' },
+  { w: 640, h: 480, size: '67 KB', type: 'JPG', color: '#202820' },
+  { w: 1024, h: 768, size: '123 KB', type: 'PNG', color: '#261E28' },
+  { w: 512, h: 512, size: '45 KB', type: 'WEBP', color: '#1E2824' },
+  { w: 1440, h: 900, size: '198 KB', type: 'JPG', color: '#262220' },
+  { w: 256, h: 256, size: '15 KB', type: 'PNG', color: '#221E26' },
+  { w: 3840, h: 2160, size: '1.2 MB', type: 'PNG', color: '#1E2426' },
+  { w: 720, h: 480, size: '78 KB', type: 'JPG', color: '#222820' },
+  { w: 1080, h: 1080, size: '134 KB', type: 'PNG', color: '#282420' },
+  { w: 200, h: 150, size: '11 KB', type: 'GIF', color: '#1E261E' },
+  { w: 1920, h: 1200, size: '267 KB', type: 'JPG', color: '#28221C' },
+  { w: 960, h: 640, size: '98 KB', type: 'WEBP', color: '#1C2228' },
+  { w: 480, h: 320, size: '38 KB', type: 'JPG', color: '#26241E' },
+  { w: 1280, h: 720, size: '178 KB', type: 'PNG', color: '#201E26' },
+  { w: 350, h: 350, size: '28 KB', type: 'SVG', color: '#1E2620' },
+  { w: 2048, h: 1536, size: '390 KB', type: 'JPG', color: '#282420' },
+  { w: 600, h: 400, size: '56 KB', type: 'PNG', color: '#202228' },
+  { w: 1366, h: 768, size: '145 KB', type: 'JPG', color: '#222820' },
+];
+
+const typeClasses = { JPG: 'jpg', WEBP: 'webp', GIF: 'gif', SVG: 'svg' };
+const grid = document.getElementById('grid');
+const selectedIndices = [1, 4, 9];
+
+images.forEach((img, i) => {
+  const selected = selectedIndices.includes(i);
+  const typeClass = typeClasses[img.type] || '';
+  const card = document.createElement('div');
+  card.className = 'card' + (selected ? ' selected' : '');
+  card.innerHTML = `
+    <div class="card-check"></div>
+    <div class="card-overlay">
+      <button class="overlay-btn" title="Copy URL">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+      <button class="overlay-btn" title="Open in new tab">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </button>
+      <button class="overlay-btn" title="Download">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </div>
+    <div class="card-thumb" style="background: ${img.color};">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+    </div>
+    <div class="card-meta">
+      <div class="meta-left">
+        <span class="meta-dims">${img.w}×${img.h}</span>
+        <span class="meta-type ${typeClass}">${img.type}</span>
+      </div>
+      <span class="meta-size">${img.size}</span>
+    </div>
+  `;
+  grid.appendChild(card);
+});
+
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('click', () => {
+    card.classList.toggle('selected');
+  });
+});
+
+document.querySelectorAll('.pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

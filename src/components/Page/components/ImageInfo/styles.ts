@@ -1,6 +1,7 @@
 import { Box, Link, Theme, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+import { colors } from '@theme';
 import { QualityLevel } from '@utils';
 
 export const ImageInfoContainer = styled(Box)(({ theme }) => ({
@@ -26,7 +27,7 @@ export const ImageInfoContainer = styled(Box)(({ theme }) => ({
 
 export const FileName = styled(Typography)(() => ({
   fontWeight: 500,
-  fontSize: '0.875rem',
+  fontSize: '0.8125rem',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
@@ -51,16 +52,18 @@ export const DimensionsContainer = styled(Box)(({ theme }) => ({
 }));
 
 const commonBadgeStyles = (theme: Theme) => ({
-  fontSize: '0.7rem',
+  fontSize: '0.6875rem',
+  fontFamily: '"JetBrains Mono", monospace',
   color: theme.palette.text.secondary,
-  backgroundColor: theme.palette.grey[100],
-  border: `1px solid ${theme.palette.grey[300]}`,
-  borderRadius: '2px',
-  padding: '1px 3px',
+  backgroundColor: theme.palette.background.default,
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 4,
+  padding: '1px 5px',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   height: '18px',
+  fontWeight: 500,
 });
 
 export const Dimensions = styled('span')(({ theme }) => ({
@@ -78,35 +81,39 @@ export const FileSize = styled('span')(({ theme }) => ({
 
 export const FileExtension = styled('span')(({ theme }) => ({
   ...commonBadgeStyles(theme),
-  fontWeight: 500,
-  letterSpacing: '0.02em',
+  fontWeight: 600,
+  letterSpacing: '0.03em',
   minWidth: '26px',
   textAlign: 'center',
+  textTransform: 'uppercase',
+  fontSize: '0.625rem',
 }));
 
 export const QualityBadge = styled('span')<{ quality: QualityLevel }>(({ theme, quality }) => ({
   ...commonBadgeStyles(theme),
-  fontWeight: 500,
+  fontWeight: 600,
   minWidth: '36px',
   textAlign: 'center',
+  fontSize: '0.625rem',
+  textTransform: 'uppercase',
   backgroundColor:
     quality === QualityLevel.HD
-      ? theme.palette.success.light
+      ? 'rgba(43, 165, 99, 0.12)'
       : quality === QualityLevel.MEDIUM
-        ? theme.palette.warning.light
-        : theme.palette.error.light,
+        ? 'rgba(229, 160, 0, 0.14)'
+        : 'rgba(220, 76, 76, 0.12)',
   color:
     quality === QualityLevel.HD
-      ? theme.palette.success.contrastText
+      ? colors.successDark
       : quality === QualityLevel.MEDIUM
-        ? theme.palette.warning.contrastText
-        : theme.palette.error.contrastText,
+        ? colors.warningDark
+        : colors.errorDark,
   border: `1px solid ${
     quality === QualityLevel.HD
-      ? theme.palette.success.main
+      ? 'rgba(43, 165, 99, 0.35)'
       : quality === QualityLevel.MEDIUM
-        ? theme.palette.warning.main
-        : theme.palette.error.main
+        ? 'rgba(229, 160, 0, 0.35)'
+        : 'rgba(220, 76, 76, 0.35)'
   }`,
 }));
 
@@ -128,7 +135,7 @@ export const ImageUrl = styled(Link)(({ theme }) => ({
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
-  transition: 'color 0.2s',
+  transition: 'color 0.15s',
   color: theme.palette.text.secondary,
   fontSize: '0.75rem',
   cursor: 'pointer',
@@ -151,7 +158,7 @@ export const ImageUrl = styled(Link)(({ theme }) => ({
     verticalAlign: 'middle',
     color: 'inherit',
     fontSize: '0.875rem',
-    transition: 'color 0.2s',
+    transition: 'color 0.15s',
   },
 }));
 

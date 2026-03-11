@@ -1,7 +1,5 @@
 import { Box, Typography, styled } from '@mui/material';
 
-import { colors } from '../../../../theme';
-
 export const HelpTextContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   fontSize: theme.typography.caption.fontSize,
@@ -10,7 +8,7 @@ export const HelpTextContainer = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   padding: theme.spacing(1.5),
   borderRadius: theme.shape.borderRadius,
-  borderLeft: `3px solid ${colors.primaryLight}`,
+  borderLeft: `3px solid ${theme.palette.primary.light}`,
   textAlign: 'center',
 }));
 

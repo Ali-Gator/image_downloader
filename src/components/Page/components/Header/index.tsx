@@ -226,7 +226,7 @@ export const Header: FC = () => {
     <HeaderContainer>
       <TitleContainer>
         <LogoImage src="/img/logo-64.png" alt="Logo" />
-        <Typography variant="h6">{t('popup_title')}</Typography>
+        <Typography>{t('popup_title')}</Typography>
       </TitleContainer>
 
       <ControlsContainer>

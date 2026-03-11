@@ -19,12 +19,13 @@ export const NoImagesMessage = styled('div')(({ theme }) => ({
   padding: theme.spacing(4),
   color: theme.palette.text.secondary,
   height: '50vh',
+  fontSize: '0.875rem',
 }));
 
 const GridListContainer = styled('div')(({ theme }) => ({
   display: 'grid',
-  padding: theme.spacing(2),
-  gap: theme.spacing(2),
+  padding: theme.spacing(1, 3, 2.5, 3),
+  gap: theme.spacing(1.75),
   alignContent: 'flex-start',
   gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
   gridAutoRows: 'max-content',

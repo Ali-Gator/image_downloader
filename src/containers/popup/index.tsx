@@ -19,7 +19,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+      <SnackbarProvider
+        maxSnack={3}
+        autoHideDuration={3000}
+        style={{ fontFamily: '"DM Sans", sans-serif', borderRadius: 8 }}
+      >
         <ErrorBoundary>
           <Popup />
         </ErrorBoundary>

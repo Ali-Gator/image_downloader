@@ -1,22 +1,26 @@
 import { styled } from '@mui/material/styles';
 
 export const StyledBadge = styled('span')<{ emphasis?: boolean }>(({ theme, emphasis }) => ({
-  fontSize: '0.7rem',
+  fontSize: '0.6875rem',
+  fontFamily: '"JetBrains Mono", monospace',
   color: theme.palette.text.secondary,
-  backgroundColor: theme.palette.grey[100],
-  border: `1px solid ${theme.palette.grey[300]}`,
-  borderRadius: '2px',
-  padding: '1px 3px',
+  backgroundColor: theme.palette.background.default,
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 4,
+  padding: '1px 5px',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   height: '18px',
   margin: theme.spacing(0, 0.15),
+  fontWeight: 500,
 
   ...(emphasis && {
-    fontWeight: 500,
-    letterSpacing: '0.02em',
+    fontWeight: 600,
+    letterSpacing: '0.03em',
     minWidth: '26px',
     textAlign: 'center',
+    textTransform: 'uppercase' as const,
+    fontSize: '0.625rem',
   }),
 }));

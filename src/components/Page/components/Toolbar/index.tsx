@@ -3,6 +3,7 @@ import { FC, SyntheticEvent, useCallback, useState } from 'react';
 import GridViewIcon from '@mui/icons-material/GridView';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import SearchIcon from '@mui/icons-material/Search';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import {
   Button,
@@ -225,6 +226,11 @@ export const Toolbar: FC = () => {
               size="small"
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <SearchIcon sx={{ color: 'text.secondary', fontSize: '1.1rem', mr: 0.5 }} />
+                ),
+              }}
             />
           </ControlItem>
 
@@ -234,6 +240,14 @@ export const Toolbar: FC = () => {
               size="medium"
               onClick={handleSizeFilterClick}
               aria-describedby="size-filter-popover"
+              sx={{
+                borderRadius: '20px',
+                fontSize: '0.75rem',
+                fontWeight: 500,
+                px: 2,
+                py: 0.5,
+                minWidth: 'auto',
+              }}
             >
               {getQualityFilterLabel()}
             </Button>
@@ -342,28 +356,14 @@ export const Toolbar: FC = () => {
             <Button
               startIcon={<RestartAltIcon />}
               variant="outlined"
+              size="small"
               onClick={handleClearFilters}
               title={t('reset_filters_title')}
+              sx={{ fontSize: '0.75rem' }}
             >
               {t('reset_btn')}
             </Button>
           </ControlItem>
-
-          {sourceTabId && (
-            <ControlItem>
-              <Button
-                startIcon={
-                  isRescanning ? <CircularProgress size={18} color="inherit" /> : <RefreshIcon />
-                }
-                variant="outlined"
-                onClick={handleRescan}
-                disabled={isRescanning}
-                title={t('rescan_button')}
-              >
-                {t('rescan_button')}
-              </Button>
-            </ControlItem>
-          )}
         </ControlsRow>
       </LeftSection>
 
@@ -406,6 +406,22 @@ export const Toolbar: FC = () => {
             <ViewListIcon />
           </ViewButton>
         </ViewOptionsContainer>
+
+        {sourceTabId && (
+          <Button
+            startIcon={
+              isRescanning ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />
+            }
+            variant="outlined"
+            size="small"
+            onClick={handleRescan}
+            disabled={isRescanning}
+            title={t('rescan_button')}
+            sx={{ fontSize: '0.75rem' }}
+          >
+            {t('rescan_button')}
+          </Button>
+        )}
       </RightSection>
     </ToolbarContainer>
   );
