@@ -204,8 +204,6 @@ export const ContentScriptConstants = {
    */
   CONTEXT: {
     INJECTION: 'content_script_injection',
-    DIAGNOSIS: 'content_script_diagnosis',
-    REINJECT_FAILED: 'content_script_reinject_failed',
     MESSAGE_HANDLER: 'content_script_message_handler',
   },
 
@@ -218,10 +216,14 @@ export const ContentScriptConstants = {
 export const SENTRY_FILTER_ERRORS = [
   // Chrome internal pages — content scripts cannot access these
   'cannot access a chrome://',
+  'cannot access a chrome-extension://',
   'cannot access contents of url "chrome',
+  'cannot access contents of the page',
   // Chrome messaging — expected when content script or SW not ready
   'receiving end does not exist',
   'could not establish connection',
+  // Content script file not found (old versions / unsupported pages)
+  'could not load file',
   // Chrome window/tab context — expected in background or headless contexts
   'no current window',
   // Generic Chrome API error — not actionable

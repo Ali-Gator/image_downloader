@@ -50,9 +50,15 @@ const injectContentScript = async (tabId: number, tabUrl?: string): Promise<bool
     if (tabUrl && !isContentScriptSupported(tabUrl)) {
       return false;
     }
+    const manifest = chrome.runtime.getManifest();
+    const contentScriptPath = manifest.content_scripts?.[0]?.js?.[0];
+    if (!contentScriptPath) {
+      handleError(new Error('Content script path not found in manifest'));
+      return false;
+    }
     await chrome.scripting.executeScript({
       target: { tabId },
-      files: ['content-script.js'],
+      files: [contentScriptPath],
     });
     return true;
   } catch (error) {

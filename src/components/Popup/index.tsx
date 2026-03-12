@@ -52,16 +52,46 @@ export const Popup: React.FC = () => {
         active: false,
       });
 
-      setTimeout(async () => {
-        if (tab.id) {
-          const success = await sendImagesToTab(tab.id, payload);
-          if (!success) {
-            handleError(new Error(t('failed_to_send_images')), true);
+      if (!tab.id) {
+        handleError(new Error(t('invalid_tab_id')), true);
+        return;
+      }
+
+      const tabId = tab.id;
+
+      // Wait for tab DOM to load, then retry sending until React listener is ready
+      await new Promise<void>((resolve) => {
+        const onUpdated = (id: number, info: chrome.tabs.TabChangeInfo) => {
+          if (id === tabId && info.status === 'complete') {
+            chrome.tabs.onUpdated.removeListener(onUpdated);
+            resolve();
           }
-        } else {
-          handleError(new Error(t('invalid_tab_id')), true);
-        }
-      }, 500);
+        };
+        chrome.tabs.onUpdated.addListener(onUpdated);
+        chrome.tabs.get(tabId).then((currentTab) => {
+          if (currentTab.status === 'complete') {
+            chrome.tabs.onUpdated.removeListener(onUpdated);
+            resolve();
+          }
+        }).catch(() => {
+          chrome.tabs.onUpdated.removeListener(onUpdated);
+          resolve();
+        });
+      });
+
+      // Retry until the React listener in page.html is ready (it mounts after DOM load)
+      const MAX_ATTEMPTS = 10;
+      const RETRY_DELAY_MS = 150;
+      let success = false;
+      for (let i = 0; i < MAX_ATTEMPTS; i++) {
+        success = await sendImagesToTab(tabId, payload, { silent: i < MAX_ATTEMPTS - 1 });
+        if (success) break;
+        if (i < MAX_ATTEMPTS - 1) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+      }
+
+      if (!success) {
+        handleError(new Error(t('failed_to_send_images')), true);
+      }
     },
     [t],
   );

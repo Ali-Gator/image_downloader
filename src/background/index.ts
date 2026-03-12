@@ -238,19 +238,6 @@ function getContentScriptPath(): string {
   }
 }
 
-/**
- * Checks if content script is available on a tab
- */
-async function isContentScriptAvailable(tabId: number): Promise<boolean> {
-  try {
-    const response = await chrome.tabs.sendMessage(tabId, {
-      action: MessageActionType.HEALTH_CHECK,
-    });
-    return response && response.available;
-  } catch (error) {
-    return false;
-  }
-}
 
 /**
  * Injects content script into all existing tabs when extension is installed/updated
@@ -315,78 +302,6 @@ async function injectContentScriptIntoAllTabs() {
   }
 }
 
-/**
- * Диагностика content script на активной вкладке
- */
-async function diagnoseContentScript() {
-  try {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tabs[0]?.id) return;
-
-    const tab = tabs[0];
-    const tabId = tab.id;
-    if (!tabId) return;
-
-    const isAvailable = await isContentScriptAvailable(tabId);
-
-    if (!isAvailable) {
-      // Skip injection for unsupported URLs (chrome://, chrome-extension://, etc.)
-      if (tab.url) {
-        const lowerUrl = tab.url.toLowerCase();
-        const unsupportedProtocols = [
-          'chrome:',
-          'chrome-extension:',
-          'moz-extension:',
-          'edge:',
-          'file:',
-          'about:',
-          'data:',
-        ];
-        if (unsupportedProtocols.some((p) => lowerUrl.startsWith(p))) {
-          return;
-        }
-      }
-
-      // Content script недоступен - логируем это
-      const diagnosticError = new Error('Content script not available on active tab');
-      Object.assign(diagnosticError, {
-        context: ContentScriptConstants.CONTEXT.DIAGNOSIS,
-        tabInfo: {
-          tabId: tabId,
-          url: tab.url,
-          title: tab.title,
-          status: tab.status,
-          active: tab.active,
-        },
-        timestamp: new Date().toISOString(),
-      });
-      handleError(diagnosticError);
-
-      // Пытаемся переинжектировать
-      try {
-        const contentScriptPath = getContentScriptPath();
-        await chrome.scripting.executeScript({
-          target: { tabId: tabId },
-          files: [contentScriptPath],
-        });
-      } catch (reinjectError) {
-        const failedReinject = ensureError(reinjectError);
-        Object.assign(failedReinject, {
-          context: ContentScriptConstants.CONTEXT.REINJECT_FAILED,
-          tabInfo: {
-            tabId: tabId,
-            url: tab.url,
-            title: tab.title,
-          },
-          timestamp: new Date().toISOString(),
-        });
-        handleError(failedReinject);
-      }
-    }
-  } catch (error) {
-    handleError(error);
-  }
-}
 
 // Clean up any existing rules when extension loads
 // Enhanced cleanup with additional logging
@@ -984,12 +899,7 @@ try {
 
   // Clean up rules when tab changes
   chrome.tabs.onActivated.addListener(() => {
-    // When user switches tabs, remove any active rules
     removeReferrerRules().catch(handleError);
-    // Также запускаем диагностику после короткой задержки
-    setTimeout(() => {
-      diagnoseContentScript().catch(handleError);
-    }, ContentScriptConstants.DIAGNOSIS_DELAY);
   });
 
   chrome.runtime.setUninstallURL(ApplicationLinks.UNINSTALL_URL);

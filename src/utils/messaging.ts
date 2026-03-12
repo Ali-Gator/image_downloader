@@ -1,15 +1,17 @@
 import { ImageData, PageImagesPayload } from '@types';
-import { getLocalizedMessage, handleError, MessageResponse } from '@utils';
+import { handleError, MessageResponse } from '@utils';
 
 /**
  * Sends image data to an active tab and handles the response
  * @param tabId The ID of the tab to send images to
  * @param payload Images payload to send (includes source page URL)
+ * @param silent
  * @returns Promise that resolves to true if successful, false if there was an error
  */
 export const sendImagesToTab = async (
   tabId: number,
   payload: PageImagesPayload,
+  { silent = false }: { silent?: boolean } = {},
 ): Promise<boolean> => {
   try {
     const response = await chrome.tabs.sendMessage(tabId, payload);
@@ -17,15 +19,11 @@ export const sendImagesToTab = async (
       await chrome.tabs.update(tabId, { active: true });
       return true;
     } else {
-      handleError(
-        new Error('Failed to confirm images received'),
-        true,
-        getLocalizedMessage('error_text'),
-      );
+      if (!silent) handleError(new Error('Failed to confirm images received'));
       return false;
     }
   } catch (error) {
-    handleError(error, true, getLocalizedMessage('error_text'));
+    if (!silent) handleError(error);
     return false;
   }
 };

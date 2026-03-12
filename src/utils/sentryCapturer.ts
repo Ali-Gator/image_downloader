@@ -24,12 +24,20 @@ const client = new BrowserClient({
   transport: makeFetchTransport,
   stackParser: defaultStackParser,
   integrations: integrations,
-  enabled: true, // Всегда включено
-  release: `image-downloader@${packageData.version}`, // Фиксированная версия для тестирования
-  environment: process.env.NODE_ENV, // Всегда тестовое окружение
-  debug: isDev, // Включаем отладку
-  tracesSampleRate: 1.0, // Фиксируем все трассировки
-  allowUrls: ['*'], // Разрешаем все URL
+  enabled: true,
+  release: `image-downloader@${packageData.version}`,
+  environment: process.env.NODE_ENV,
+  debug: isDev,
+  tracesSampleRate: 0,
+  allowUrls: ['*'],
+  beforeSend(event) {
+    const message =
+      event.exception?.values?.[0]?.value ?? event.message ?? '';
+    if (shouldIgnoreError(message)) {
+      return null;
+    }
+    return event;
+  },
 });
 
 const scope = new Scope();
@@ -42,6 +50,8 @@ function shouldIgnoreError(errorMessage: string): boolean {
 
 // Function to capture exceptions
 export const captureException = (error: Error, errorInfo?: ErrorInfo) => {
+  // beforeSend covers SDK-internal captures (GlobalHandlers etc.)
+  // This early return avoids unnecessary scope tag pollution for manual calls
   if (shouldIgnoreError(error.message || '')) {
     return null;
   }

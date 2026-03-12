@@ -68,6 +68,30 @@ describe('captureException', () => {
     expect(mockCaptureException).not.toHaveBeenCalled();
   });
 
+  it('filters "Cannot access a chrome-extension://" errors', () => {
+    const result = captureException(
+      new Error('Cannot access a chrome-extension:// URL of different extension'),
+    );
+    expect(result).toBeNull();
+    expect(mockCaptureException).not.toHaveBeenCalled();
+  });
+
+  it('filters "Cannot access contents of the page" errors', () => {
+    const result = captureException(
+      new Error(
+        'Cannot access contents of the page. Extension manifest must request permission to access the respective host.',
+      ),
+    );
+    expect(result).toBeNull();
+    expect(mockCaptureException).not.toHaveBeenCalled();
+  });
+
+  it('filters "Could not load file" errors', () => {
+    const result = captureException(new Error("Could not load file: 'content-script.js'."));
+    expect(result).toBeNull();
+    expect(mockCaptureException).not.toHaveBeenCalled();
+  });
+
   it('sends real errors to Sentry', () => {
     const result = captureException(new Error('Download failed: network timeout'));
     expect(result).toBe('event-id-123');

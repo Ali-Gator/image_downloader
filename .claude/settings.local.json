@@ -24,11 +24,9 @@
       "Bash(npx playwright:*)",
       "Bash(npm run:*)",
       "Bash(npm test:*)",
-      "Bash(open /Users/oleg/me/frontend/ext/image_downloader/mockups/option1-refresh.html)"
+      "mcp__sentry__update_issue"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "sentry"
-  ]
+  "enabledMcpjsonServers": ["sentry"]
 }
