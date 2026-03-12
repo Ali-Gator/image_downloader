@@ -42,27 +42,13 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
   // Handler for clicking on the card to select the image
   const handleSelect = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
-      // In list mode, only allow selection when clicking the checkbox area
-      if (isListMode) {
-        // Only select if clicking on the checkbox container
-        const isCheckboxAreaClick =
-          event.target instanceof Element &&
-          (event.target.classList.contains('checkbox-area') ||
-            event.target.closest('.checkbox-area'));
-
-        if (!isCheckboxAreaClick) {
-          return;
-        }
-      } else {
-        // Grid mode - check if click is on interactive elements
-        if (event.target instanceof Element && event.target.closest('button')) {
-          return;
-        }
+      if (event.target instanceof Element && event.target.closest('button')) {
+        return;
       }
 
       toggleSelectImage(image);
     },
-    [image, toggleSelectImage, isListMode],
+    [image, toggleSelectImage],
   );
 
   // Use theme-based styles but apply them via className with emotion

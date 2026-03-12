@@ -23,7 +23,7 @@ import {
 import { useSnackbar } from 'notistack';
 
 import { RatingWidget } from '@components';
-import { useImageStore } from '@store';
+import { useImageStore, useSettingsStore } from '@store';
 import { GrabImagesResponse, MessageActionType } from '@types';
 import { QualityLevel, SortOption, sendMessageToContentScript, useTranslation } from '@utils';
 
@@ -60,6 +60,16 @@ export const Toolbar: FC = () => {
     isGridView,
     setIsGridView,
   } = useImageStore();
+
+  const { setDefaultGridView } = useSettingsStore();
+
+  const handleSetIsGridView = useCallback(
+    (value: boolean) => {
+      setIsGridView(value);
+      setDefaultGridView(value);
+    },
+    [setIsGridView, setDefaultGridView],
+  );
 
   const [isRescanning, setIsRescanning] = useState(false);
 
@@ -392,14 +402,14 @@ export const Toolbar: FC = () => {
 
         <ViewOptionsContainer>
           <ViewButton
-            onClick={() => setIsGridView(true)}
+            onClick={() => handleSetIsGridView(true)}
             active={isGridView}
             title={t('grid_view_text')}
           >
             <GridViewIcon />
           </ViewButton>
           <ViewButton
-            onClick={() => setIsGridView(false)}
+            onClick={() => handleSetIsGridView(false)}
             active={!isGridView}
             title={t('list_view_text')}
           >
