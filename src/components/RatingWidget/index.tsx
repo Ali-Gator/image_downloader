@@ -72,7 +72,7 @@ function RatingWidget() {
       spacing={0.5}
     >
       {/* Текст призыва к действию */}
-      <Typography variant="body1" sx={{ marginRight: '5px' }}>
+      <Typography variant="body2" sx={{ marginRight: '4px', fontSize: '0.8125rem' }}>
         {t('rateUs')}
       </Typography>
 
@@ -81,8 +81,7 @@ function RatingWidget() {
         <Rating
           name="rating-widget"
           value={ratingValue}
-          size="medium"
-          sx={{ marginRight: '10px' }}
+          size="small"
           onChange={handleClick}
         />
       </ThemeProvider>

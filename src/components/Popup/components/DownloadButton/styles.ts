@@ -1,5 +1,19 @@
 import { Button, styled } from '@mui/material';
 
 export const StyledButton = styled(Button)(({ theme }) => ({
-  minHeight: theme.spacing(6),
+  minHeight: theme.spacing(5.5),
+  borderRadius: 10,
+  fontSize: '0.875rem',
+  letterSpacing: '0.02em',
+  boxShadow: `0 2px 8px rgba(45, 91, 227, 0.3)`,
+  '&:hover': {
+    boxShadow: `0 4px 16px rgba(45, 91, 227, 0.4)`,
+  },
+  '& .MuiSvgIcon-root': {
+    fontSize: '1.2rem',
+    transition: 'transform 0.2s ease',
+  },
+  '&:hover .MuiSvgIcon-root': {
+    transform: 'scale(1.1)',
+  },
 }));
