@@ -3,6 +3,7 @@
 ## Context
 
 No in-app onboarding exists. Users landing on page.html get no guidance. We need:
+
 1. Page onboarding overlay (page.html) — how-to + features
 2. Options onboarding (options.html) — explain each setting + debug/bug-report
 3. Deferred prompt — after 5 downloads or 7 days, suggest Options tour
@@ -14,7 +15,8 @@ No in-app onboarding exists. Users landing on page.html get no guidance. We need
 
 ### Aesthetic: "Warm Editorial"
 
-Cohesive with existing theme (DM Sans, cream `#FAFAF8` surface, blue `#2D5BE3` primary) but with a premium, magazine-like onboarding feel.
+Cohesive with existing theme (DM Sans, cream `#FAFAF8` surface, blue `#2D5BE3` primary) but with a premium,
+magazine-like onboarding feel.
 
 ### Dialog Layout
 
@@ -46,36 +48,40 @@ Cohesive with existing theme (DM Sans, cream `#FAFAF8` surface, blue `#2D5BE3` p
 
 ### Key Visual Details
 
-**Dialog paper:** `maxWidth: 440px`, `borderRadius: 16px`, shadow: `0 24px 48px rgba(0,0,0,0.12)`. Top decorative stripe: `linear-gradient(90deg, #2D5BE3, #5B8DEF, #2D5BE3)`.
+**Dialog paper:** `maxWidth: 440px`, `borderRadius: 16px`, shadow: `0 24px 48px rgba(0,0,0,0.12)`. Top decorative
+stripe: `linear-gradient(90deg, #2D5BE3, #5B8DEF, #2D5BE3)`.
 
-**Step icon:** 80×80 circle, `radial-gradient(circle, #EBF0FD 0%, transparent 70%)`, MUI icon 40px `primaryMain`. Subtle float: `translateY(±3px)` 3s ease-in-out infinite.
+**Step icon:** 80×80 circle, `radial-gradient(circle, #EBF0FD 0%, transparent 70%)`, MUI icon 40px `primaryMain`. Subtle
+float: `translateY(±3px)` 3s ease-in-out infinite.
 
 **Transitions:** Content fade+slide `opacity 0→1, translateX(20px→0)` 300ms. Back: slide from left.
 
-**Step dots (custom):** Active: 8px `#2D5BE3`. Inactive: 6px `#DDD9D3`. Completed: 6px `#2D5BE3` opacity 0.4. Transition 300ms.
+**Step dots (custom):** Active: 8px `#2D5BE3`. Inactive: 6px `#DDD9D3`. Completed: 6px `#2D5BE3` opacity 0.4. Transition
+300ms.
 
-**Buttons:** Skip = text `textSecondary` left. Back = outlined middle. Next/Finish = contained primary right. Last step: Yes=primary, No=outlined.
+**Buttons:** Skip = text `textSecondary` left. Back = outlined middle. Next/Finish = contained primary right. Last step:
+Yes=primary, No=outlined.
 
 ### Icons per Step (Page)
 
-| Step | Icon | Purpose |
-|------|------|---------|
-| Welcome | `CollectionsOutlined` | Images collection |
-| Select | `CheckBoxOutlined` | Selection |
-| Filter | `TuneOutlined` | Filtering |
-| Download | `CloudDownloadOutlined` | Downloading |
-| Options? | `SettingsOutlined` | Settings prompt |
+| Step     | Icon                    | Purpose           |
+|----------|-------------------------|-------------------|
+| Welcome  | `CollectionsOutlined`   | Images collection |
+| Select   | `CheckBoxOutlined`      | Selection         |
+| Filter   | `TuneOutlined`          | Filtering         |
+| Download | `CloudDownloadOutlined` | Downloading       |
+| Options? | `SettingsOutlined`      | Settings prompt   |
 
 ### Icons per Step (Options)
 
-| Step | Icon | Purpose |
-|------|------|---------|
-| Folder | `FolderOutlined` | Folder name |
-| Rename | `DriveFileRenameOutlineOutlined` | Rename pattern |
-| Convert | `TransformOutlined` | Format conversion |
-| Zip | `FolderZipOutlined` | Zip archive |
-| Debug | `BugReportOutlined` | Debug + report |
-| Done | `CheckCircleOutlined` | Completion |
+| Step    | Icon                             | Purpose           |
+|---------|----------------------------------|-------------------|
+| Folder  | `FolderOutlined`                 | Folder name       |
+| Rename  | `DriveFileRenameOutlineOutlined` | Rename pattern    |
+| Convert | `TransformOutlined`              | Format conversion |
+| Zip     | `FolderZipOutlined`              | Zip archive       |
+| Debug   | `BugReportOutlined`              | Debug + report    |
+| Done    | `CheckCircleOutlined`            | Completion        |
 
 ### Deferred Prompt (compact)
 
@@ -92,6 +98,7 @@ Cohesive with existing theme (DM Sans, cream `#FAFAF8` surface, blue `#2D5BE3` p
 │  [No thanks]         [Show me →]    │
 └─────────────────────────────────────┘
 ```
+
 `maxWidth: 360px`, same visual treatment, no stepper.
 
 ---
@@ -121,26 +128,33 @@ Cohesive with existing theme (DM Sans, cream `#FAFAF8` surface, blue `#2D5BE3` p
 ### Component: `src/components/Page/components/Onboarding/`
 
 **Files to create:**
+
 - `index.tsx` — main component
 - `steps.tsx` — step content definitions
 - `styles.ts` — styled components
 
 **Behavior:**
+
 - On mount: read `chrome.storage.local` for `ONBOARDING_COMPLETED` key
 - If not set → show MUI `Dialog` with `MobileStepper`
 - Skip button on every step (marks completed, closes)
 - Back / Next navigation
 
 **Steps:**
+
 1. **Welcome** — "Here are all the images found on the page. Let's walk through how to use the extension."
 2. **Select images** — checkboxes on each card, Select All in header, grid/list view toggle
 3. **Filter & sort** — search by URL, filter by size (quality presets or custom dimensions), sort options
-4. **Download** — Download button, conversion, zip archive, rename — all configured in Settings
-5. **Explore Options?** — "There's a Settings button (⚙️) with download options like folder name, rename patterns, format conversion, and zip. Want to explore them now?"
-   - **Yes** → set `ONBOARDING_COMPLETED=true`, open `options.html?onboarding=true`
-   - **No thanks** → set `ONBOARDING_COMPLETED=true`, close
+4. **Reset & Rescan** buttons.
+5. **Download** — Download button, conversion, zip archive, rename — all configured in Settings
+6. **Explore Options?** — "There's a Settings button (⚙️) with download options like folder name, rename patterns,
+   format conversion, and zip. Want to explore them now?"
+
+- **Yes** → set `ONBOARDING_COMPLETED=true`, open `options.html?onboarding=true`
+- **No thanks** → set `ONBOARDING_COMPLETED=true`, close
 
 **Integration:**
+
 - Add `<Onboarding />` to `src/components/Page/index.tsx` (alongside `<RatingReminderModal />`)
 - Export from `src/components/Page/components/index.ts`
 
@@ -151,25 +165,30 @@ Cohesive with existing theme (DM Sans, cream `#FAFAF8` surface, blue `#2D5BE3` p
 ### Component: `src/components/OptionsPage/components/OptionsOnboarding/`
 
 **Files to create:**
+
 - `index.tsx` — main component
 - `steps.tsx` — step content definitions
 - `styles.ts` — styled components
 
 **Behavior:**
+
 - On mount: check if URL has `?onboarding=true` OR `showOnboardingNextTime` setting is true
 - If neither → don't render
 - If triggered → show MUI `Dialog` with `MobileStepper`
 - On finish → set `OPTIONS_ONBOARDING_COMPLETED=true`, reset `showOnboardingNextTime=false`
 
 **Steps:**
+
 1. **Folder name** — set a custom download folder for all images
 2. **Rename pattern** — batch rename with patterns like `{name}_{index}`
 3. **Format conversion** — convert images between formats (e.g. WebP → PNG)
 4. **Zip archive** — pack all downloads into a single zip file
-5. **Debug & bug reporting** — if something goes wrong, use "Export Debug Log" to download logs, then click "Report a Bug" to submit them. Include a Report a Bug link (`ApplicationLinks.BUG_REPORT_FORM`)
+5. **Debug & bug reporting** — if something goes wrong, use "Export Debug Log" to download logs, then click "Report a
+   Bug" to submit them. Include a Report a Bug link (`ApplicationLinks.BUG_REPORT_FORM`)
 6. **All set!** — "You're ready to go. You can re-enable this guide anytime from the checkbox below."
 
 **Integration:**
+
 - Add `<OptionsOnboarding />` to `src/components/OptionsPage/index.tsx`
 - Export from `src/components/OptionsPage/components/index.ts`
 
@@ -180,21 +199,25 @@ Cohesive with existing theme (DM Sans, cream `#FAFAF8` surface, blue `#2D5BE3` p
 ### Component: `src/components/Page/components/OptionsPrompt/`
 
 **Files to create:**
+
 - `index.tsx` — prompt dialog component
 - `styles.ts` — styled components
 
 **Behavior:**
+
 - On mount: check conditions:
   1. `OPTIONS_ONBOARDING_COMPLETED` is NOT true (user hasn't seen options onboarding)
   2. `OPTIONS_PROMPT_DISMISSED` is NOT true (user hasn't dismissed this prompt before)
   3. Either: `downloadCount >= 5` OR `daysSinceInstall >= 7`
-- Download count: read `usedPageUrls` from `chrome.storage.local` (already tracked by monetization — reuse `getMonetizationLimitState().usedCount`)
+- Download count: read `usedPageUrls` from `chrome.storage.local` (already tracked by monetization — reuse
+  `getMonetizationLimitState().usedCount`)
 - Install date: read `installDate` from `chrome.storage.sync` (already set in background/index.ts on install)
 - If all conditions met → show a simple Dialog: "Did you know there are more download options? Want a quick tour?"
   - **Yes** → set `OPTIONS_PROMPT_DISMISSED=true`, open `options.html?onboarding=true`
   - **No thanks** → set `OPTIONS_PROMPT_DISMISSED=true`, close
 
 **Integration:**
+
 - Add `<OptionsPrompt />` to `src/components/Page/index.tsx`
 
 ---
@@ -204,16 +227,20 @@ Cohesive with existing theme (DM Sans, cream `#FAFAF8` surface, blue `#2D5BE3` p
 ### Component: `src/components/OptionsPage/components/ShowOnboardingCheckbox/`
 
 **Files to create:**
+
 - `index.tsx` — checkbox component
 - `styles.ts` — styled components
 
 **Behavior:**
+
 - Checkbox label: "Show onboarding guide next time"
 - Reads/writes `showOnboardingNextTime` from `useSettingsStore`
-- When checked: also clear `ONBOARDING_COMPLETED`, `OPTIONS_ONBOARDING_COMPLETED`, `OPTIONS_PROMPT_DISMISSED` from `chrome.storage.local`
+- When checked: also clear `ONBOARDING_COMPLETED`, `OPTIONS_ONBOARDING_COMPLETED`, `OPTIONS_PROMPT_DISMISSED` from
+  `chrome.storage.local`
 - When unchecked: just update the setting
 
 **Integration:**
+
 - Add to `src/components/OptionsPage/components/DownloadOptions/index.tsx` after `<ResetButton />`
 - Export from `src/components/OptionsPage/components/index.ts`
 
@@ -225,8 +252,12 @@ Add to `StorageKeys` in `src/utils/constants.ts`:
 
 ```ts
 ONBOARDING_COMPLETED: 'image-downloader-onboarding-completed',
-OPTIONS_ONBOARDING_COMPLETED: 'image-downloader-options-onboarding-completed',
-OPTIONS_PROMPT_DISMISSED: 'image-downloader-options-prompt-dismissed',
+  OPTIONS_ONBOARDING_COMPLETED
+:
+'image-downloader-options-onboarding-completed',
+  OPTIONS_PROMPT_DISMISSED
+:
+'image-downloader-options-prompt-dismissed',
 ```
 
 ---
@@ -275,50 +306,52 @@ Other 50+ locales updated separately.
 ## Files Summary
 
 ### Create
-| File | Purpose |
-|------|---------|
-| `src/components/Page/components/Onboarding/index.tsx` | Page onboarding stepper |
-| `src/components/Page/components/Onboarding/steps.tsx` | Step content for Page |
-| `src/components/Page/components/Onboarding/styles.ts` | Styles |
-| `src/components/OptionsPage/components/OptionsOnboarding/index.tsx` | Options onboarding stepper |
-| `src/components/OptionsPage/components/OptionsOnboarding/steps.tsx` | Step content for Options |
-| `src/components/OptionsPage/components/OptionsOnboarding/styles.ts` | Styles |
-| `src/components/Page/components/OptionsPrompt/index.tsx` | Deferred "explore options?" prompt |
-| `src/components/Page/components/OptionsPrompt/styles.ts` | Styles |
-| `src/components/OptionsPage/components/ShowOnboardingCheckbox/index.tsx` | Re-enable checkbox |
-| `src/components/OptionsPage/components/ShowOnboardingCheckbox/styles.ts` | Styles |
-| `src/__tests__/onboarding.test.tsx` | Unit tests: Page onboarding |
-| `src/__tests__/optionsOnboarding.test.tsx` | Unit tests: Options onboarding |
-| `src/__tests__/optionsPrompt.test.tsx` | Unit tests: deferred prompt |
-| `e2e/onboarding.spec.ts` | E2E tests: full onboarding flow |
+
+| File                                                                     | Purpose                            |
+|--------------------------------------------------------------------------|------------------------------------|
+| `src/components/Page/components/Onboarding/index.tsx`                    | Page onboarding stepper            |
+| `src/components/Page/components/Onboarding/steps.tsx`                    | Step content for Page              |
+| `src/components/Page/components/Onboarding/styles.ts`                    | Styles                             |
+| `src/components/OptionsPage/components/OptionsOnboarding/index.tsx`      | Options onboarding stepper         |
+| `src/components/OptionsPage/components/OptionsOnboarding/steps.tsx`      | Step content for Options           |
+| `src/components/OptionsPage/components/OptionsOnboarding/styles.ts`      | Styles                             |
+| `src/components/Page/components/OptionsPrompt/index.tsx`                 | Deferred "explore options?" prompt |
+| `src/components/Page/components/OptionsPrompt/styles.ts`                 | Styles                             |
+| `src/components/OptionsPage/components/ShowOnboardingCheckbox/index.tsx` | Re-enable checkbox                 |
+| `src/components/OptionsPage/components/ShowOnboardingCheckbox/styles.ts` | Styles                             |
+| `src/__tests__/onboarding.test.tsx`                                      | Unit tests: Page onboarding        |
+| `src/__tests__/optionsOnboarding.test.tsx`                               | Unit tests: Options onboarding     |
+| `src/__tests__/optionsPrompt.test.tsx`                                   | Unit tests: deferred prompt        |
+| `e2e/onboarding.spec.ts`                                                 | E2E tests: full onboarding flow    |
 
 ### Modify
-| File | Change |
-|------|--------|
-| `src/components/Page/index.tsx` | Add `<Onboarding />` and `<OptionsPrompt />` |
-| `src/components/Page/components/index.ts` | Export Onboarding, OptionsPrompt |
-| `src/components/OptionsPage/index.tsx` | Add `<OptionsOnboarding />` |
-| `src/components/OptionsPage/components/index.ts` | Export OptionsOnboarding, ShowOnboardingCheckbox |
-| `src/components/OptionsPage/components/DownloadOptions/index.tsx` | Add `<ShowOnboardingCheckbox />` |
-| `src/utils/constants.ts` | Add 3 new StorageKeys |
-| `src/store/settingsStore.ts` | Add `showOnboardingNextTime` + setter |
-| `src/store/types.ts` | Add to `SettingsState` interface |
-| `public/_locales/en/messages.json` | Add ~25 onboarding i18n keys |
+
+| File                                                              | Change                                           |
+|-------------------------------------------------------------------|--------------------------------------------------|
+| `src/components/Page/index.tsx`                                   | Add `<Onboarding />` and `<OptionsPrompt />`     |
+| `src/components/Page/components/index.ts`                         | Export Onboarding, OptionsPrompt                 |
+| `src/components/OptionsPage/index.tsx`                            | Add `<OptionsOnboarding />`                      |
+| `src/components/OptionsPage/components/index.ts`                  | Export OptionsOnboarding, ShowOnboardingCheckbox |
+| `src/components/OptionsPage/components/DownloadOptions/index.tsx` | Add `<ShowOnboardingCheckbox />`                 |
+| `src/utils/constants.ts`                                          | Add 3 new StorageKeys                            |
+| `src/store/settingsStore.ts`                                      | Add `showOnboardingNextTime` + setter            |
+| `src/store/types.ts`                                              | Add to `SettingsState` interface                 |
+| `public/_locales/en/messages.json`                                | Add ~25 onboarding i18n keys                     |
 
 ---
 
 ## Reusable Code
 
-| What | Where | How |
-|------|-------|-----|
-| Dialog + storage check pattern | `src/components/RatingReminderModal/` | Same MUI Dialog + chrome.storage.local read on mount |
-| Translation hook | `src/utils/useTranslation.tsx` | `useTranslation()` → `t('key')` |
-| Storage keys | `src/utils/constants.ts` | `StorageKeys.*` |
-| Fallback storage | `src/store/fallbackStorage.ts` | For zustand persist |
-| Open options page | `src/components/Page/components/SettingsButton/` | `chrome.runtime.openOptionsPage()` |
-| Download count | `src/utils/monetization.ts` → `getMonetizationLimitState()` | `usedCount` for deferred trigger |
-| Install date | Background sets `installDate` in `chrome.storage.sync` | Read for 7-day trigger |
-| Bug report link | `ApplicationLinks.BUG_REPORT_FORM` in constants | For Options onboarding step 5 |
+| What                           | Where                                                       | How                                                  |
+|--------------------------------|-------------------------------------------------------------|------------------------------------------------------|
+| Dialog + storage check pattern | `src/components/RatingReminderModal/`                       | Same MUI Dialog + chrome.storage.local read on mount |
+| Translation hook               | `src/utils/useTranslation.tsx`                              | `useTranslation()` → `t('key')`                      |
+| Storage keys                   | `src/utils/constants.ts`                                    | `StorageKeys.*`                                      |
+| Fallback storage               | `src/store/fallbackStorage.ts`                              | For zustand persist                                  |
+| Open options page              | `src/components/Page/components/SettingsButton/`            | `chrome.runtime.openOptionsPage()`                   |
+| Download count                 | `src/utils/monetization.ts` → `getMonetizationLimitState()` | `usedCount` for deferred trigger                     |
+| Install date                   | Background sets `installDate` in `chrome.storage.sync`      | Read for 7-day trigger                               |
+| Bug report link                | `ApplicationLinks.BUG_REPORT_FORM` in constants             | For Options onboarding step 5                        |
 
 ---
 
@@ -327,6 +360,7 @@ Other 50+ locales updated separately.
 ### Unit Tests (vitest + @testing-library/react)
 
 **`src/__tests__/onboarding.test.tsx`:**
+
 - Shows onboarding when `ONBOARDING_COMPLETED` is not set
 - Does NOT show when `ONBOARDING_COMPLETED` is true
 - Next/Back changes active step
@@ -334,6 +368,7 @@ Other 50+ locales updated separately.
 - "Yes" on last step calls `chrome.runtime.openOptionsPage`
 
 **`src/__tests__/optionsOnboarding.test.tsx`:**
+
 - Shows when URL has `?onboarding=true`
 - Does NOT show without trigger
 - Step navigation works
@@ -341,6 +376,7 @@ Other 50+ locales updated separately.
 - Step 5 contains bug report link
 
 **`src/__tests__/optionsPrompt.test.tsx`:**
+
 - Shows when downloadCount >= 5 and options onboarding not completed
 - Shows when daysSinceInstall >= 7 and options onboarding not completed
 - Does NOT show when `OPTIONS_PROMPT_DISMISSED` is true
@@ -351,6 +387,7 @@ Other 50+ locales updated separately.
 ### E2E Tests (Playwright)
 
 **`e2e/onboarding.spec.ts`:**
+
 - Fresh install → open page.html → onboarding dialog visible
 - Navigate all steps → verify step content changes
 - Click "Explore Options" → options.html opens with onboarding
