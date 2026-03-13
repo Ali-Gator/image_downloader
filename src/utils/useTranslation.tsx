@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { handleError } from './errorHandlers';
 import messages from '../../public/_locales/en/messages.json';
 
-type MessageKey = keyof typeof messages;
+export type MessageKey = keyof typeof messages;
 type Substitutions = string | string[] | null;
 
 /**

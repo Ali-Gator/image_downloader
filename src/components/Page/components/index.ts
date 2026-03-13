@@ -4,6 +4,9 @@ export { MetadataBadge } from './MetadataBadge';
 export { ImageActions } from './ImageActions';
 export { SafeImage } from './SafeImage';
 
+// Export onboarding
+export { Onboarding } from './Onboarding';
+
 // Export other components
 export { ActionButton } from './ActionButton';
 export { CheckboxButton } from './CheckboxButton';

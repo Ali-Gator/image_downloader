@@ -319,5 +319,56 @@
   },
   "export_debug_log": {
     "message": "Export debug log"
+  },
+  "onboarding_welcome_title": {
+    "message": "Welcome to Image Downloader"
+  },
+  "onboarding_welcome_text": {
+    "message": "Here are all the images found on the page. Let's walk through how to use the extension."
+  },
+  "onboarding_select_title": {
+    "message": "Select Images"
+  },
+  "onboarding_select_text": {
+    "message": "Use checkboxes on each card to pick images, or Select All in the header to grab everything at once."
+  },
+  "onboarding_filter_title": {
+    "message": "Filter & Sort"
+  },
+  "onboarding_filter_text": {
+    "message": "Search by URL, filter by size with quality presets or custom dimensions, and sort images. Use Reset to clear all filters."
+  },
+  "onboarding_actions_title": {
+    "message": "Rescan"
+  },
+  "onboarding_actions_text": {
+    "message": "If the page has changed since you opened the extension, hit Rescan to find new images."
+  },
+  "onboarding_download_title": {
+    "message": "Download"
+  },
+  "onboarding_download_text": {
+    "message": "Hit Download to save selected images. Conversion, zip archive, and rename options are all configured in Settings."
+  },
+  "onboarding_options_title": {
+    "message": "Explore Settings?"
+  },
+  "onboarding_options_text": {
+    "message": "There's a Settings page with download options like custom folders, rename patterns, format conversion, and zip. Want to explore them now?"
+  },
+  "onboarding_options_yes": {
+    "message": "Show me"
+  },
+  "onboarding_options_no": {
+    "message": "No thanks"
+  },
+  "onboarding_skip": {
+    "message": "Skip"
+  },
+  "onboarding_next": {
+    "message": "Next"
+  },
+  "onboarding_back": {
+    "message": "Back"
   }
 }

@@ -230,7 +230,7 @@ export const Header: FC = () => {
       </TitleContainer>
 
       <ControlsContainer>
-        <SelectAllContainer>
+        <SelectAllContainer data-onboarding="select-all">
           <Checkbox
             id="selectAll"
             checked={isAllSelected}
@@ -245,6 +245,7 @@ export const Header: FC = () => {
         {monetizationNode}
 
         <Button
+          data-onboarding="download-button"
           variant="contained"
           color="secondary"
           startIcon={<DownloadIcon />}

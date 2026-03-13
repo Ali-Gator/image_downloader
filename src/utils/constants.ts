@@ -114,6 +114,18 @@ export const StorageKeys = {
    * Key for storing simple reminder date flag
    */
   REMINDER_DATE_FLAG: 'image-downloader-reminder-date',
+  /**
+   * Key for storing page onboarding completion status
+   */
+  ONBOARDING_COMPLETED: 'image-downloader-onboarding-completed',
+  /**
+   * Key for storing options onboarding completion status
+   */
+  OPTIONS_ONBOARDING_COMPLETED: 'image-downloader-options-onboarding-completed',
+  /**
+   * Key for storing options prompt dismissal status
+   */
+  OPTIONS_PROMPT_DISMISSED: 'image-downloader-options-prompt-dismissed',
 } as const;
 
 /**

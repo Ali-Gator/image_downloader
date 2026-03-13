@@ -228,7 +228,7 @@ export const Toolbar: FC = () => {
   return (
     <ToolbarContainer>
       <LeftSection>
-        <ControlsRow>
+        <ControlsRow data-onboarding="filter-section">
           <ControlItem>
             <TextField
               placeholder={t('filter_text')}
@@ -419,6 +419,7 @@ export const Toolbar: FC = () => {
 
         {sourceTabId && (
           <Button
+            data-onboarding="rescan-button"
             startIcon={
               isRescanning ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />
             }

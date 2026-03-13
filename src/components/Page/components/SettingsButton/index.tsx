@@ -48,6 +48,7 @@ export const SettingsButton: FC = () => {
   return (
     <Tooltip title={t('settings_btn_tooltip')} placement="bottom">
       <StyledSettingsButton
+        data-onboarding="settings-button"
         onClick={handleOpenOptions}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

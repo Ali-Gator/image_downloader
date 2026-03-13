@@ -123,74 +123,106 @@ Yes=primary, No=outlined.
 
 ---
 
-## Phase 1: Page Onboarding
+## Phase 1: Page Onboarding ✅ IMPLEMENTED
+
+### Architecture: Hybrid Spotlight/Dialog
+
+Instead of a static dialog for all steps, the onboarding uses a **hybrid approach**:
+
+- **Dialog mode** — for steps without a UI target (Welcome, Explore Options). Centered MUI Dialog with
+  backdrop blur, same "Warm Editorial" visual treatment.
+- **Spotlight mode** — for steps that reference a specific UI element (Select All, Filter, Rescan, Download).
+  A full-screen SVG overlay dims the page with a rounded-rect cutout around the target element. A floating
+  tooltip card is positioned near the highlighted element.
+
+### Technical decisions
+
+- **Target binding:** `data-onboarding="..."` attributes on target elements, queried via CSS selectors.
+  Decoupled from component internals, easy to add/remove.
+- **Fallback:** If a target element is not found in the DOM (e.g., Rescan button when `sourceTabId` is null),
+  the step automatically falls back to dialog mode.
+- **Positioning:** `getBoundingClientRect()` measured in `useLayoutEffect`, re-measured on resize/scroll.
+  Tooltip placement configurable per step (`top`, `bottom`, `left`, `right`) with viewport clamping.
+- **Cutout:** SVG `<mask>` with a black rounded rect punched out of a white fill, applied to a semi-transparent
+  overlay rect. This gives a smooth rounded cutout without CSS hacks.
 
 ### Component: `src/components/Page/components/Onboarding/`
 
-**Files to create:**
+**Files:**
 
-- `index.tsx` — main component
-- `steps.tsx` — step content definitions
-- `styles.ts` — styled components
+- `index.tsx` — main component (hybrid dialog/spotlight renderer)
+- `steps.tsx` — step definitions with `targetSelector` and `tooltipPlacement`
+- `styles.ts` — styled components for both modes
 
-**Behavior:**
+**Data attributes added to existing components:**
 
-- On mount: read `chrome.storage.local` for `ONBOARDING_COMPLETED` key
-- If not set → show MUI `Dialog` with `MobileStepper`
-- Skip button on every step (marks completed, closes)
-- Back / Next navigation
+- `Header/index.tsx`: `data-onboarding="select-all"` on `SelectAllContainer`,
+  `data-onboarding="download-button"` on Download `Button`
+- `Toolbar/index.tsx`: `data-onboarding="filter-section"` on `LeftSection`,
+  `data-onboarding="rescan-button"` on Rescan `Button`
 
 **Steps:**
 
-1. **Welcome** — "Here are all the images found on the page. Let's walk through how to use the extension."
-2. **Select images** — checkboxes on each card, Select All in header, grid/list view toggle
-3. **Filter & sort** — search by URL, filter by size (quality presets or custom dimensions), sort options
-4. **Reset & Rescan** buttons.
-5. **Download** — Download button, conversion, zip archive, rename — all configured in Settings
-6. **Explore Options?** — "There's a Settings button (⚙️) with download options like folder name, rename patterns,
-   format conversion, and zip. Want to explore them now?"
-
-- **Yes** → set `ONBOARDING_COMPLETED=true`, open `options.html?onboarding=true`
-- **No thanks** → set `ONBOARDING_COMPLETED=true`, close
+1. **Welcome** (dialog) — intro overview
+2. **Select images** (spotlight → `[data-onboarding="select-all"]`) — checkboxes, Select All
+3. **Filter & sort** (spotlight → `[data-onboarding="filter-section"]`) — search, quality, dimensions
+4. **Reset & Rescan** (spotlight → `[data-onboarding="rescan-button"]`) — reset filters, rescan page
+5. **Download** (spotlight → `[data-onboarding="download-button"]`) — download, settings in Options
+6. **Explore Options?** (dialog) — Yes opens `options.html?onboarding=true`, No closes
 
 **Integration:**
 
-- Add `<Onboarding />` to `src/components/Page/index.tsx` (alongside `<RatingReminderModal />`)
-- Export from `src/components/Page/components/index.ts`
+- `<Onboarding />` added to `src/components/Page/index.tsx`
+- Exported from `src/components/Page/components/index.ts`
 
 ---
 
 ## Phase 2: Options Onboarding
 
+### Architecture: Hybrid Spotlight/Dialog (same as Phase 1)
+
+Reuse the same spotlight infrastructure from Phase 1. The Options page settings sections will get
+`data-onboarding` attributes. Steps 1-4 spotlight the corresponding settings section; steps 5-6 use dialog.
+
 ### Component: `src/components/OptionsPage/components/OptionsOnboarding/`
 
 **Files to create:**
 
-- `index.tsx` — main component
-- `steps.tsx` — step content definitions
-- `styles.ts` — styled components
+- `index.tsx` — main component (import shared styles from Page Onboarding or extract shared styles)
+- `steps.tsx` — step definitions with `targetSelector` and `tooltipPlacement`
+- `styles.ts` — styled components (can re-export shared spotlight styles)
+
+**Data attributes to add to Options page components:**
+
+- `data-onboarding="folder-name"` on the folder name section
+- `data-onboarding="rename-pattern"` on the rename section
+- `data-onboarding="convert"` on the conversion section
+- `data-onboarding="zip-archive"` on the zip section
 
 **Behavior:**
 
 - On mount: check if URL has `?onboarding=true` OR `showOnboardingNextTime` setting is true
 - If neither → don't render
-- If triggered → show MUI `Dialog` with `MobileStepper`
+- If triggered → show hybrid spotlight/dialog onboarding
 - On finish → set `OPTIONS_ONBOARDING_COMPLETED=true`, reset `showOnboardingNextTime=false`
 
 **Steps:**
 
-1. **Folder name** — set a custom download folder for all images
-2. **Rename pattern** — batch rename with patterns like `{name}_{index}`
-3. **Format conversion** — convert images between formats (e.g. WebP → PNG)
-4. **Zip archive** — pack all downloads into a single zip file
-5. **Debug & bug reporting** — if something goes wrong, use "Export Debug Log" to download logs, then click "Report a
-   Bug" to submit them. Include a Report a Bug link (`ApplicationLinks.BUG_REPORT_FORM`)
-6. **All set!** — "You're ready to go. You can re-enable this guide anytime from the checkbox below."
+1. **Folder name** (spotlight) — set a custom download folder for all images
+2. **Rename pattern** (spotlight) — batch rename with patterns like `{name}_{index}`
+3. **Format conversion** (spotlight) — convert images between formats (e.g. WebP → PNG)
+4. **Zip archive** (spotlight) — pack all downloads into a single zip file
+5. **Debug & bug reporting** (dialog) — "Export Debug Log" + "Report a Bug" link
+6. **All set!** (dialog) — completion, re-enable checkbox mention
 
 **Integration:**
 
 - Add `<OptionsOnboarding />` to `src/components/OptionsPage/index.tsx`
 - Export from `src/components/OptionsPage/components/index.ts`
+
+**Shared code consideration:** Consider extracting the spotlight overlay, tooltip positioning logic,
+and shared styled components into a shared module (e.g., `src/components/shared/SpotlightOnboarding/`)
+to avoid duplication between Page and Options onboarding. This can be done when implementing Phase 2.
 
 ---
 
