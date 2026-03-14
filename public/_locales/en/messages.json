@@ -356,10 +356,10 @@
   "onboarding_options_text": {
     "message": "There's a Settings page with download options like custom folders, rename patterns, format conversion, and zip. Want to explore them now?"
   },
-  "onboarding_options_yes": {
+  "onboarding_show_me": {
     "message": "Show me"
   },
-  "onboarding_options_no": {
+  "onboarding_no_thanks": {
     "message": "No thanks"
   },
   "onboarding_skip": {
@@ -409,5 +409,14 @@
   },
   "options_onboarding_done_text": {
     "message": "You're ready to go. All settings are saved automatically. You can re-enable this guide anytime from the options page."
+  },
+  "options_prompt_title": {
+    "message": "Did you know?"
+  },
+  "options_prompt_text": {
+    "message": "There are more download options like custom folders, rename patterns, and format conversion. Want a quick tour?"
+  },
+  "show_onboarding_checkbox_label": {
+    "message": "Show onboarding guide next time"
   }
 }

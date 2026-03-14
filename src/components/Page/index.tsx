@@ -1,7 +1,7 @@
 import { FC, useEffect } from 'react';
 
 import { RatingReminderModal } from '@components';
-import { Header, ImageGrid, LoadingOverlay, Onboarding, Toolbar } from '@components/Page/components';
+import { Header, ImageGrid, LoadingOverlay, Onboarding, OptionsPrompt, Toolbar } from '@components/Page/components';
 import { useImageStore, useSettingsStore } from '@store';
 import { setupImageListener } from '@utils';
 
@@ -61,6 +61,7 @@ export const Page: FC = () => {
         <Header />
         <RatingReminderModal />
         <Onboarding />
+        <OptionsPrompt />
         <Toolbar />
         <ImageGrid />
         {isLoading && <LoadingOverlay />}

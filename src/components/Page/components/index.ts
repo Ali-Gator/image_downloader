@@ -6,6 +6,7 @@ export { SafeImage } from './SafeImage';
 
 // Export onboarding
 export { Onboarding } from './Onboarding';
+export { OptionsPrompt } from './OptionsPrompt';
 
 // Export other components
 export { ActionButton } from './ActionButton';

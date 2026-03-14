@@ -34,10 +34,10 @@ export function Onboarding() {
   const navigationButtons = state.isLastStep ? (
     <>
       <Button variant="outlined" onClick={state.handleClose}>
-        {t('onboarding_options_no')}
+        {t('onboarding_no_thanks')}
       </Button>
       <Button variant="contained" onClick={handleOptionsYes}>
-        {t('onboarding_options_yes')}
+        {t('onboarding_show_me')}
       </Button>
     </>
   ) : (

@@ -17,8 +17,12 @@ export const useSettingsStore = create<SettingsState>()(
       // Initialize all download options from constants
       ...DEFAULT_DOWNLOAD_OPTIONS,
 
+      // Onboarding
+      showOnboardingNextTime: false,
+
       // Settings actions
       setDefaultGridView: (defaultGridView) => set({ defaultGridView }),
+      setShowOnboardingNextTime: (showOnboardingNextTime) => set({ showOnboardingNextTime }),
       setShowDownloadNotifications: (showDownloadNotifications) =>
         set({ showDownloadNotifications }),
 
@@ -49,6 +53,7 @@ export const useSettingsStore = create<SettingsState>()(
               convertFrom,
               convertTo,
               createZipArchive,
+              showOnboardingNextTime,
             } = settingsData;
 
             set({
@@ -59,6 +64,7 @@ export const useSettingsStore = create<SettingsState>()(
               convertFrom,
               convertTo,
               createZipArchive,
+              showOnboardingNextTime,
             });
           }
         } catch (error) {
@@ -79,6 +85,7 @@ export const useSettingsStore = create<SettingsState>()(
         convertFrom: state.convertFrom,
         convertTo: state.convertTo,
         createZipArchive: state.createZipArchive,
+        showOnboardingNextTime: state.showOnboardingNextTime,
       }),
     },
   ),

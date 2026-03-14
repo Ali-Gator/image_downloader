@@ -16,9 +16,13 @@ export interface SettingsState {
   convertTo: string;
   createZipArchive: boolean;
 
+  // Onboarding
+  showOnboardingNextTime: boolean;
+
   // Actions
   setDefaultGridView: (isGridView: boolean) => void;
   setShowDownloadNotifications: (show: boolean) => void;
+  setShowOnboardingNextTime: (show: boolean) => void;
 
   // Download options actions
   setFolderName: (name: string) => void;

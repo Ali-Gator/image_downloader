@@ -8,4 +8,5 @@ export { OptionsHeader } from './OptionsHeader';
 export { RenamePatternField } from './RenamePatternField';
 export { ResetButton } from './ResetButton';
 export { OptionsOnboarding } from './OptionsOnboarding';
+export { ShowOnboardingCheckbox } from './ShowOnboardingCheckbox';
 export { ZipArchiveOption } from './ZipArchiveOption';
