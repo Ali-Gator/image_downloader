@@ -1,4 +1,12 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, Paper, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  Paper,
+  Typography,
+} from '@mui/material';
 import { keyframes, styled } from '@mui/material/styles';
 
 const float = keyframes`
@@ -123,7 +131,7 @@ export const SpotlightOverlay = styled(Box)({
   position: 'fixed',
   inset: 0,
   zIndex: 1300,
-  pointerEvents: 'auto',
+  pointerEvents: 'none',
 });
 
 export const SpotlightTooltip = styled(Paper)(({ theme }) => ({

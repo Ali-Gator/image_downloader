@@ -19,7 +19,7 @@ export const ConvertOptions: FC = () => {
   const { convertFrom, convertTo, setConvertFrom, setConvertTo } = useSettingsStore();
 
   return (
-    <ConvertRow>
+    <ConvertRow data-onboarding="convert">
       <StyledTypography variant="body1">{t('convert')}</StyledTypography>
 
       <SelectsContainer>

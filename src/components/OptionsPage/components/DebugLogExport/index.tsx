@@ -30,7 +30,7 @@ export const DebugLogExport: FC = () => {
 
   return (
     <StyledContainer>
-      <Button variant="outlined" size="small" onClick={handleExport}>
+      <Button variant="outlined" size="small" onClick={handleExport} data-onboarding="debug-export">
         {t('export_debug_log')}
       </Button>
       <Typography variant="caption" color="textSecondary" sx={{ ml: 1 }}>

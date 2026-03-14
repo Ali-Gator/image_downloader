@@ -13,7 +13,7 @@ export const ZipArchiveOption: FC = () => {
   const { createZipArchive, setCreateZipArchive } = useSettingsStore();
 
   return (
-    <OptionRow>
+    <OptionRow data-onboarding="zip-archive">
       <FormControlLabel
         control={
           <Checkbox

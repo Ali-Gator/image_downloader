@@ -43,6 +43,7 @@ export default defineConfig({
       '@types': resolve(__dirname, 'src/types'),
       '@store': resolve(__dirname, 'src/store'),
       '@theme': resolve(__dirname, 'src/theme'),
+      '@shared': resolve(__dirname, 'src/components/shared'),
     },
   },
   plugins: [

@@ -14,7 +14,7 @@ export const RenamePatternField: FC = () => {
   const { renamePattern, setRenamePattern } = useSettingsStore();
 
   return (
-    <FieldContainer>
+    <FieldContainer data-onboarding="rename-pattern">
       <StyledTypography variant="body1">{t('rename_files')}:</StyledTypography>
       <StyledTextField
         fullWidth

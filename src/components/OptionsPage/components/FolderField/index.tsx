@@ -18,7 +18,7 @@ export const FolderField: FC = () => {
   };
 
   return (
-    <FieldContainer>
+    <FieldContainer data-onboarding="folder-name">
       <StyledTypography variant="body1">{t('folder_name')}:</StyledTypography>
       <StyledTextField
         fullWidth

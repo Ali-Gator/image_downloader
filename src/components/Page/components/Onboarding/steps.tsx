@@ -1,5 +1,3 @@
-import { FC } from 'react';
-
 import {
   CheckBoxOutlined,
   CloudDownloadOutlined,
@@ -8,21 +6,8 @@ import {
   SettingsOutlined,
   TuneOutlined,
 } from '@mui/icons-material';
-import { SvgIconProps } from '@mui/material';
 
-import { MessageKey } from '@utils';
-
-export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
-
-export interface OnboardingStep {
-  titleKey: MessageKey;
-  textKey: MessageKey;
-  Icon: FC<SvgIconProps>;
-  /** CSS selector for the spotlight target. If absent, step renders as a centered dialog. */
-  targetSelector?: string;
-  /** Preferred tooltip placement relative to the target */
-  tooltipPlacement?: TooltipPlacement;
-}
+import { OnboardingStep } from '@shared/onboarding';
 
 export const steps: OnboardingStep[] = [
   {

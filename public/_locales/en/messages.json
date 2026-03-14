@@ -370,5 +370,44 @@
   },
   "onboarding_back": {
     "message": "Back"
+  },
+  "onboarding_finish": {
+    "message": "Finish"
+  },
+  "options_onboarding_folder_title": {
+    "message": "Download Folder"
+  },
+  "options_onboarding_folder_text": {
+    "message": "Set a custom subfolder where all downloaded images are saved. Leave empty to use the default downloads directory."
+  },
+  "options_onboarding_rename_title": {
+    "message": "Rename Pattern"
+  },
+  "options_onboarding_rename_text": {
+    "message": "Batch-rename files using patterns like prefix_{name}. The {name} placeholder keeps the original filename."
+  },
+  "options_onboarding_convert_title": {
+    "message": "Format Conversion"
+  },
+  "options_onboarding_convert_text": {
+    "message": "Automatically convert images between formats when downloading. For example, convert WebP images to PNG or JPEG."
+  },
+  "options_onboarding_zip_title": {
+    "message": "Zip Archive"
+  },
+  "options_onboarding_zip_text": {
+    "message": "Pack all downloaded images into a single ZIP file instead of saving them individually. Keeps your downloads folder tidy."
+  },
+  "options_onboarding_debug_title": {
+    "message": "Debug & Bug Reporting"
+  },
+  "options_onboarding_debug_text": {
+    "message": "If something goes wrong, export the debug log. It captures what the extension did so you can share it when reporting issues."
+  },
+  "options_onboarding_done_title": {
+    "message": "All Set!"
+  },
+  "options_onboarding_done_text": {
+    "message": "You're ready to go. All settings are saved automatically. You can re-enable this guide anytime from the options page."
   }
 }
