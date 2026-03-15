@@ -378,7 +378,7 @@
     "message": "Download Folder"
   },
   "options_onboarding_folder_text": {
-    "message": "Set a custom subfolder where all downloaded images are saved. Leave empty to use the default downloads directory."
+    "message": "Set a custom subfolder where all downloaded images are saved. You can also organize files by website domain. Leave empty to use the default downloads directory."
   },
   "options_onboarding_rename_title": {
     "message": "Rename Pattern"
@@ -418,5 +418,11 @@
   },
   "show_onboarding_checkbox_label": {
     "message": "Show onboarding guide next time"
+  },
+  "organize_by_domain": {
+    "message": "Organize by website"
+  },
+  "organize_by_domain_info": {
+    "message": "Create a subfolder for each website domain inside the download folder (e.g. images/example.com/photo.jpg)"
   }
 }

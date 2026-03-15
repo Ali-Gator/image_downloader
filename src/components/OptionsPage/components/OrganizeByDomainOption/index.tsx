@@ -8,23 +8,23 @@ import { useTranslation } from '@utils';
 import { InfoTooltip } from '../InfoIcon';
 import { OptionRow } from '../styles';
 
-export const ZipArchiveOption: FC = () => {
+export const OrganizeByDomainOption: FC = () => {
   const { t } = useTranslation();
-  const { createZipArchive, setCreateZipArchive } = useSettingsStore();
+  const { organizeByDomain, setOrganizeByDomain } = useSettingsStore();
 
   return (
-    <OptionRow data-onboarding="zip-archive">
+    <OptionRow data-onboarding="organize-by-domain">
       <FormControlLabel
         control={
           <Checkbox
-            checked={createZipArchive}
-            onChange={(e) => setCreateZipArchive(e.target.checked)}
+            checked={organizeByDomain}
+            onChange={(e) => setOrganizeByDomain(e.target.checked)}
             size="small"
           />
         }
-        label={t('create_zip_archive')}
+        label={t('organize_by_domain')}
       />
-      <InfoTooltip title={t('create_zip_archive_info')} />
+      <InfoTooltip title={t('organize_by_domain_info')} />
     </OptionRow>
   );
 };

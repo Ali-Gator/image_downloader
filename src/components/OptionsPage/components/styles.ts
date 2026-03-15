@@ -1,4 +1,4 @@
-import { styled } from '@mui/material/styles';
+import { Box, styled } from '@mui/material';
 
 export const FieldContainer = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -16,4 +16,11 @@ export const FieldContainer = styled('div')(({ theme }) => ({
   '& .MuiTextField-root': {
     flex: 1,
   },
+}));
+
+export const OptionRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(2),
 }));

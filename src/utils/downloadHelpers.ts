@@ -10,6 +10,27 @@ import { debugLogger } from './debugLogger';
 import { updateFilenameExtensionFromDataUrl } from './imageUtils';
 
 /**
+ * Extracts the domain from a URL or origin string, stripping the www. prefix
+ * @param urlOrOrigin URL or origin string
+ * @returns Domain hostname without www. prefix, or empty string on failure
+ */
+export const extractDomain = (urlOrOrigin: string): string => {
+  if (!urlOrOrigin) return '';
+  try {
+    // Only process http/https URLs — reject chrome-extension://, chrome://, etc.
+    if (urlOrOrigin.includes('://') && !urlOrOrigin.startsWith('http')) {
+      return '';
+    }
+    const url = urlOrOrigin.startsWith('http')
+      ? new URL(urlOrOrigin)
+      : new URL(`https://${urlOrOrigin}`);
+    return url.hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+};
+
+/**
  * Sanitizes a filename by replacing unsafe characters with underscores and handling special cases
  * @param filename The filename to sanitize
  * @param maxLength Optional maximum length (defaults to 150)
@@ -202,6 +223,7 @@ const createFallbackFilename = (originalFilename: string, imageUrl: string): str
 export const downloadImage = (image: {
   src: string;
   filename: string;
+  pageUrl?: string;
 }): Promise<DownloadResult> => {
   if (!image.src || !image.filename) {
     return Promise.reject(new Error('Invalid image source or filename'));
@@ -315,6 +337,7 @@ export const downloadImage = (image: {
                         action: MessageActionType.REGISTER_FILENAME,
                         downloadId,
                         filename: correctedFilename,
+                        pageUrl: image.pageUrl,
                       },
                       () => {
                         if (chrome.runtime.lastError) {
@@ -414,6 +437,7 @@ export const downloadImage = (image: {
                 action: MessageActionType.REGISTER_FILENAME,
                 downloadId,
                 filename: filename,
+                pageUrl: image.pageUrl,
               },
               () => {
                 if (chrome.runtime.lastError) {

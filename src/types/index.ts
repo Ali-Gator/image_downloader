@@ -20,6 +20,7 @@ export interface RegisterFilenameMessage {
   action: MessageActionType.REGISTER_FILENAME;
   downloadId: number;
   filename: string;
+  pageUrl?: string;
 }
 
 /**
@@ -279,6 +280,7 @@ export interface DownloadOptions {
   convertFrom: string;
   convertTo: string;
   createZipArchive: boolean;
+  organizeByDomain: boolean;
 }
 
 // Props for the ErrorBoundary component

@@ -25,7 +25,8 @@
       "Bash(npm run:*)",
       "Bash(npm test:*)",
       "mcp__sentry__update_issue",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(npx vite:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

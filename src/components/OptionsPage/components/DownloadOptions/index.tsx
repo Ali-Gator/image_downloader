@@ -6,6 +6,7 @@ import {
   FolderField,
   InfoMessage,
   OptionsHeader,
+  OrganizeByDomainOption,
   RenamePatternField,
   ResetButton,
   ShowOnboardingCheckbox,
@@ -18,6 +19,7 @@ export const DownloadOptions: FC = () => {
     <StyledContainer elevation={2}>
       <OptionsHeader />
       <FolderField />
+      <OrganizeByDomainOption />
       <RenamePatternField />
       <ConvertOptions />
       <ZipArchiveOption />

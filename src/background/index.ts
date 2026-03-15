@@ -18,6 +18,7 @@ import {
 import {
   applyRenamePattern,
   ensureValidExtension,
+  extractDomain,
   sanitizeFileName,
 } from '../utils/downloadHelpers';
 import { ensureError, handleError } from '../utils/errorHandlers';
@@ -34,9 +35,12 @@ let pendingRuleUpdate: Promise<void> | null = null;
 // Unique ID for our referrer rule - using a more unique value to avoid conflicts
 const REFERRER_RULE_ID = 842751963;
 
-// Словарь для хранения соответствий между ID загрузки и именами файлов
-// Это позволит сохранить исходное имя при переименовании
-const downloadFilenamesMap: Record<number, string> = {};
+// Per-download metadata: original filename and source page URL (for domain subfolders)
+interface DownloadMeta {
+  filename: string;
+  domainSegment: string;
+}
+const downloadMetaMap: Record<number, DownloadMeta> = {};
 
 /**
  * Monetize (Paywall) external messaging support (as required by Monetize).
@@ -550,8 +554,24 @@ chrome.runtime.onMessage.addListener((message: RegisterFilenameMessage, _, sendR
     message.downloadId &&
     message.filename
   ) {
-    // Store the filename in our map for later use
-    downloadFilenamesMap[message.downloadId] = message.filename;
+    // Pre-compute sanitized domain segment at registration time
+    let domainSegment = '';
+    if (message.pageUrl) {
+      const domain = extractDomain(message.pageUrl);
+      if (domain) {
+        domainSegment = `${sanitizeFileName(domain)}/`;
+      }
+    }
+
+    downloadMetaMap[message.downloadId] = {
+      filename: message.filename,
+      domainSegment,
+    };
+
+    // Backstop cleanup in case onDeterminingFilename never fires
+    setTimeout(() => {
+      delete downloadMetaMap[message.downloadId];
+    }, 30_000);
 
     // Send success response back to content script
     sendResponse({ success: true });
@@ -576,43 +596,37 @@ if (typeof chrome !== 'undefined' && chrome.downloads) {
 
         const folderName = downloadOptions?.folderName;
         const renamePattern = downloadOptions?.renamePattern;
+        const organizeByDomain = downloadOptions?.organizeByDomain;
 
-        // Check if we have a saved filename for this download ID
-        let finalFilename = item.filename;
-        if (item.id && downloadFilenamesMap[item.id]) {
-          finalFilename = downloadFilenamesMap[item.id];
+        // Check if we have saved metadata for this download ID
+        const meta = item.id ? downloadMetaMap[item.id] : undefined;
+        let finalFilename = meta?.filename || item.filename;
 
-          // Clean up the mapping to prevent memory leaks
+        if (meta) {
+          // Clean up — backstop timer will also fire but delete on undefined is harmless
           setTimeout(() => {
-            delete downloadFilenamesMap[item.id];
+            delete downloadMetaMap[item.id];
           }, 5000);
         }
 
         // Make sure it has a valid extension
-        if (typeof ensureValidExtension !== 'function') {
-          // Fallback
-          if (!finalFilename.includes('.')) {
-            finalFilename = `${finalFilename}.jpg`;
-          }
-        } else {
-          finalFilename = ensureValidExtension(finalFilename, item.url);
-        }
+        finalFilename = ensureValidExtension(finalFilename, item.url);
 
         // Apply rename pattern if specified
         if (renamePattern) {
-          if (typeof applyRenamePattern === 'function') {
-            finalFilename = applyRenamePattern(finalFilename, renamePattern);
-            // Note: We need to sanitize after applying rename pattern as it could introduce invalid characters
-            finalFilename = sanitizeFileName(finalFilename);
-          }
+          finalFilename = applyRenamePattern(finalFilename, renamePattern);
+          finalFilename = sanitizeFileName(finalFilename);
         }
+
+        // Domain subfolder segment (pre-computed at registration time)
+        const domainSegment = organizeByDomain && meta?.domainSegment ? meta.domainSegment : '';
 
         // Apply folder to filename if needed
         if (folderName) {
           const sanitizedFolder = sanitizeFileName(folderName);
-          return `${sanitizedFolder}/${finalFilename}`;
+          return `${sanitizedFolder}/${domainSegment}${finalFilename}`;
         } else {
-          return finalFilename;
+          return `${domainSegment}${finalFilename}`;
         }
       } catch (error) {
         handleError(error);

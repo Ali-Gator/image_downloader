@@ -15,6 +15,7 @@ export interface SettingsState {
   convertFrom: string;
   convertTo: string;
   createZipArchive: boolean;
+  organizeByDomain: boolean;
 
   // Onboarding
   showOnboardingNextTime: boolean;
@@ -30,6 +31,7 @@ export interface SettingsState {
   setConvertFrom: (option: string) => void;
   setConvertTo: (format: string) => void;
   setCreateZipArchive: (createZip: boolean) => void;
+  setOrganizeByDomain: (organize: boolean) => void;
   resetDownloadOptions: () => void;
   refreshSettings: () => Promise<void>;
 }

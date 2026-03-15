@@ -32,6 +32,7 @@ export const useSettingsStore = create<SettingsState>()(
       setConvertFrom: (convertFrom) => set({ convertFrom }),
       setConvertTo: (convertTo) => set({ convertTo }),
       setCreateZipArchive: (createZipArchive) => set({ createZipArchive }),
+      setOrganizeByDomain: (organizeByDomain) => set({ organizeByDomain }),
       resetDownloadOptions: () => set(DEFAULT_DOWNLOAD_OPTIONS),
 
       // Force refresh settings from storage
@@ -53,6 +54,7 @@ export const useSettingsStore = create<SettingsState>()(
               convertFrom,
               convertTo,
               createZipArchive,
+              organizeByDomain,
               showOnboardingNextTime,
             } = settingsData;
 
@@ -64,6 +66,7 @@ export const useSettingsStore = create<SettingsState>()(
               convertFrom,
               convertTo,
               createZipArchive,
+              organizeByDomain,
               showOnboardingNextTime,
             });
           }
@@ -85,6 +88,7 @@ export const useSettingsStore = create<SettingsState>()(
         convertFrom: state.convertFrom,
         convertTo: state.convertTo,
         createZipArchive: state.createZipArchive,
+        organizeByDomain: state.organizeByDomain,
         showOnboardingNextTime: state.showOnboardingNextTime,
       }),
     },

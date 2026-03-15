@@ -6,7 +6,6 @@ import { getMonetizationLimitState } from '@utils/monetization';
 import { OptionsPrompt } from '../components/Page/components/OptionsPrompt';
 import { StorageKeys } from '../utils/constants';
 
-
 vi.mock('@utils', async () => {
   const actual = await vi.importActual<typeof import('@utils')>('@utils');
   return {

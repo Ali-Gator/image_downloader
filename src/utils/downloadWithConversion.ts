@@ -6,7 +6,7 @@ import { downloadImage } from './downloadHelpers';
 import { convertImageElementToFormat } from './imageConverter';
 import { updateFilenameExtensionFromDataUrl } from './imageUtils';
 import { createAndDownloadZipArchive } from './zipArchive';
-import { useRatingStore, useSettingsStore } from '../store';
+import { useImageStore, useRatingStore, useSettingsStore } from '../store';
 import { BulkDownloadResult, DownloadResult, ImageData } from '../types';
 
 /**
@@ -29,6 +29,7 @@ export const downloadImageWithConversion = async (
 
   // Read conversion settings (caller is responsible for refreshSettings before calling)
   const { convertFrom, convertTo } = useSettingsStore.getState();
+  const pageUrl = useImageStore.getState().pageUrl || undefined;
 
   // Check if conversion is needed
   const needsConversion = shouldConvertImage(filename, convertFrom);
@@ -48,6 +49,7 @@ export const downloadImageWithConversion = async (
           return await downloadImage({
             src: convertedDataUrl,
             filename: newFilename,
+            pageUrl,
           });
         } catch (conversionError) {
           // Remove all console.log and console.warn except for real errors (console.error)
@@ -67,6 +69,7 @@ export const downloadImageWithConversion = async (
       return await downloadImage({
         src: originalSrc,
         filename: correctedFilename,
+        pageUrl,
       });
     }
   } catch (domError) {
@@ -74,7 +77,7 @@ export const downloadImageWithConversion = async (
   }
 
   // Fallback to original download
-  return await downloadImage({ src, filename });
+  return await downloadImage({ src, filename, pageUrl });
 };
 
 /**

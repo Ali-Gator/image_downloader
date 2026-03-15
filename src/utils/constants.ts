@@ -92,6 +92,7 @@ export const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = {
   convertFrom: 'none',
   convertTo: 'jpeg',
   createZipArchive: false,
+  organizeByDomain: false,
 };
 
 /**

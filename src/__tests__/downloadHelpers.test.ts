@@ -1,6 +1,6 @@
 import { MessageActionType } from '../types';
 import { debugLogger } from '../utils/debugLogger';
-import { downloadImage } from '../utils/downloadHelpers';
+import { downloadImage, extractDomain } from '../utils/downloadHelpers';
 
 vi.mock('../utils/debugLogger', () => ({
   debugLogger: {
@@ -10,6 +10,36 @@ vi.mock('../utils/debugLogger', () => ({
     export: vi.fn().mockResolvedValue('[]'),
   },
 }));
+
+describe('extractDomain', () => {
+  it('should extract domain from a URL with www prefix', () => {
+    expect(extractDomain('https://www.example.com/path')).toBe('example.com');
+  });
+
+  it('should extract domain from a URL without www prefix', () => {
+    expect(extractDomain('https://example.com')).toBe('example.com');
+  });
+
+  it('should preserve subdomains', () => {
+    expect(extractDomain('https://sub.example.com')).toBe('sub.example.com');
+  });
+
+  it('should strip www from subdomain URLs', () => {
+    expect(extractDomain('https://www.sub.example.com')).toBe('sub.example.com');
+  });
+
+  it('should return empty string for empty input', () => {
+    expect(extractDomain('')).toBe('');
+  });
+
+  it('should return empty string for invalid URL', () => {
+    expect(extractDomain('not a url at all')).toBe('');
+  });
+
+  it('should return empty string for chrome-extension:// URLs', () => {
+    expect(extractDomain('chrome-extension://abcdefghijklmnop')).toBe('');
+  });
+});
 
 describe('downloadImage', () => {
   beforeEach(() => {
