@@ -24,7 +24,8 @@
       "Bash(npx playwright:*)",
       "Bash(npm run:*)",
       "Bash(npm test:*)",
-      "mcp__sentry__update_issue"
+      "mcp__sentry__update_issue",
+      "Bash(npm ls:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

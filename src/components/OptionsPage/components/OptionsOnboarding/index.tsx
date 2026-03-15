@@ -4,9 +4,8 @@ import { OnboardingShell, useOnboardingState } from '@shared/onboarding';
 import { useSettingsStore } from '@store';
 import { storageGet, StorageKeys, useTranslation } from '@utils';
 
-import { SkipButton } from '../../../Page/components/Onboarding/styles';
-
 import { steps } from './steps';
+import { SkipButton } from '../../../Page/components/Onboarding/styles';
 
 const shouldOpen = (done: (open: boolean) => void) => {
   const params = new URLSearchParams(window.location.search);

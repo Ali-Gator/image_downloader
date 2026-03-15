@@ -1,14 +1,22 @@
 import { FC, useEffect } from 'react';
 
 import { RatingReminderModal } from '@components';
-import { Header, ImageGrid, LoadingOverlay, Onboarding, OptionsPrompt, Toolbar } from '@components/Page/components';
+import {
+  Header,
+  ImageGrid,
+  LoadingOverlay,
+  Onboarding,
+  OptionsPrompt,
+  Toolbar,
+} from '@components/Page/components';
 import { useImageStore, useSettingsStore } from '@store';
 import { setupImageListener } from '@utils';
 
 import { PageContainer } from './styles';
 
 export const Page: FC = () => {
-  const { setImages, setIsLoading, setPageUrl, setSourceTabId, isLoading, setIsGridView } = useImageStore();
+  const { setImages, setIsLoading, setPageUrl, setSourceTabId, isLoading, setIsGridView } =
+    useImageStore();
   const { defaultGridView } = useSettingsStore();
 
   useEffect(() => {

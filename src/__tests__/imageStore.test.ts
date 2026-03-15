@@ -4,11 +4,7 @@ import { useImageStore } from '../store/imageStore';
 import { ImageData } from '../types';
 import { QualityLevel } from '../utils/constants';
 
-const makeImage = (
-  id: string,
-  src: string,
-  overrides?: Partial<ImageData>,
-): ImageData => ({
+const makeImage = (id: string, src: string, overrides?: Partial<ImageData>): ImageData => ({
   id,
   src,
   alt: '',

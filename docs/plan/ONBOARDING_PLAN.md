@@ -65,7 +65,7 @@ Yes=primary, No=outlined.
 ### Icons per Step (Page)
 
 | Step     | Icon                    | Purpose           |
-|----------|-------------------------|-------------------|
+| -------- | ----------------------- | ----------------- |
 | Welcome  | `CollectionsOutlined`   | Images collection |
 | Select   | `CheckBoxOutlined`      | Selection         |
 | Filter   | `TuneOutlined`          | Filtering         |
@@ -75,7 +75,7 @@ Yes=primary, No=outlined.
 ### Icons per Step (Options)
 
 | Step    | Icon                             | Purpose           |
-|---------|----------------------------------|-------------------|
+| ------- | -------------------------------- | ----------------- |
 | Folder  | `FolderOutlined`                 | Folder name       |
 | Rename  | `DriveFileRenameOutlineOutlined` | Rename pattern    |
 | Convert | `TransformOutlined`              | Format conversion |
@@ -340,7 +340,7 @@ Other 50+ locales updated separately.
 ### Create
 
 | File                                                                     | Purpose                            |
-|--------------------------------------------------------------------------|------------------------------------|
+| ------------------------------------------------------------------------ | ---------------------------------- |
 | `src/components/Page/components/Onboarding/index.tsx`                    | Page onboarding stepper            |
 | `src/components/Page/components/Onboarding/steps.tsx`                    | Step content for Page              |
 | `src/components/Page/components/Onboarding/styles.ts`                    | Styles                             |
@@ -359,7 +359,7 @@ Other 50+ locales updated separately.
 ### Modify
 
 | File                                                              | Change                                           |
-|-------------------------------------------------------------------|--------------------------------------------------|
+| ----------------------------------------------------------------- | ------------------------------------------------ |
 | `src/components/Page/index.tsx`                                   | Add `<Onboarding />` and `<OptionsPrompt />`     |
 | `src/components/Page/components/index.ts`                         | Export Onboarding, OptionsPrompt                 |
 | `src/components/OptionsPage/index.tsx`                            | Add `<OptionsOnboarding />`                      |
@@ -375,7 +375,7 @@ Other 50+ locales updated separately.
 ## Reusable Code
 
 | What                           | Where                                                       | How                                                  |
-|--------------------------------|-------------------------------------------------------------|------------------------------------------------------|
+| ------------------------------ | ----------------------------------------------------------- | ---------------------------------------------------- |
 | Dialog + storage check pattern | `src/components/RatingReminderModal/`                       | Same MUI Dialog + chrome.storage.local read on mount |
 | Translation hook               | `src/utils/useTranslation.tsx`                              | `useTranslation()` → `t('key')`                      |
 | Storage keys                   | `src/utils/constants.ts`                                    | `StorageKeys.*`                                      |

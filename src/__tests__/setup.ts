@@ -16,6 +16,7 @@ global.chrome = {
     getManifest: vi.fn(() => ({ content_scripts: [{ js: ['content-script.js'] }] })),
     connect: vi.fn(() => ({ onDisconnect: { addListener: vi.fn() }, disconnect: vi.fn() })),
     setUninstallURL: vi.fn(),
+    getURL: vi.fn((path: string) => `chrome-extension://test-extension-id/${path}`),
   },
   storage: {
     local: {

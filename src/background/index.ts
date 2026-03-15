@@ -238,7 +238,6 @@ function getContentScriptPath(): string {
   }
 }
 
-
 /**
  * Injects content script into all existing tabs when extension is installed/updated
  */
@@ -301,7 +300,6 @@ async function injectContentScriptIntoAllTabs() {
     handleError(error);
   }
 }
-
 
 // Clean up any existing rules when extension loads
 // Enhanced cleanup with additional logging

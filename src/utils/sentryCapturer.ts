@@ -31,8 +31,7 @@ const client = new BrowserClient({
   tracesSampleRate: 0,
   allowUrls: ['*'],
   beforeSend(event) {
-    const message =
-      event.exception?.values?.[0]?.value ?? event.message ?? '';
+    const message = event.exception?.values?.[0]?.value ?? event.message ?? '';
     if (shouldIgnoreError(message)) {
       return null;
     }

@@ -78,12 +78,7 @@ function RatingWidget() {
 
       {/* Звезды рейтинга */}
       <ThemeProvider theme={themeRating}>
-        <Rating
-          name="rating-widget"
-          value={ratingValue}
-          size="small"
-          onChange={handleClick}
-        />
+        <Rating name="rating-widget" value={ratingValue} size="small" onChange={handleClick} />
       </ThemeProvider>
     </Stack>
   );

@@ -68,15 +68,18 @@ export const Popup: React.FC = () => {
           }
         };
         chrome.tabs.onUpdated.addListener(onUpdated);
-        chrome.tabs.get(tabId).then((currentTab) => {
-          if (currentTab.status === 'complete') {
+        chrome.tabs
+          .get(tabId)
+          .then((currentTab) => {
+            if (currentTab.status === 'complete') {
+              chrome.tabs.onUpdated.removeListener(onUpdated);
+              resolve();
+            }
+          })
+          .catch(() => {
             chrome.tabs.onUpdated.removeListener(onUpdated);
             resolve();
-          }
-        }).catch(() => {
-          chrome.tabs.onUpdated.removeListener(onUpdated);
-          resolve();
-        });
+          });
       });
 
       // Retry until the React listener in page.html is ready (it mounts after DOM load)
@@ -86,7 +89,8 @@ export const Popup: React.FC = () => {
       for (let i = 0; i < MAX_ATTEMPTS; i++) {
         success = await sendImagesToTab(tabId, payload, { silent: i < MAX_ATTEMPTS - 1 });
         if (success) break;
-        if (i < MAX_ATTEMPTS - 1) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+        if (i < MAX_ATTEMPTS - 1)
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
       }
 
       if (!success) {

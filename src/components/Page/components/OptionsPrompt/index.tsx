@@ -6,9 +6,8 @@ import { Button } from '@mui/material';
 import { storageGet, StorageKeys, useTranslation } from '@utils';
 import { getMonetizationLimitState } from '@utils/monetization';
 
-import { DialogStepContent } from '../Onboarding/styles';
-
 import { Actions, IconCircle, StepText, StepTitle, StyledDialog, TopStripe } from './styles';
+import { DialogStepContent } from '../Onboarding/styles';
 
 function storageGetAsync(key: string): Promise<boolean> {
   return new Promise((resolve) => {

@@ -105,15 +105,19 @@ export async function collectImages(
 
     const isValid = isValidImage(bestSrc);
     const isLazy = bestSrc !== img.src;
-    if (!isValid || (!isLazy && isTinyImage(img.naturalWidth, img.naturalHeight)) || seenUrls.has(bestSrc)) {
+    if (
+      !isValid ||
+      (!isLazy && isTinyImage(img.naturalWidth, img.naturalHeight)) ||
+      seenUrls.has(bestSrc)
+    ) {
       continue;
     }
 
     seenUrls.add(bestSrc);
     if (img.src) seenUrls.add(img.src);
 
-    const width = isLazy ? (parseInt(img.getAttribute('width') || '0') || 0) : img.naturalWidth;
-    const height = isLazy ? (parseInt(img.getAttribute('height') || '0') || 0) : img.naturalHeight;
+    const width = isLazy ? parseInt(img.getAttribute('width') || '0') || 0 : img.naturalWidth;
+    const height = isLazy ? parseInt(img.getAttribute('height') || '0') || 0 : img.naturalHeight;
 
     const imageCandidate: ImageCandidate = {
       id: generateImageId(bestSrc, width, height),

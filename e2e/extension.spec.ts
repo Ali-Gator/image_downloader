@@ -5,10 +5,7 @@ import type { BrowserContext, Page } from '@playwright/test';
  * Helper: sends GRAB_IMAGES to a specific tab via the extension's messaging API.
  * Reuses an existing extension page to avoid open/close overhead per call.
  */
-async function grabImagesFromTab(
-  helperPage: Page,
-  tabUrlSubstring: string,
-) {
+async function grabImagesFromTab(helperPage: Page, tabUrlSubstring: string) {
   const result = await helperPage.evaluate(async (urlMatch: string) => {
     const tabs = await chrome.tabs.query({});
     const targetTab = tabs.find((t) => t.url?.includes(urlMatch));
@@ -140,10 +137,7 @@ test.describe('Image detection', () => {
     await canvasPage.close();
   });
 
-  test('flutter page: detects images loaded via fetch', async ({
-    context,
-    extensionId,
-  }) => {
+  test('flutter page: detects images loaded via fetch', async ({ context, extensionId }) => {
     const flutterPage = await context.newPage();
     await flutterPage.goto(`${FIXTURE_BASE}/flutter-page.html`);
     await flutterPage.waitForLoadState('networkidle');

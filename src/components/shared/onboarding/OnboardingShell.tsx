@@ -2,6 +2,8 @@ import { ReactNode } from 'react';
 
 import { useTranslation } from '@utils';
 
+import { getTooltipPosition, OVERLAY_COLOR } from './spotlightUtils';
+import { OnboardingStep, TargetRect } from './types';
 import {
   ContentWrapper,
   DialogStepActions,
@@ -18,9 +20,6 @@ import {
   TooltipContent,
   TopStripe,
 } from '../../Page/components/Onboarding/styles';
-
-import { getTooltipPosition, OVERLAY_COLOR } from './spotlightUtils';
-import { OnboardingStep, TargetRect } from './types';
 
 interface OnboardingShellProps {
   steps: OnboardingStep[];
@@ -84,7 +83,11 @@ export function OnboardingShell({
     return (
       <>
         <SpotlightOverlay>
-          <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          <svg
+            width="100%"
+            height="100%"
+            style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+          >
             <defs>
               <mask id={maskId}>
                 <rect width="100%" height="100%" fill="white" />
@@ -98,20 +101,11 @@ export function OnboardingShell({
                 />
               </mask>
             </defs>
-            <rect
-              width="100%"
-              height="100%"
-              fill={OVERLAY_COLOR}
-              mask={`url(#${maskId})`}
-            />
+            <rect width="100%" height="100%" fill={OVERLAY_COLOR} mask={`url(#${maskId})`} />
           </svg>
         </SpotlightOverlay>
 
-        <SpotlightTooltip
-          ref={setTooltipEl}
-          elevation={0}
-          style={{ top: pos.top, left: pos.left }}
-        >
+        <SpotlightTooltip ref={setTooltipEl} elevation={0} style={{ top: pos.top, left: pos.left }}>
           <TooltipContent>
             {stepContent}
             {dots}
