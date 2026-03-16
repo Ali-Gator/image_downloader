@@ -439,5 +439,11 @@
   },
   "enhanced_badge_tooltip": {
     "message": "Upgraded from thumbnail"
+  },
+  "onboarding_enhance_title": {
+    "message": "Find Full-Size Images"
+  },
+  "onboarding_enhance_text": {
+    "message": "Some sites show thumbnails instead of full images. Click Enhance to automatically find and upgrade to the original full-size versions."
   }
 }

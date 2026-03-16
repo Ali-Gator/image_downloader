@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Onboarding } from '../components/Page/components/Onboarding';
+import { steps } from '../components/Page/components/Onboarding/steps';
 import { StorageKeys } from '../utils/constants';
 
 vi.mock('@utils', async () => {
@@ -98,7 +99,7 @@ describe('Page Onboarding', () => {
       expect(screen.getByText('onboarding_welcome_title')).toBeInTheDocument();
     });
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < steps.length - 1; i++) {
       fireEvent.click(screen.getByText('onboarding_next'));
     }
 

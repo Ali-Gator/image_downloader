@@ -1,14 +1,18 @@
 import { ImageCandidate, ImageData, MessageActionType, ValidateImageUrlResponse } from '../types';
 import { ContentScriptConstants, handleError } from '../utils';
 import { collectImages } from './collectImages';
+import { debugLogger } from '../utils/debugLogger';
 import { ensureError } from '../utils/errorHandlers';
 import { extractOgImageFromHtml } from '../utils/fullSizeResolver';
 import { blobToDataUrl } from '../utils/imageUtils';
+import { captureMessage } from '../utils/sentryCapturer';
 import {
   isCanvasHeavyApp,
   observeNewPerformanceEntries,
   performanceUrlsToImageData,
 } from '../utils/performanceImageScanner';
+
+const ENHANCE_LOG_CONTEXT = 'fullSizeResolver';
 
 /**
  * Simple fetch image as data URL (content script version)
@@ -209,6 +213,8 @@ const MAX_OG_FETCHES = 20;
 async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
   const candidates = images.filter((img) => img.linkedPageUrl);
 
+  debugLogger.log('info', ENHANCE_LOG_CONTEXT, `Enhancement triggered: ${candidates.length}/${images.length} candidates with linkedPageUrl`);
+
   // Deduplicate by linkedPageUrl — fetch each unique page only once
   const uniqueUrls = [...new Set(candidates.map((img) => img.linkedPageUrl!))].slice(
     0,
@@ -228,6 +234,7 @@ async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
         });
 
         if (!metaResponse?.html) {
+          debugLogger.log('warn', ENHANCE_LOG_CONTEXT, `Strategy D fetch failed: ${pageUrl} -> no HTML returned`);
           ogCache.set(pageUrl, null);
           return;
         }
@@ -244,8 +251,15 @@ async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
           url: ogImageUrl,
         });
 
-        ogCache.set(pageUrl, validation?.exists ? ogImageUrl : null);
-      } catch {
+        if (validation?.exists) {
+          ogCache.set(pageUrl, ogImageUrl);
+        } else {
+          debugLogger.log('warn', ENHANCE_LOG_CONTEXT, `Validation failed: ${ogImageUrl} -> not accessible`);
+          ogCache.set(pageUrl, null);
+        }
+      } catch (error) {
+        debugLogger.log('warn', ENHANCE_LOG_CONTEXT, `Strategy D fetch failed: ${pageUrl} -> ${ensureError(error).message}`);
+        captureMessage(`Strategy D fetch failed: ${pageUrl}`, 'warning');
         ogCache.set(pageUrl, null);
       }
     }),
@@ -256,6 +270,7 @@ async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
   for (const img of candidates) {
     const ogImageUrl = ogCache.get(img.linkedPageUrl!);
     if (ogImageUrl && ogImageUrl !== img.src) {
+      debugLogger.log('info', ENHANCE_LOG_CONTEXT, `Strategy D: ${img.src} -> ${ogImageUrl} (OG meta from ${img.linkedPageUrl})`);
       updated.set(img.id, {
         ...img,
         originalSrc: img.originalSrc || img.src,
@@ -264,6 +279,8 @@ async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
       });
     }
   }
+
+  debugLogger.log('info', ENHANCE_LOG_CONTEXT, `Enhancement complete: ${updated.size}/${images.length} upgraded`);
 
   return images.map((img) => updated.get(img.id) || img);
 }

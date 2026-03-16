@@ -1,4 +1,5 @@
 import {
+  AutoFixHighOutlined,
   CheckBoxOutlined,
   CloudDownloadOutlined,
   CollectionsOutlined,
@@ -34,6 +35,13 @@ export const steps: OnboardingStep[] = [
     textKey: 'onboarding_actions_text',
     Icon: RefreshOutlined,
     targetSelector: '[data-onboarding="rescan-button"]',
+    tooltipPlacement: 'bottom',
+  },
+  {
+    titleKey: 'onboarding_enhance_title',
+    textKey: 'onboarding_enhance_text',
+    Icon: AutoFixHighOutlined,
+    targetSelector: '[data-onboarding="enhance-button"]',
     tooltipPlacement: 'bottom',
   },
   {
