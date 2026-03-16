@@ -2,6 +2,11 @@ import { ImageCandidate, ImageData } from '../types';
 import { isTinyImage, PlaceholderImages } from '../utils';
 import { scanBackgroundImages } from '../utils/backgroundImageScanner';
 import { getSmartFileName } from '../utils/fileUtils';
+import {
+  resolveDataAttributes,
+  resolveParentAnchorUrl,
+  resolveUrlPatternCleanup,
+} from '../utils/fullSizeResolver';
 import { generateImageId } from '../utils/idUtils';
 import {
   getBestSrcFromElement,
@@ -130,6 +135,45 @@ export async function collectImages(
       fileSize: estimateImageSize(img),
       qualityScore: 0,
     };
+
+    // Full-size resolution: Strategy C → A → B (most reliable first)
+    let resolved = false;
+
+    // Strategy C: Data attributes
+    const dataAttrUrl = resolveDataAttributes(img);
+    if (dataAttrUrl && dataAttrUrl !== bestSrc) {
+      imageCandidate.originalSrc = bestSrc;
+      imageCandidate.src = dataAttrUrl;
+      imageCandidate.enhanced = true;
+      resolved = true;
+    }
+
+    // Strategy A: Parent anchor — always run for linkedPageUrl even if already resolved
+    const anchorResult = resolveParentAnchorUrl(img);
+    if (!resolved && anchorResult?.imageUrl && anchorResult.imageUrl !== bestSrc) {
+      imageCandidate.originalSrc = bestSrc;
+      imageCandidate.src = anchorResult.imageUrl;
+      imageCandidate.enhanced = true;
+      resolved = true;
+    }
+    if (anchorResult?.pageUrl) {
+      imageCandidate.linkedPageUrl = anchorResult.pageUrl;
+    }
+
+    // Strategy B: URL pattern cleanup
+    if (!resolved) {
+      const cleanedUrl = resolveUrlPatternCleanup(bestSrc);
+      if (cleanedUrl && cleanedUrl !== bestSrc) {
+        imageCandidate.originalSrc = bestSrc;
+        imageCandidate.src = cleanedUrl;
+        imageCandidate.enhanced = true;
+      }
+    }
+
+    // Add resolved URL to seenUrls to prevent duplicates
+    if (imageCandidate.src !== bestSrc) {
+      seenUrls.add(imageCandidate.src);
+    }
 
     imageCandidate.filename = getSmartFileName(imageCandidate);
     candidateImages.push(imageCandidate);

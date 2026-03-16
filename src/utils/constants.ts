@@ -205,6 +205,7 @@ export const NOTIFICATION_DURATION = {
 export const IMAGE_FETCH_TIMEOUTS = {
   CONTENT_SCRIPT: 2000, // 2 seconds
   CANVAS_TIMEOUT: 5000, // 5 seconds
+  ENHANCE_FETCH: 5000, // 5 seconds — for OG meta / URL validation
   BACKGROUND_FETCH: 30000, // 30 seconds
 };
 

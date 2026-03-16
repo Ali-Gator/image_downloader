@@ -1,7 +1,8 @@
-import { ImageCandidate, ImageData, MessageActionType } from '../types';
+import { ImageCandidate, ImageData, MessageActionType, ValidateImageUrlResponse } from '../types';
 import { ContentScriptConstants, handleError } from '../utils';
 import { collectImages } from './collectImages';
 import { ensureError } from '../utils/errorHandlers';
+import { extractOgImageFromHtml } from '../utils/fullSizeResolver';
 import { blobToDataUrl } from '../utils/imageUtils';
 import {
   isCanvasHeavyApp,
@@ -160,6 +161,21 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
       scanAndRespond(sendResponse, message.action);
       return true;
     }
+
+    if (message.action === MessageActionType.ENHANCE_IMAGES) {
+      enhanceImages(message.images)
+        .then((updated) => sendResponse({ images: updated }))
+        .catch((error) => {
+          const err = ensureError(error);
+          Object.assign(err, {
+            context: ContentScriptConstants.CONTEXT.MESSAGE_HANDLER,
+            messageAction: message.action,
+          });
+          handleError(err);
+          sendResponse({ error: 'Enhancement failed', details: err.message });
+        });
+      return true;
+    }
   } catch (error) {
     // Отправляем ошибку в Sentry с подробным контекстом
     const contentScriptError = ensureError(error);
@@ -183,3 +199,71 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   }
   return true; // Нужно для асинхронных обработчиков
 });
+
+const MAX_OG_FETCHES = 20;
+
+/**
+ * Strategy D: For images with linkedPageUrl, fetch the page HTML via background
+ * script and extract og:image / twitter:image meta tags.
+ */
+async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
+  const candidates = images.filter((img) => img.linkedPageUrl);
+
+  // Deduplicate by linkedPageUrl — fetch each unique page only once
+  const uniqueUrls = [...new Set(candidates.map((img) => img.linkedPageUrl!))].slice(
+    0,
+    MAX_OG_FETCHES,
+  );
+
+  // Fetch OG images for each unique page URL
+  const ogCache = new Map<string, string | null>();
+
+  await Promise.allSettled(
+    uniqueUrls.map(async (pageUrl) => {
+      try {
+        const metaResponse = await chrome.runtime.sendMessage({
+          msg: MessageActionType.FETCH_PAGE_META,
+          url: pageUrl,
+          referrer: window.location.origin,
+        });
+
+        if (!metaResponse?.html) {
+          ogCache.set(pageUrl, null);
+          return;
+        }
+
+        const ogImageUrl = extractOgImageFromHtml(metaResponse.html);
+        if (!ogImageUrl) {
+          ogCache.set(pageUrl, null);
+          return;
+        }
+
+        // Validate the OG image URL
+        const validation: ValidateImageUrlResponse = await chrome.runtime.sendMessage({
+          msg: MessageActionType.VALIDATE_IMAGE_URL,
+          url: ogImageUrl,
+        });
+
+        ogCache.set(pageUrl, validation?.exists ? ogImageUrl : null);
+      } catch {
+        ogCache.set(pageUrl, null);
+      }
+    }),
+  );
+
+  // Apply resolved OG images to all candidates sharing the same linkedPageUrl
+  const updated = new Map<string, ImageData>();
+  for (const img of candidates) {
+    const ogImageUrl = ogCache.get(img.linkedPageUrl!);
+    if (ogImageUrl && ogImageUrl !== img.src) {
+      updated.set(img.id, {
+        ...img,
+        originalSrc: img.originalSrc || img.src,
+        src: ogImageUrl,
+        enhanced: true,
+      });
+    }
+  }
+
+  return images.map((img) => updated.get(img.id) || img);
+}

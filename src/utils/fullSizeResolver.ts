@@ -179,23 +179,22 @@ export function resolveDataAttributes(img: HTMLImageElement): string | null {
 }
 
 /**
+ * Pre-compiled patterns for OG/Twitter meta tag extraction.
+ * Each tag has two patterns to handle both attribute orderings.
+ */
+const OG_META_PATTERNS = ['og:image', 'twitter:image'].flatMap((tag) => [
+  new RegExp(`<meta[^>]+(?:property|name)\\s*=\\s*["']${tag}["'][^>]+content\\s*=\\s*["']([^"']+)["']`, 'i'),
+  new RegExp(`<meta[^>]+content\\s*=\\s*["']([^"']+)["'][^>]+(?:property|name)\\s*=\\s*["']${tag}["']`, 'i'),
+]);
+
+/**
  * Strategy D parser: Extract og:image or twitter:image from HTML string.
  */
 export function extractOgImageFromHtml(html: string): string | null {
-  // Try og:image first (preferred), then twitter:image as fallback
-  // For each tag, handle both attribute orderings (property/name before or after content)
-  for (const tag of ['og:image', 'twitter:image']) {
-    const escaped = tag.replace(':', ':');
-    const patterns = [
-      new RegExp(`<meta[^>]+(?:property|name)\\s*=\\s*["']${escaped}["'][^>]+content\\s*=\\s*["']([^"']+)["']`, 'i'),
-      new RegExp(`<meta[^>]+content\\s*=\\s*["']([^"']+)["'][^>]+(?:property|name)\\s*=\\s*["']${escaped}["']`, 'i'),
-    ];
-    for (const pattern of patterns) {
-      const match = html.match(pattern);
-      if (match?.[1]) return match[1];
-    }
+  for (const pattern of OG_META_PATTERNS) {
+    const match = html.match(pattern);
+    if (match?.[1]) return match[1];
   }
-
   return null;
 }
 

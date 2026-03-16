@@ -3,8 +3,10 @@
 import {
   DownloadOptions,
   FetchImageMessage,
+  FetchPageMetaMessage,
   MessageActionType,
   RegisterFilenameMessage,
+  ValidateImageUrlMessage,
 } from '../types';
 import {
   ApplicationLinks,
@@ -838,6 +840,97 @@ chrome.runtime.onMessage.addListener((request: FetchImageMessage, _, sendRespons
   sendResponse({ success: false, error: 'Unknown message type' });
   return false;
 });
+
+const MAX_PAGE_HTML_SIZE = 50 * 1024; // 50KB
+
+/**
+ * FETCH_PAGE_META: Fetch an HTML page and return raw text (for OG meta extraction).
+ * VALIDATE_IMAGE_URL: HEAD request to check if a URL points to a valid image.
+ */
+chrome.runtime.onMessage.addListener(
+  (request: FetchPageMetaMessage | ValidateImageUrlMessage, _, sendResponse) => {
+    if (request.msg === MessageActionType.FETCH_PAGE_META) {
+      (async () => {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), IMAGE_FETCH_TIMEOUTS.ENHANCE_FETCH);
+
+          const response = await fetch(request.url, {
+            method: 'GET',
+            signal: controller.signal,
+            credentials: 'omit',
+            headers: {
+              Accept: 'text/html',
+              ...(request.referrer ? { Referer: request.referrer } : {}),
+            },
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            sendResponse({ html: null });
+            return;
+          }
+
+          // Read limited amount of HTML to avoid large downloads
+          const reader = response.body?.getReader();
+          if (!reader) {
+            sendResponse({ html: null });
+            return;
+          }
+
+          const decoder = new TextDecoder();
+          let html = '';
+          let done = false;
+          while (!done && html.length < MAX_PAGE_HTML_SIZE) {
+            const { value, done: streamDone } = await reader.read();
+            done = streamDone;
+            if (value) {
+              html += decoder.decode(value, { stream: !done });
+            }
+          }
+          reader.cancel();
+
+          sendResponse({ html });
+        } catch {
+          sendResponse({ html: null });
+        }
+      })();
+      return true;
+    }
+
+    if (request.msg === MessageActionType.VALIDATE_IMAGE_URL) {
+      (async () => {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), IMAGE_FETCH_TIMEOUTS.ENHANCE_FETCH);
+
+          const response = await fetch(request.url, {
+            method: 'HEAD',
+            signal: controller.signal,
+            credentials: 'omit',
+          });
+
+          clearTimeout(timeoutId);
+
+          const contentType = response.headers.get('content-type') || '';
+          const contentLength = response.headers.get('content-length');
+
+          sendResponse({
+            exists: response.ok && contentType.startsWith('image/'),
+            contentType,
+            ...(contentLength ? { contentLength: parseInt(contentLength, 10) } : {}),
+          });
+        } catch {
+          sendResponse({ exists: false, contentType: '' });
+        }
+      })();
+      return true;
+    }
+
+    return false;
+  },
+);
 
 // Initialize tab origin tracking
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
