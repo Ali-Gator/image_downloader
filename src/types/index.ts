@@ -9,6 +9,9 @@ export enum MessageActionType {
   CONVERT_IMAGE_ELEMENT = 'convertImageElement',
   RESCAN_IMAGES = 'rescanImages',
   HEALTH_CHECK = 'healthCheck',
+  ENHANCE_IMAGES = 'enhanceImages',
+  FETCH_PAGE_META = 'fetchPageMeta',
+  VALIDATE_IMAGE_URL = 'validateImageUrl',
 }
 
 /**
@@ -80,6 +83,43 @@ export interface HealthCheckMessage {
 }
 
 /**
+ * Interface for the enhance images message
+ * Used to trigger Strategy D (OG meta extraction) for images with linkedPageUrl
+ */
+export interface EnhanceImagesMessage {
+  action: MessageActionType.ENHANCE_IMAGES;
+  images: ImageData[];
+}
+
+/**
+ * Interface for the fetch page meta message
+ * Used by background script to fetch HTML and extract OG image meta tags
+ */
+export interface FetchPageMetaMessage {
+  msg: MessageActionType.FETCH_PAGE_META;
+  url: string;
+  referrer?: string;
+}
+
+/**
+ * Interface for the validate image URL message
+ * Used by background script to HEAD-check a candidate URL
+ */
+export interface ValidateImageUrlMessage {
+  msg: MessageActionType.VALIDATE_IMAGE_URL;
+  url: string;
+}
+
+/**
+ * Response from validate image URL
+ */
+export interface ValidateImageUrlResponse {
+  exists: boolean;
+  contentType: string;
+  contentLength?: number;
+}
+
+/**
  * Union type for all possible messages to content script
  */
 export type ContentScriptMessage =
@@ -87,7 +127,8 @@ export type ContentScriptMessage =
   | RescanImagesMessage
   | FetchImageAsDataUrlMessage
   | ConvertImageElementMessage
-  | HealthCheckMessage;
+  | HealthCheckMessage
+  | EnhanceImagesMessage;
 
 /**
  * Result of a download attempt
@@ -151,6 +192,9 @@ export interface ImageData {
   aspectRatio: number;
   filename: string;
   fileSize: number;
+  originalSrc?: string;
+  enhanced?: boolean;
+  linkedPageUrl?: string;
 }
 
 /**

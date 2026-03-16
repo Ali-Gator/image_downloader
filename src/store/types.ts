@@ -54,6 +54,7 @@ export interface ImageState {
   // UI state
   isLoading: boolean;
   isGridView: boolean;
+  isEnhancing: boolean;
 
   // Filter state
   filterText: string;
@@ -72,6 +73,8 @@ export interface ImageState {
   deselectAll: () => void;
   setIsLoading: (isLoading: boolean) => void;
   setIsGridView: (isGridView: boolean) => void;
+  setIsEnhancing: (isEnhancing: boolean) => void;
+  updateImages: (updated: ImageData[]) => void;
   setFilterText: (text: string) => void;
   setQualityFilters: (filters: QualityLevel[]) => void;
   toggleQualityFilter: (filter: QualityLevel) => void;

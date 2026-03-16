@@ -15,6 +15,11 @@ const RESIZE_PARAMS = new Set([
   'resize',
   'maxwidth',
   'maxheight',
+  'shape',
+  'fidelity',
+  'thumb',
+  'thumbnail',
+  'preset',
 ]);
 
 /**

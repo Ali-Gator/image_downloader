@@ -13,6 +13,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
   sourceTabId: null,
   isLoading: false,
   isGridView: true,
+  isEnhancing: false,
   filterText: '',
   qualityFilters: [QualityLevel.ALL],
   customSizeFilter: { minWidth: 0, minHeight: 0 },
@@ -55,6 +56,21 @@ export const useImageStore = create<ImageState>((set, get) => ({
   setIsLoading: (isLoading) => set({ isLoading }),
 
   setIsGridView: (isGridView) => set({ isGridView }),
+
+  setIsEnhancing: (isEnhancing) => set({ isEnhancing }),
+
+  updateImages: (updated) => {
+    const { images, selectedImages } = get();
+    const updatedMap = new Map(updated.map((img) => [img.id, img]));
+    const newImages = images.map((img) => updatedMap.get(img.id) ?? img);
+    const hasSelectedOverlap = selectedImages.some((img) => updatedMap.has(img.id));
+    const state: Partial<ImageState> = { images: newImages };
+    if (hasSelectedOverlap) {
+      state.selectedImages = selectedImages.map((img) => updatedMap.get(img.id) ?? img);
+    }
+    set(state);
+    get().applyFilters();
+  },
 
   setFilterText: (filterText) => {
     set({ filterText });
