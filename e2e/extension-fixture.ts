@@ -21,14 +21,21 @@ function startFixtureServer(fixturesDir: string, port: number): Server {
     '.js': 'application/javascript',
   };
 
-  return createServer((req, res) => {
-    const url = req.url === '/' ? '/test-page.html' : req.url || '/';
-    const filePath = path.join(fixturesDir, url);
+  return createServer(async (req, res) => {
+    const urlPath = new URL(req.url || '/', 'http://localhost').pathname;
+    let resolved = urlPath === '/' ? '/test-page.html' : urlPath;
+
+    // Handle directory URLs: /foo/bar/ → /foo/bar/index.html
+    if (resolved.endsWith('/')) {
+      resolved += 'index.html';
+    }
+
+    const filePath = path.join(fixturesDir, resolved);
     const ext = path.extname(filePath);
     const contentType = mimeTypes[ext] || 'application/octet-stream';
 
     try {
-      const data = fs.readFileSync(filePath);
+      const data = await fs.promises.readFile(filePath);
       res.writeHead(200, { 'Content-Type': contentType });
       res.end(data);
     } catch {

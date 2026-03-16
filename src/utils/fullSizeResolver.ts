@@ -14,7 +14,7 @@ const IMAGE_EXTENSIONS = new RegExp(
  * E.g. photo_thumb.jpg → photo.jpg, img-small.png → img.png
  */
 const THUMBNAIL_SUFFIXES =
-  /([-_](thumb|thumbnail|small|medium|preview|sq|icon|mini|tiny|[smt]|d))(\.[a-z]{3,4})$/i;
+  /([-_](thumb|thumbnail|small|medium|preview|sq|mini|tiny|[smt]|d))(\.[a-z]{3,4})$/i;
 
 /**
  * Numeric size suffixes at the end of the filename stem.

@@ -1,26 +1,51 @@
-import { test, expect, FIXTURE_BASE } from './extension-fixture';
+import { expect, FIXTURE_BASE, test } from './extension-fixture';
+
 import type { BrowserContext, Page } from '@playwright/test';
 
-/**
- * Helper: sends GRAB_IMAGES to a specific tab via the extension's messaging API.
- * Reuses an existing extension page to avoid open/close overhead per call.
- */
-async function grabImagesFromTab(helperPage: Page, tabUrlSubstring: string) {
-  const result = await helperPage.evaluate(async (urlMatch: string) => {
-    const tabs = await chrome.tabs.query({});
-    const targetTab = tabs.find((t) => t.url?.includes(urlMatch));
-    if (!targetTab?.id) return { images: [] as Array<{ src: string }> };
-
-    return new Promise<{ images: Array<{ src: string }>; pageUrl?: string }>((resolve) => {
-      chrome.tabs.sendMessage(targetTab.id!, { action: 'grabImages' }, (response) => {
-        const r = response as { images: Array<{ src: string }>; pageUrl?: string } | undefined;
-        resolve(r ?? { images: [] });
-      });
-    });
-  }, tabUrlSubstring);
-
-  return result;
+interface GrabbedImage {
+  src: string;
+  originalSrc?: string;
+  enhanced?: boolean;
+  linkedPageUrl?: string;
 }
+
+/**
+ * Generic helper: sends a message to a tab matched by URL substring
+ * via the extension's chrome.tabs messaging API.
+ */
+async function sendMessageToTab(
+  helperPage: Page,
+  tabUrlSubstring: string,
+  message: Record<string, unknown>,
+): Promise<{ images: GrabbedImage[]; pageUrl?: string }> {
+  const result = await helperPage.evaluate(
+    async ({ urlMatch, msg }: { urlMatch: string; msg: Record<string, unknown> }) => {
+      const tabs = await chrome.tabs.query({});
+      const targetTab = tabs.find((t) => t.url?.includes(urlMatch));
+      if (!targetTab?.id) return { images: [] as Array<Record<string, unknown>> };
+
+      return new Promise<{ images: Array<Record<string, unknown>>; pageUrl?: string }>(
+        (resolve) => {
+          chrome.tabs.sendMessage(targetTab.id!, msg, (response) => {
+            const r = response as
+              | { images: Array<Record<string, unknown>>; pageUrl?: string }
+              | undefined;
+            resolve(r ?? { images: [] });
+          });
+        },
+      );
+    },
+    { urlMatch: tabUrlSubstring, msg: message },
+  );
+
+  return result as unknown as { images: GrabbedImage[]; pageUrl?: string };
+}
+
+const grabImagesFromTab = (helperPage: Page, tabUrlSubstring: string) =>
+  sendMessageToTab(helperPage, tabUrlSubstring, { action: 'grabImages' });
+
+const enhanceImagesInTab = (helperPage: Page, tabUrlSubstring: string, images: GrabbedImage[]) =>
+  sendMessageToTab(helperPage, tabUrlSubstring, { action: 'enhanceImages', images });
 
 /**
  * Opens a long-lived options.html page for use as a chrome.tabs API bridge.
@@ -77,9 +102,10 @@ test.describe('Image detection', () => {
     await helper.close();
 
     expect(result).toHaveProperty('images');
-    expect(result.images.length).toBe(9);
 
     const srcs = result.images.map((img) => img.src);
+
+    expect(result.images.length).toBe(9);
 
     // Basic <img> should be detected
     expect(srcs.some((s) => s.includes('basic-photo'))).toBe(true);
@@ -157,5 +183,88 @@ test.describe('Image detection', () => {
     expect(srcs.some((s) => s.includes('data-original-photo'))).toBe(true);
 
     await flutterPage.close();
+  });
+});
+
+test.describe('Full-size image resolution', () => {
+  // Shared state: all auto-resolution tests use the same page grab
+  let sharedResult: { images: GrabbedImage[] };
+  let sharedSrcs: string[];
+  let sharedPage: Page;
+
+  test.beforeAll(async ({ context, extensionId }) => {
+    sharedPage = await context.newPage();
+    await sharedPage.goto(`${FIXTURE_BASE}/fullsize-test-page.html`);
+    await sharedPage.waitForLoadState('networkidle');
+    await sharedPage.waitForTimeout(2000);
+
+    const helper = await openHelperPage(context, extensionId);
+    sharedResult = await grabImagesFromTab(helper, 'fullsize-test-page');
+    await helper.close();
+    sharedSrcs = sharedResult.images.map((img) => img.src);
+  });
+
+  test.afterAll(async () => {
+    await sharedPage?.close();
+  });
+
+  test('auto-resolves direct image links (Case 2)', async () => {
+    // Strategy A: parent <a href="images/IMG_0003.jpg"> should resolve the thumbnail
+    expect(sharedSrcs.some((s) => s.includes('IMG_0003.jpg') && !s.includes('tn_'))).toBe(true);
+    // The thumbnail URL should NOT appear as a src
+    expect(sharedSrcs.some((s) => s.includes('tn_IMG_0003'))).toBe(false);
+  });
+
+  test('auto-resolves URL suffix patterns (Case 1 & 5)', async () => {
+    // Case 1 (Imgur): Strategy B strips _d suffix from filename
+    // photo_d.webp → photo.webp (suffix stripped from pathname)
+    expect(sharedSrcs.some((s) => s.includes('/photo.webp') && !s.includes('_d'))).toBe(true);
+    expect(sharedSrcs.some((s) => s.includes('photo_d'))).toBe(false);
+
+    // Case 5: Strategy B strips _thumb suffix
+    // landscape_thumb.jpg → landscape.jpg
+    expect(sharedSrcs.some((s) => s.includes('/landscape.jpg') && !s.includes('_thumb'))).toBe(
+      true,
+    );
+    expect(sharedSrcs.some((s) => s.includes('landscape_thumb'))).toBe(false);
+  });
+
+  test('auto-resolves data attributes (Case 4)', async () => {
+    // Strategy C: data-high-res attribute should resolve to full image
+    expect(sharedSrcs.some((s) => s.includes('photo-full.png'))).toBe(true);
+    expect(sharedSrcs.some((s) => s.includes('photo-thumb.png'))).toBe(false);
+  });
+
+  test('stores linkedPageUrl for Flickr-style layouts (Case 3)', async () => {
+    // The Flickr-style image should have linkedPageUrl set by Strategy A container search
+    const flickrImage = sharedResult.images.find((img) => img.src.includes('55145287496'));
+    expect(flickrImage).toBeDefined();
+    expect(flickrImage!.linkedPageUrl).toBeDefined();
+    expect(flickrImage!.linkedPageUrl).toContain('/photos/125877475/55145287496/');
+  });
+
+  test('Enhance resolves OG images (Case 3)', async ({ context, extensionId }) => {
+    // Enhance needs its own page since it runs in a separate browser context
+    const testPage = await context.newPage();
+    await testPage.goto(`${FIXTURE_BASE}/fullsize-test-page.html`);
+    await testPage.waitForLoadState('networkidle');
+    await testPage.waitForTimeout(2000);
+
+    const helper = await openHelperPage(context, extensionId);
+    const result = await grabImagesFromTab(helper, 'fullsize-test-page');
+
+    // Run enhance (Strategy D) on the grabbed images
+    const enhanced = await enhanceImagesInTab(helper, 'fullsize-test-page', result.images);
+    await helper.close();
+
+    // The Flickr-style image should now be upgraded via OG meta
+    const flickrImage = enhanced.images.find(
+      (img) => img.src.includes('55145287496_full') || img.originalSrc?.includes('55145287496'),
+    );
+    expect(flickrImage).toBeDefined();
+    expect(flickrImage!.src).toContain('55145287496_full.jpg');
+    expect(flickrImage!.enhanced).toBe(true);
+
+    await testPage.close();
   });
 });

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Full-Size Resolution Test Page</title>
+  </head>
+  <body>
+    <h1>Full-Size Image Resolution E2E Test Page</h1>
+
+    <!-- Case 1 — Imgur-style (parent anchor is page URL + URL has resize params/suffix) -->
+    <section>
+      <a href="/gallery/photo-of-pup-Dd0bfnF" class="Post-item">
+        <div class="Post-item-container">
+          <div class="Post-item-media" style="height: 400px;">
+            <div class="imageContainer">
+              <img src="images/photo_d.webp?maxwidth=520&shape=thumb&fidelity=high"
+                   width="300" height="400" alt="photo-of-pup">
+            </div>
+          </div>
+        </div>
+      </a>
+    </section>
+
+    <!-- Case 2 — Classic thumbnail gallery (direct image link wrapping thumbnail) -->
+    <section>
+      <a href="images/IMG_0003.jpg">
+        <img src="images/thumbs/tn_IMG_0003.jpg" class="img_thumbnail_image"
+             width="200" height="150" alt="Gallery thumbnail">
+      </a>
+    </section>
+
+    <!-- Case 3 — Flickr-style (img and link in separate subtrees of container) -->
+    <section>
+      <div class="photo-list-photo-container">
+        <img loading="lazy" src="images/55145287496_a240db048f.jpg"
+             height="300" width="400" alt="Flickr photo">
+        <div class="interaction-view">
+          <div class="photo-list-photo-interaction">
+            <a class="overlay" href="/photos/125877475/55145287496/"
+               aria-label="cold evening by Rafael Zenon Wagner"></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Case 4 — Data attribute (high-res source) -->
+    <section>
+      <img data-high-res="images/photo-full.png" src="images/photo-thumb.png"
+           width="100" height="100" alt="Data attr image">
+    </section>
+
+    <!-- Case 5 — URL suffix cleanup (no link, just URL pattern) -->
+    <section class="photo-container">
+      <img src="images/landscape_thumb.jpg" width="600" height="400" alt="Landscape thumbnail">
+    </section>
+  </body>
+</html>

@@ -837,7 +837,7 @@ chrome.runtime.onMessage.addListener((request: FetchImageMessage, _, sendRespons
     return true; // Required for async response
   }
 
-  sendResponse({ success: false, error: 'Unknown message type' });
+  // Don't respond to messages meant for other listeners
   return false;
 });
 
