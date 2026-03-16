@@ -117,6 +117,17 @@ export const QualityBadge = styled('span')<{ quality: QualityLevel }>(({ theme, 
   }`,
 }));
 
+export const EnhancedBadge = styled('span')(({ theme }) => ({
+  ...commonBadgeStyles(theme),
+  fontWeight: 600,
+  fontSize: '0.625rem',
+  minWidth: '18px',
+  textAlign: 'center',
+  backgroundColor: 'rgba(103, 58, 183, 0.12)',
+  color: '#7c4dff',
+  border: '1px solid rgba(103, 58, 183, 0.35)',
+}));
+
 export const ActionsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',

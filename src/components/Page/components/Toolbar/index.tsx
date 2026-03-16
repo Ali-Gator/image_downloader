@@ -1,5 +1,6 @@
 import { FC, SyntheticEvent, useCallback, useState } from 'react';
 
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import GridViewIcon from '@mui/icons-material/GridView';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
@@ -24,7 +25,7 @@ import { useSnackbar } from 'notistack';
 
 import { RatingWidget } from '@components';
 import { useImageStore, useSettingsStore } from '@store';
-import { GrabImagesResponse, MessageActionType } from '@types';
+import { GrabImagesResponse, ImageData, MessageActionType } from '@types';
 import { QualityLevel, SortOption, sendMessageToContentScript, useTranslation } from '@utils';
 
 import {
@@ -59,6 +60,7 @@ export const Toolbar: FC = () => {
     setSortOption,
     isGridView,
     setIsGridView,
+    updateImages,
   } = useImageStore();
 
   const { setDefaultGridView } = useSettingsStore();
@@ -72,6 +74,7 @@ export const Toolbar: FC = () => {
   );
 
   const [isRescanning, setIsRescanning] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   const handleRescan = useCallback(async () => {
     if (!sourceTabId) return;
@@ -102,6 +105,30 @@ export const Toolbar: FC = () => {
       setIsRescanning(false);
     }
   }, [sourceTabId, enqueueSnackbar, t]);
+
+  const handleEnhance = useCallback(async () => {
+    if (!sourceTabId) return;
+
+    setIsEnhancing(true);
+    try {
+      const { images } = useImageStore.getState();
+      const response = await sendMessageToContentScript<{ images: ImageData[] }>(
+        sourceTabId,
+        { action: MessageActionType.ENHANCE_IMAGES, images },
+        30000,
+      );
+      if (response?.images && response.images.length > 0) {
+        updateImages(response.images);
+        enqueueSnackbar(t('enhance_found', response.images.length.toString()), {
+          variant: 'success',
+        });
+      } else {
+        enqueueSnackbar(t('enhance_no_upgrades'), { variant: 'info' });
+      }
+    } finally {
+      setIsEnhancing(false);
+    }
+  }, [sourceTabId, updateImages, enqueueSnackbar, t]);
 
   // Size filter popover state
   const [sizeAnchorEl, setSizeAnchorEl] = useState<HTMLElement | null>(null);
@@ -418,20 +445,36 @@ export const Toolbar: FC = () => {
         </ViewOptionsContainer>
 
         {sourceTabId && (
-          <Button
-            data-onboarding="rescan-button"
-            startIcon={
-              isRescanning ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />
-            }
-            variant="outlined"
-            size="small"
-            onClick={handleRescan}
-            disabled={isRescanning}
-            title={t('rescan_button')}
-            sx={{ fontSize: '0.75rem' }}
-          >
-            {t('rescan_button')}
-          </Button>
+          <>
+            <Button
+              data-onboarding="enhance-button"
+              startIcon={
+                isEnhancing ? <CircularProgress size={16} color="inherit" /> : <AutoFixHighIcon />
+              }
+              variant="outlined"
+              size="small"
+              onClick={handleEnhance}
+              disabled={isEnhancing}
+              title={t('enhance_button_title')}
+              sx={{ fontSize: '0.75rem' }}
+            >
+              {t('enhance_button')}
+            </Button>
+            <Button
+              data-onboarding="rescan-button"
+              startIcon={
+                isRescanning ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />
+              }
+              variant="outlined"
+              size="small"
+              onClick={handleRescan}
+              disabled={isRescanning}
+              title={t('rescan_button')}
+              sx={{ fontSize: '0.75rem' }}
+            >
+              {t('rescan_button')}
+            </Button>
+          </>
         )}
       </RightSection>
     </ToolbarContainer>

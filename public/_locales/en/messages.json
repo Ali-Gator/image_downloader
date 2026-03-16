@@ -424,5 +424,20 @@
   },
   "organize_by_domain_info": {
     "message": "Create a subfolder for each website domain inside the download folder (e.g. images/example.com/photo.jpg)"
+  },
+  "enhance_button": {
+    "message": "Enhance"
+  },
+  "enhance_button_title": {
+    "message": "Find full-size versions of thumbnail images"
+  },
+  "enhance_found": {
+    "message": "Upgraded $1 image(s) to full size"
+  },
+  "enhance_no_upgrades": {
+    "message": "All images are already at best quality"
+  },
+  "enhanced_badge_tooltip": {
+    "message": "Upgraded from thumbnail"
   }
 }
