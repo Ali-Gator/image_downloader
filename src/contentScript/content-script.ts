@@ -5,12 +5,13 @@ import { debugLogger } from '../utils/debugLogger';
 import { ensureError } from '../utils/errorHandlers';
 import { extractOgImageFromHtml } from '../utils/fullSizeResolver';
 import { blobToDataUrl } from '../utils/imageUtils';
-import { captureMessage } from '../utils/sentryCapturer';
 import {
   isCanvasHeavyApp,
   observeNewPerformanceEntries,
   performanceUrlsToImageData,
+  probeImageDimensions,
 } from '../utils/performanceImageScanner';
+import { captureMessage } from '../utils/sentryCapturer';
 
 const ENHANCE_LOG_CONTEXT = 'fullSizeResolver';
 
@@ -168,7 +169,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
 
     if (message.action === MessageActionType.ENHANCE_IMAGES) {
       enhanceImages(message.images)
-        .then((updated) => sendResponse({ images: updated }))
+        .then(({ images, upgradedCount }) => sendResponse({ images, upgradedCount }))
         .catch((error) => {
           const err = ensureError(error);
           Object.assign(err, {
@@ -204,16 +205,24 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   return true; // Нужно для асинхронных обработчиков
 });
 
-const MAX_OG_FETCHES = 20;
+const MAX_OG_FETCHES = 50;
+
+const DIMENSION_PROBE_TIMEOUT_MS = 10000;
 
 /**
  * Strategy D: For images with linkedPageUrl, fetch the page HTML via background
  * script and extract og:image / twitter:image meta tags.
  */
-async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
+async function enhanceImages(
+  images: ImageData[],
+): Promise<{ images: ImageData[]; upgradedCount: number }> {
   const candidates = images.filter((img) => img.linkedPageUrl);
 
-  debugLogger.log('info', ENHANCE_LOG_CONTEXT, `Enhancement triggered: ${candidates.length}/${images.length} candidates with linkedPageUrl`);
+  debugLogger.log(
+    'info',
+    ENHANCE_LOG_CONTEXT,
+    `Enhancement triggered: ${candidates.length}/${images.length} candidates with linkedPageUrl`,
+  );
 
   // Deduplicate by linkedPageUrl — fetch each unique page only once
   const uniqueUrls = [...new Set(candidates.map((img) => img.linkedPageUrl!))].slice(
@@ -234,7 +243,11 @@ async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
         });
 
         if (!metaResponse?.html) {
-          debugLogger.log('warn', ENHANCE_LOG_CONTEXT, `Strategy D fetch failed: ${pageUrl} -> no HTML returned`);
+          debugLogger.log(
+            'warn',
+            ENHANCE_LOG_CONTEXT,
+            `Strategy D fetch failed: ${pageUrl} -> no HTML returned`,
+          );
           ogCache.set(pageUrl, null);
           return;
         }
@@ -254,11 +267,19 @@ async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
         if (validation?.exists) {
           ogCache.set(pageUrl, ogImageUrl);
         } else {
-          debugLogger.log('warn', ENHANCE_LOG_CONTEXT, `Validation failed: ${ogImageUrl} -> not accessible`);
+          debugLogger.log(
+            'warn',
+            ENHANCE_LOG_CONTEXT,
+            `Validation failed: ${ogImageUrl} -> not accessible`,
+          );
           ogCache.set(pageUrl, null);
         }
       } catch (error) {
-        debugLogger.log('warn', ENHANCE_LOG_CONTEXT, `Strategy D fetch failed: ${pageUrl} -> ${ensureError(error).message}`);
+        debugLogger.log(
+          'warn',
+          ENHANCE_LOG_CONTEXT,
+          `Strategy D fetch failed: ${pageUrl} -> ${ensureError(error).message}`,
+        );
         captureMessage(`Strategy D fetch failed: ${pageUrl}`, 'warning');
         ogCache.set(pageUrl, null);
       }
@@ -270,7 +291,11 @@ async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
   for (const img of candidates) {
     const ogImageUrl = ogCache.get(img.linkedPageUrl!);
     if (ogImageUrl && ogImageUrl !== img.src) {
-      debugLogger.log('info', ENHANCE_LOG_CONTEXT, `Strategy D: ${img.src} -> ${ogImageUrl} (OG meta from ${img.linkedPageUrl})`);
+      debugLogger.log(
+        'info',
+        ENHANCE_LOG_CONTEXT,
+        `Strategy D: ${img.src} -> ${ogImageUrl} (OG meta from ${img.linkedPageUrl})`,
+      );
       updated.set(img.id, {
         ...img,
         originalSrc: img.originalSrc || img.src,
@@ -280,7 +305,32 @@ async function enhanceImages(images: ImageData[]): Promise<ImageData[]> {
     }
   }
 
-  debugLogger.log('info', ENHANCE_LOG_CONTEXT, `Enhancement complete: ${updated.size}/${images.length} upgraded`);
+  // Load actual dimensions for enhanced images
+  if (updated.size > 0) {
+    const dimensionResults = await Promise.allSettled(
+      [...updated.entries()].map(async ([id, img]) => {
+        const dims = await probeImageDimensions(img.src, DIMENSION_PROBE_TIMEOUT_MS);
+        return { id, dims };
+      }),
+    );
 
-  return images.map((img) => updated.get(img.id) || img);
+    for (const result of dimensionResults) {
+      if (result.status === 'fulfilled' && result.value.dims.width > 0) {
+        const img = updated.get(result.value.id)!;
+        img.width = result.value.dims.width;
+        img.height = result.value.dims.height;
+      }
+    }
+  }
+
+  debugLogger.log(
+    'info',
+    ENHANCE_LOG_CONTEXT,
+    `Enhancement complete: ${updated.size}/${images.length} upgraded`,
+  );
+
+  return {
+    images: images.map((img) => updated.get(img.id) || img),
+    upgradedCount: updated.size,
+  };
 }

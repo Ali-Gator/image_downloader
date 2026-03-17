@@ -85,7 +85,7 @@ export function scanPerformanceEntries(options: { includeXhr?: boolean } = {}): 
  * Probes a single image URL for real dimensions using a cached `new Image()` load.
  * Returns quickly since the browser already fetched this resource.
  */
-function probeImageDimensions(
+export function probeImageDimensions(
   url: string,
   timeoutMs: number,
 ): Promise<{ width: number; height: number }> {

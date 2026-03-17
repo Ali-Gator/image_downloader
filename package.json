@@ -1,7 +1,7 @@
 {
   "name": "image-downloader",
   "private": true,
-  "version": "5.1.1",
+  "version": "5.2.1",
   "author": "ali-gator",
   "type": "module",
   "license": "MIT",
