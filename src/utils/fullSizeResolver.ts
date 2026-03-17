@@ -19,8 +19,9 @@ const THUMBNAIL_SUFFIXES =
 /**
  * Numeric size suffixes at the end of the filename stem.
  * E.g. photo_500.jpg → photo.jpg, photo_150x150.jpg → photo.jpg
+ * Leading-zero numbers (e.g. _0024) are excluded — they are sequential IDs, not sizes.
  */
-const SIZE_SUFFIXES = /([-_]\d{2,4}(x\d{2,4})?)(\.[a-z]{3,4})$/i;
+const SIZE_SUFFIXES = /([-_][1-9]\d{1,3}(x[1-9]\d{1,3})?)(\.[a-z]{3,4})$/i;
 
 /**
  * Path segments that indicate thumbnails. Removed entirely from the path.
@@ -89,18 +90,25 @@ export function resolveParentAnchorUrl(img: HTMLImageElement): ParentAnchorResul
   return null;
 }
 
+export interface UrlCleanupOptions {
+  /** Skip path segment removal (e.g. /thumbs/ → /), useful when Strategy D will handle resolution */
+  skipPathSegments?: boolean;
+}
+
 /**
  * Strategy B: Strip thumbnail suffixes and path segments from URL.
  */
-export function resolveUrlPatternCleanup(url: string): string | null {
+export function resolveUrlPatternCleanup(url: string, options?: UrlCleanupOptions): string | null {
   try {
     const parsed = new URL(url);
     let pathname = parsed.pathname;
 
-    // Strip thumbnail path segments
-    for (const segment of THUMBNAIL_PATH_SEGMENTS) {
-      if (pathname.includes(segment)) {
-        pathname = pathname.replace(segment, '/');
+    // Strip thumbnail path segments (unless skipped)
+    if (!options?.skipPathSegments) {
+      for (const segment of THUMBNAIL_PATH_SEGMENTS) {
+        if (pathname.includes(segment)) {
+          pathname = pathname.replace(segment, '/');
+        }
       }
     }
 
@@ -148,11 +156,7 @@ export function resolveDataAttributes(img: HTMLImageElement): string | null {
   for (const attr of HIGH_RES_ATTRS) {
     const value = img.getAttribute(attr);
     if (value && value !== img.src) {
-      debugLogger.log(
-        'info',
-        LOG_CONTEXT,
-        `Strategy C: ${img.src} -> ${value} (${attr})`,
-      );
+      debugLogger.log('info', LOG_CONTEXT, `Strategy C: ${img.src} -> ${value} (${attr})`);
       return value;
     }
   }
@@ -183,8 +187,14 @@ export function resolveDataAttributes(img: HTMLImageElement): string | null {
  * Each tag has two patterns to handle both attribute orderings.
  */
 const OG_META_PATTERNS = ['og:image', 'twitter:image'].flatMap((tag) => [
-  new RegExp(`<meta[^>]+(?:property|name)\\s*=\\s*["']${tag}["'][^>]+content\\s*=\\s*["']([^"']+)["']`, 'i'),
-  new RegExp(`<meta[^>]+content\\s*=\\s*["']([^"']+)["'][^>]+(?:property|name)\\s*=\\s*["']${tag}["']`, 'i'),
+  new RegExp(
+    `<meta[^>]+(?:property|name)\\s*=\\s*["']${tag}["'][^>]+content\\s*=\\s*["']([^"']+)["']`,
+    'i',
+  ),
+  new RegExp(
+    `<meta[^>]+content\\s*=\\s*["']([^"']+)["'][^>]+(?:property|name)\\s*=\\s*["']${tag}["']`,
+    'i',
+  ),
 ]);
 
 /**
@@ -198,6 +208,49 @@ export function extractOgImageFromHtml(html: string): string | null {
   return null;
 }
 
+/**
+ * Regex to extract src from <img> tags. Matches src="..." or src='...'.
+ */
+const IMG_SRC_PATTERN = /<img\b[^>]+\bsrc\s*=\s*["']([^"']+)["']/gi;
+
+/**
+ * Patterns that indicate tiny/icon images to skip.
+ */
+const SKIP_IMG_PATTERN = /\b(icon|logo|spacer|pixel|blank|loading|spinner|avatar|badge|button)\b/i;
+
+/**
+ * Strategy D fallback: Extract the main image URL from a linked page's HTML.
+ * Used when og:image/twitter:image are not present.
+ */
+export function extractMainImageFromHtml(html: string, pageUrl: string): string | null {
+  IMG_SRC_PATTERN.lastIndex = 0;
+  let match;
+
+  while ((match = IMG_SRC_PATTERN.exec(html)) !== null) {
+    const src = match[1];
+    if (!src || SKIP_IMG_PATTERN.test(src)) continue;
+    if (!IMAGE_EXTENSIONS.test(src)) continue;
+
+    try {
+      const resolved = src.startsWith('http') ? src : new URL(src, pageUrl).href;
+      debugLogger.log(
+        'info',
+        LOG_CONTEXT,
+        `Strategy D fallback: found main image ${resolved} on ${pageUrl}`,
+      );
+      return resolved;
+    } catch {
+      debugLogger.log(
+        'error',
+        LOG_CONTEXT,
+        `Strategy D fallback: wasn't found main image on ${pageUrl}`,
+      );
+    }
+  }
+
+  return null;
+}
+
 // --- Internal helpers ---
 
 function isUsableHref(href: string, rawHref?: string | null): boolean {
@@ -207,7 +260,11 @@ function isUsableHref(href: string, rawHref?: string | null): boolean {
   return true;
 }
 
-function classifyHref(href: string, imgSrc: string, rawHref?: string | null): ParentAnchorResult | null {
+function classifyHref(
+  href: string,
+  imgSrc: string,
+  rawHref?: string | null,
+): ParentAnchorResult | null {
   if (!isUsableHref(href, rawHref)) return null;
   if (href === imgSrc) return null;
 

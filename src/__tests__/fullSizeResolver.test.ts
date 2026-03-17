@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  extractMainImageFromHtml,
   extractOgImageFromHtml,
   resolveDataAttributes,
   resolveParentAnchorUrl,
@@ -164,6 +165,21 @@ describe('resolveUrlPatternCleanup (Strategy B)', () => {
     expect(result).toBe('https://example.com/photo.png');
   });
 
+  it('strips small two-digit size suffix like _10', () => {
+    const result = resolveUrlPatternCleanup('https://example.com/photo_10.jpg');
+    expect(result).toBe('https://example.com/photo.jpg');
+  });
+
+  it('does NOT strip leading-zero numeric IDs like _0024', () => {
+    const result = resolveUrlPatternCleanup('https://example.com/IMG_0024.jpg');
+    expect(result).toBeNull();
+  });
+
+  it('does NOT strip _0001 (sequential ID, not size)', () => {
+    const result = resolveUrlPatternCleanup('https://example.com/photo_0001.jpg');
+    expect(result).toBeNull();
+  });
+
   it('handles invalid URLs gracefully', () => {
     expect(resolveUrlPatternCleanup('not a url')).toBeNull();
   });
@@ -262,5 +278,54 @@ describe('extractOgImageFromHtml (Strategy D parser)', () => {
   it('handles single-quoted content attribute', () => {
     const html = `<meta property='og:image' content='https://example.com/img.jpg'>`;
     expect(extractOgImageFromHtml(html)).toBe('https://example.com/img.jpg');
+  });
+});
+
+describe('extractMainImageFromHtml (Strategy D fallback)', () => {
+  it('extracts first image with valid extension', () => {
+    const html = `
+      <html><body>
+        <img src="../images/IMG_0024.JPG">
+      </body></html>
+    `;
+    const result = extractMainImageFromHtml(html, 'https://example.com/imgpages/IMG_0024.html');
+    expect(result).toBe('https://example.com/images/IMG_0024.JPG');
+  });
+
+  it('resolves relative URLs against page URL', () => {
+    const html = `<img src="photos/big.jpg">`;
+    const result = extractMainImageFromHtml(html, 'https://example.com/gallery/page1.html');
+    expect(result).toBe('https://example.com/gallery/photos/big.jpg');
+  });
+
+  it('returns absolute URLs as-is', () => {
+    const html = `<img src="https://cdn.example.com/photo.jpg">`;
+    const result = extractMainImageFromHtml(html, 'https://example.com/page.html');
+    expect(result).toBe('https://cdn.example.com/photo.jpg');
+  });
+
+  it('skips icon/logo/spacer images', () => {
+    const html = `
+      <img src="icon-nav.png">
+      <img src="logo.jpg">
+      <img src="photos/real.jpg">
+    `;
+    const result = extractMainImageFromHtml(html, 'https://example.com/page.html');
+    expect(result).toBe('https://example.com/photos/real.jpg');
+  });
+
+  it('skips non-image extensions', () => {
+    const html = `<img src="widget.html"><img src="photo.jpg">`;
+    const result = extractMainImageFromHtml(html, 'https://example.com/page.html');
+    expect(result).toBe('https://example.com/photo.jpg');
+  });
+
+  it('returns null when no valid images found', () => {
+    const html = `<html><body><p>No images here</p></body></html>`;
+    expect(extractMainImageFromHtml(html, 'https://example.com/page.html')).toBeNull();
+  });
+
+  it('returns null for empty HTML', () => {
+    expect(extractMainImageFromHtml('', 'https://example.com/page.html')).toBeNull();
   });
 });

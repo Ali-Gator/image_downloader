@@ -3,7 +3,7 @@ import { ContentScriptConstants, handleError } from '../utils';
 import { collectImages } from './collectImages';
 import { debugLogger } from '../utils/debugLogger';
 import { ensureError } from '../utils/errorHandlers';
-import { extractOgImageFromHtml } from '../utils/fullSizeResolver';
+import { extractMainImageFromHtml, extractOgImageFromHtml } from '../utils/fullSizeResolver';
 import { blobToDataUrl } from '../utils/imageUtils';
 import {
   isCanvasHeavyApp,
@@ -252,7 +252,8 @@ async function enhanceImages(
           return;
         }
 
-        const ogImageUrl = extractOgImageFromHtml(metaResponse.html);
+        const ogImageUrl = extractOgImageFromHtml(metaResponse.html)
+          ?? extractMainImageFromHtml(metaResponse.html, pageUrl);
         if (!ogImageUrl) {
           ogCache.set(pageUrl, null);
           return;

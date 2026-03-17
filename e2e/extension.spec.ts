@@ -243,6 +243,17 @@ test.describe('Full-size image resolution (auto)', () => {
     expect(flickrImage!.linkedPageUrl).toBeDefined();
     expect(flickrImage!.linkedPageUrl).toContain('/photos/125877475/55145287496/');
   });
+
+  test('stores linkedPageUrl and keeps thumbnail src for page links (Case 6)', async () => {
+    // Strategy A finds <a href="imgpages/IMG_0006.html"> → sets linkedPageUrl
+    // Strategy B should NOT run (linkedPageUrl is set), so src stays as thumbnail
+    const case6Image = sharedResult.images.find((img) => img.src.includes('tn_IMG_0006'));
+    expect(case6Image).toBeDefined();
+    expect(case6Image!.linkedPageUrl).toBeDefined();
+    expect(case6Image!.linkedPageUrl).toContain('imgpages/IMG_0006.html');
+    // src should NOT be mangled by Strategy B
+    expect(case6Image!.src).toContain('tn_IMG_0006');
+  });
 });
 
 test.describe('Full-size image resolution (enhance)', () => {
@@ -266,6 +277,34 @@ test.describe('Full-size image resolution (enhance)', () => {
     expect(flickrImage).toBeDefined();
     expect(flickrImage!.src).toContain('55145287496_full.jpg');
     expect(flickrImage!.enhanced).toBe(true);
+
+    await testPage.close();
+  });
+
+  test('Enhance resolves via page <img> fallback when no OG meta (Case 6)', async ({
+    context,
+    extensionId,
+  }) => {
+    const testPage = await context.newPage();
+    await testPage.goto(`${FIXTURE_BASE}/fullsize-test-page.html`);
+    await testPage.waitForLoadState('networkidle');
+    await testPage.waitForTimeout(2000);
+
+    const helper = await openHelperPage(context, extensionId);
+    const result = await grabImagesFromTab(helper, 'fullsize-test-page');
+
+    // Run enhance (Strategy D) on the grabbed images
+    const enhanced = await enhanceImagesInTab(helper, 'fullsize-test-page', result.images);
+    await helper.close();
+
+    // The Case 6 image should be upgraded via the <img> on the linked page
+    const case6Image = enhanced.images.find(
+      (img) => img.src.includes('IMG_0006') || img.originalSrc?.includes('tn_IMG_0006'),
+    );
+    expect(case6Image).toBeDefined();
+    expect(case6Image!.src).toContain('/images/IMG_0006.jpg');
+    expect(case6Image!.src).not.toContain('tn_');
+    expect(case6Image!.enhanced).toBe(true);
 
     await testPage.close();
   });

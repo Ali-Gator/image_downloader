@@ -161,8 +161,12 @@ export async function collectImages(
     }
 
     // Strategy B: URL pattern cleanup
+    // When linkedPageUrl is set, skip path segment removal (Strategy D will handle it)
+    // but still allow suffix stripping (e.g. _d, _thumb)
     if (!resolved) {
-      const cleanedUrl = resolveUrlPatternCleanup(bestSrc);
+      const cleanedUrl = resolveUrlPatternCleanup(bestSrc, {
+        skipPathSegments: !!imageCandidate.linkedPageUrl,
+      });
       if (cleanedUrl && cleanedUrl !== bestSrc) {
         imageCandidate.originalSrc = bestSrc;
         imageCandidate.src = cleanedUrl;
