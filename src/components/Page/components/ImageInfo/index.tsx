@@ -53,7 +53,6 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   const hasDimensions = (width ?? 0) > 0 && (height ?? 0) > 0;
   const dimensionsDisplay = hasDimensions ? `${width} × ${height}` : t('dimensions_unknown');
   const urlDisplay = getFriendlyUrlDisplay(src);
-  const originalUrlDisplay = image?.originalSrc ? getFriendlyUrlDisplay(image.originalSrc) : null;
   const canOpenExternally = !src.startsWith('data:') && !src.startsWith('blob:');
   const fileExtension = getFileExtension(fileName);
 
@@ -125,15 +124,6 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
               </Tooltip>
             )}
           </UrlContainer>
-          {image.enhanced && originalUrlDisplay && (
-            <UrlContainer className="url-container">
-              <Tooltip title={originalUrlDisplay.tooltip}>
-                <NonClickableUrl className="image-url">
-                  {originalUrlDisplay.text}
-                </NonClickableUrl>
-              </Tooltip>
-            </UrlContainer>
-          )}
         </>
       )}
     </ImageInfoContainer>
