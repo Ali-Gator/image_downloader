@@ -186,7 +186,8 @@ test.describe('Image detection', () => {
   });
 });
 
-test.describe('Full-size image resolution', () => {
+test.describe('Full-size image resolution (auto)', () => {
+  test.describe.configure({ mode: 'serial' });
   // Shared state: all auto-resolution tests use the same page grab
   let sharedResult: { images: GrabbedImage[] };
   let sharedSrcs: string[];
@@ -242,9 +243,10 @@ test.describe('Full-size image resolution', () => {
     expect(flickrImage!.linkedPageUrl).toBeDefined();
     expect(flickrImage!.linkedPageUrl).toContain('/photos/125877475/55145287496/');
   });
+});
 
+test.describe('Full-size image resolution (enhance)', () => {
   test('Enhance resolves OG images (Case 3)', async ({ context, extensionId }) => {
-    // Enhance needs its own page since it runs in a separate browser context
     const testPage = await context.newPage();
     await testPage.goto(`${FIXTURE_BASE}/fullsize-test-page.html`);
     await testPage.waitForLoadState('networkidle');

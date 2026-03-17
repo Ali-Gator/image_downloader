@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const FIXTURE_PORT = 9753;
+const FIXTURE_PORT = 9753 + Number(process.env.TEST_WORKER_INDEX ?? 0);
 export const FIXTURE_BASE = `http://localhost:${FIXTURE_PORT}`;
 
 function startFixtureServer(fixturesDir: string, port: number): Server {
