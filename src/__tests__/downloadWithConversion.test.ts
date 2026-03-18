@@ -3,6 +3,7 @@ import { ImageData } from '../types';
 import { debugLogger } from '../utils/debugLogger';
 import { downloadImage } from '../utils/downloadHelpers';
 import { downloadImagesWithConversion } from '../utils/downloadWithConversion';
+import { createAndDownloadZipArchive } from '../utils/zipArchive';
 
 // Mock downloadImage via downloadHelpers
 vi.mock('../utils/downloadHelpers', () => ({
@@ -42,6 +43,7 @@ vi.mock('../utils/imageUtils', () => ({
 }));
 
 const mockDownloadImage = downloadImage as ReturnType<typeof vi.fn>;
+const mockCreateZip = createAndDownloadZipArchive as ReturnType<typeof vi.fn>;
 
 const makeImage = (id: string): ImageData => ({
   id,
@@ -62,8 +64,6 @@ describe('downloadImagesWithConversion', () => {
     const settingsState = {
       convertFrom: 'none',
       convertTo: 'none',
-      createZipArchive: false,
-      refreshSettings: vi.fn().mockResolvedValue(undefined),
     };
     vi.spyOn(useSettingsStore, 'getState').mockReturnValue(
       settingsState as unknown as ReturnType<typeof useSettingsStore.getState>,
@@ -131,5 +131,27 @@ describe('downloadImagesWithConversion', () => {
       'Bulk download item failed',
       expect.objectContaining({ src: 'https://example.com/a.jpg' }),
     );
+  });
+
+  it('calls createAndDownloadZipArchive when createZipArchive param is true', async () => {
+    const images = [makeImage('a'), makeImage('b')];
+    mockCreateZip.mockResolvedValue({ successCount: 2, totalCount: 2 });
+
+    const result = await downloadImagesWithConversion(images, true);
+
+    expect(mockCreateZip).toHaveBeenCalledWith(images);
+    expect(result.successCount).toBe(2);
+    expect(result.failCount).toBe(0);
+    expect(mockDownloadImage).not.toHaveBeenCalled();
+  });
+
+  it('downloads individually when createZipArchive param is false', async () => {
+    const images = [makeImage('a')];
+    mockDownloadImage.mockResolvedValue({ success: true, downloadId: 1 });
+
+    await downloadImagesWithConversion(images, false);
+
+    expect(mockCreateZip).not.toHaveBeenCalled();
+    expect(mockDownloadImage).toHaveBeenCalled();
   });
 });

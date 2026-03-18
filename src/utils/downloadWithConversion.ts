@@ -83,22 +83,16 @@ export const downloadImageWithConversion = async (
 /**
  * Downloads multiple images with conversion or as ZIP archive
  * @param images Array of image data
- * @param onProgress Optional progress callback for ZIP creation
+ * @param createZipArchive Whether to create a ZIP archive
  * @returns Promise with download results
  */
 export const downloadImagesWithConversion = async (
   images: ImageData[],
-  onProgress?: (current: number, total: number) => void,
+  createZipArchive = false,
 ): Promise<BulkDownloadResult> => {
-  // Force refresh settings from storage to get latest values
-  await useSettingsStore.getState().refreshSettings();
-
-  // Get ZIP archive setting
-  const { createZipArchive } = useSettingsStore.getState();
-
   // If ZIP archive is enabled and we have multiple images, create ZIP
   if (createZipArchive && images.length > 0) {
-    const zipResult = await createAndDownloadZipArchive(images, onProgress);
+    const zipResult = await createAndDownloadZipArchive(images);
     return { ...zipResult, failCount: zipResult.totalCount - zipResult.successCount };
   }
 

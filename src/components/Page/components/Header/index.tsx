@@ -3,9 +3,11 @@ import { ChangeEvent, FC, MouseEvent, useCallback, useEffect, useMemo, useState 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DownloadIcon from '@mui/icons-material/Download';
 import { Button, Checkbox, Menu, MenuItem, Typography } from '@mui/material';
-import { useSnackbar } from 'notistack';
+import { SnackbarKey, useSnackbar } from 'notistack';
 
 import { useImageStore, useSettingsStore } from '@store';
+
+const ZIP_PROGRESS_SNACKBAR_KEY: SnackbarKey = 'zip-progress';
 
 import {
   ControlsContainer,
@@ -38,7 +40,7 @@ export const Header: FC = () => {
   const { t } = useTranslation();
   const { filteredImages, selectedImages, selectAll, deselectAll, pageUrl } = useImageStore();
   const { showDownloadNotifications, createZipArchive } = useSettingsStore();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const [showMonetizationUI, setShowMonetizationUI] = useState(false);
   const [paid, setPaid] = useState(false);
@@ -105,12 +107,14 @@ export const Header: FC = () => {
    * Shows a notification if notifications are enabled
    */
   const showNotification = useCallback(
-    (message: string, variant: NotificationType, duration = NOTIFICATION_DURATION.MEDIUM) => {
+    (
+      message: string,
+      variant: NotificationType,
+      duration: number | null = NOTIFICATION_DURATION.MEDIUM,
+      key?: SnackbarKey,
+    ) => {
       if (showDownloadNotifications) {
-        enqueueSnackbar(message, {
-          variant,
-          autoHideDuration: duration,
-        });
+        enqueueSnackbar(message, { variant, autoHideDuration: duration, key });
       }
     },
     [showDownloadNotifications, enqueueSnackbar],
@@ -124,25 +128,25 @@ export const Header: FC = () => {
       if (gate.blocked) return;
 
       // Show initial notification
-      const startMessage = createZipArchive
-        ? t('creating_archive')
-        : `${t('download_started_text')} (${selectedImages.length})`;
-
-      showNotification(startMessage, NotificationType.INFO);
-
-      // Progress callback for ZIP creation
-      const onProgress = createZipArchive
-        ? (current: number, total: number) => {
-            const progressMessage = t('adding_image', [current.toString(), total.toString()]);
-            showNotification(progressMessage, NotificationType.INFO, NOTIFICATION_DURATION.SHORT);
-          }
-        : undefined;
+      if (createZipArchive) {
+        showNotification(t('creating_archive'), NotificationType.INFO, null, ZIP_PROGRESS_SNACKBAR_KEY);
+      } else {
+        showNotification(
+          `${t('download_started_text')} (${selectedImages.length})`,
+          NotificationType.INFO,
+        );
+      }
 
       // Use unified bulk download with conversion function
       const { successCount, failCount, totalCount } = await downloadImagesWithConversion(
         selectedImages,
-        onProgress,
+        createZipArchive,
       );
+
+      // Close the persistent progress snackbar
+      if (createZipArchive) {
+        closeSnackbar(ZIP_PROGRESS_SNACKBAR_KEY);
+      }
 
       // Count only after at least one successful download
       if (gate.eligibility.showMonetizationUI && successCount > 0) {
@@ -152,9 +156,7 @@ export const Header: FC = () => {
 
       // Show completion notification
       let completionMessage: string;
-      if (createZipArchive) {
-        completionMessage = t('download_complete_text');
-      } else if (failCount > 0) {
+      if (failCount > 0) {
         completionMessage = t('bulk_download_partial', [
           successCount.toString(),
           totalCount.toString(),
@@ -170,7 +172,8 @@ export const Header: FC = () => {
     } catch (error) {
       showNotification(t('download_error_text'), NotificationType.ERROR);
     }
-  }, [selectedImages, showNotification, t, createZipArchive, pageUrl, refreshMonetizationState]);
+  }, [selectedImages, showNotification, closeSnackbar, t, createZipArchive, pageUrl, refreshMonetizationState]);
+
 
   const monetizationNode = useMemo(() => {
     if (!showMonetizationUI) return null;

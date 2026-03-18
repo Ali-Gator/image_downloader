@@ -218,12 +218,10 @@ const downloadImageAsBlob = async (image: ImageData): Promise<{ blob: Blob; file
 /**
  * Creates and downloads a ZIP archive with selected images
  * @param images Array of image data objects
- * @param onProgress Optional progress callback
  * @returns Promise with download results
  */
 export const createAndDownloadZipArchive = async (
   images: ImageData[],
-  onProgress?: (current: number, total: number) => void,
 ): Promise<{ successCount: number; totalCount: number }> => {
   try {
     // Load JSZip
@@ -233,21 +231,29 @@ export const createAndDownloadZipArchive = async (
     const totalCount = images.length;
     let successCount = 0;
     const failures: string[] = [];
+    const usedFilenames = new Set<string>();
 
     // Add images to ZIP archive
     for (let i = 0; i < images.length; i++) {
       const image = images[i];
 
       try {
-        // Call progress callback if provided
-        if (onProgress) {
-          onProgress(i + 1, totalCount);
-        }
-
         const { blob, filename } = await downloadImageAsBlob(image);
 
-        // Add to ZIP with sanitized filename
-        const sanitizedFilename = sanitizeFileName(filename);
+        // Add to ZIP with sanitized and deduplicated filename
+        let sanitizedFilename = sanitizeFileName(filename);
+        const lowerName = sanitizedFilename.toLowerCase();
+        if (usedFilenames.has(lowerName)) {
+          const dotIdx = sanitizedFilename.lastIndexOf('.');
+          const base = dotIdx > 0 ? sanitizedFilename.slice(0, dotIdx) : sanitizedFilename;
+          const ext = dotIdx > 0 ? sanitizedFilename.slice(dotIdx) : '';
+          let counter = 1;
+          while (usedFilenames.has(`${base}_${counter}${ext}`.toLowerCase())) {
+            counter++;
+          }
+          sanitizedFilename = `${base}_${counter}${ext}`;
+        }
+        usedFilenames.add(sanitizedFilename.toLowerCase());
         zip.file(sanitizedFilename, blob);
         successCount++;
       } catch (error) {

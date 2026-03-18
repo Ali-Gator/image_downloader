@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { DEFAULT_DOWNLOAD_OPTIONS, StorageKeys } from '@utils/constants';
+import { isChromeExtension } from '@utils/utils';
 
 import { fallbackStorage } from './fallbackStorage';
 import { SettingsState } from './types';
@@ -94,3 +95,34 @@ export const useSettingsStore = create<SettingsState>()(
     },
   ),
 );
+
+// Sync settings across extension contexts (e.g. Options page → Page app).
+// Compares old/new to avoid a setState→persist→onChanged loop.
+if (isChromeExtension() && chrome.storage?.onChanged) {
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+    const entry = changes[StorageKeys.SETTINGS_STORE_KEY];
+    if (!entry?.newValue || JSON.stringify(entry.newValue) === JSON.stringify(entry.oldValue)) return;
+
+    try {
+      const parsed = typeof entry.newValue === 'string'
+        ? JSON.parse(entry.newValue)
+        : entry.newValue;
+      const data = parsed.state ?? parsed;
+
+      useSettingsStore.setState({
+        defaultGridView: data.defaultGridView,
+        showDownloadNotifications: data.showDownloadNotifications,
+        folderName: data.folderName,
+        renamePattern: data.renamePattern,
+        convertFrom: data.convertFrom,
+        convertTo: data.convertTo,
+        createZipArchive: data.createZipArchive,
+        organizeByDomain: data.organizeByDomain,
+        showOnboardingNextTime: data.showOnboardingNextTime,
+      });
+    } catch {
+      // Ignore malformed storage data
+    }
+  });
+}

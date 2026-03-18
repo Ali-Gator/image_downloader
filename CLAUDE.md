@@ -1,5 +1,10 @@
 # CLAUDE.md
 
+## Behavioral rules
+
+- Do not guess - ask questions
+- All text: chat conversations, comments, plans, etc. - only in English
+
 ## What This Is
 
 Chrome extension (Manifest V3) for downloading images from web pages. Built with CRXJS + Vite + React 18 + TypeScript +
