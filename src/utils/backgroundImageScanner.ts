@@ -58,7 +58,10 @@ function collectFromElements(
  * First pass: targeted selectors for speed.
  * Second pass: walks all elements to catch background images set via CSS rules.
  */
-export function scanBackgroundImages(minSize: number, maxResults: number = 200): BackgroundImageInfo[] {
+export function scanBackgroundImages(
+  minSize: number,
+  maxResults: number = 200,
+): BackgroundImageInfo[] {
   const seen = new Set<string>();
   const results: BackgroundImageInfo[] = [];
 

@@ -1,13 +1,12 @@
 import { FC } from 'react';
 
-import { InputAdornment } from '@mui/material';
+import { InputAdornment, TextField, Typography } from '@mui/material';
 
 import { useSettingsStore } from '@store';
 import { useTranslation } from '@utils';
 
 import { InfoTooltip } from '../InfoIcon';
 import { FieldContainer } from '../styles';
-import { StyledTextField, StyledTypography } from './styles';
 
 export const RenamePatternField: FC = () => {
   const { t } = useTranslation();
@@ -15,8 +14,8 @@ export const RenamePatternField: FC = () => {
 
   return (
     <FieldContainer data-onboarding="rename-pattern">
-      <StyledTypography variant="body1">{t('rename_files')}:</StyledTypography>
-      <StyledTextField
+      <Typography variant="body1">{t('rename_files')}</Typography>
+      <TextField
         fullWidth
         size="small"
         variant="outlined"

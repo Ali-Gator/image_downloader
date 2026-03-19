@@ -1,11 +1,17 @@
 import { useCallback } from 'react';
 
-import { Checkbox } from '@mui/material';
+import { Checkbox, FormControlLabel, SxProps, Theme } from '@mui/material';
 
 import { useSettingsStore } from '@store';
 import { StorageKeys, useTranslation } from '@utils';
 
-import { StyledFormControlLabel } from './styles';
+const labelSx: SxProps<Theme> = {
+  ml: 0,
+  '& .MuiTypography-root': {
+    fontSize: '0.8125rem',
+    color: 'text.secondary',
+  },
+};
 
 export function ShowOnboardingCheckbox() {
   const { t } = useTranslation();
@@ -16,7 +22,6 @@ export function ShowOnboardingCheckbox() {
       setShowOnboardingNextTime(checked);
 
       if (checked) {
-        // Clear all completion/dismissal flags so onboarding can re-trigger
         chrome.storage.local
           .remove([
             StorageKeys.ONBOARDING_COMPLETED,
@@ -30,9 +35,10 @@ export function ShowOnboardingCheckbox() {
   );
 
   return (
-    <StyledFormControlLabel
+    <FormControlLabel
       control={<Checkbox checked={showOnboardingNextTime} onChange={handleChange} size="small" />}
       label={t('show_onboarding_checkbox_label')}
+      sx={labelSx}
     />
   );
 }

@@ -1,14 +1,6 @@
 import { ChangeEvent, FC, useState } from 'react';
 
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  InputAdornment,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { InputAdornment, TextField, Typography } from '@mui/material';
 
 import { useSettingsStore } from '@store';
 import { useTranslation } from '@utils';
@@ -38,56 +30,47 @@ export const AdvancedOptions: FC = () => {
   };
 
   return (
-    <Accordion
-      disableGutters
-      elevation={0}
-      sx={{ '&:before': { display: 'none' }, backgroundColor: 'transparent' }}
-    >
-      <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 0 }}>
-        <Typography variant="body1">{t('advanced_options')}</Typography>
-      </AccordionSummary>
-      <AccordionDetails sx={{ px: 0 }}>
-        <FieldContainer>
-          <Typography variant="body1">{t('max_og_fetches')}:</Typography>
-          <TextField
-            fullWidth
-            size="small"
-            variant="outlined"
-            type="number"
-            value={ogInput}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setOgInput(e.target.value)}
-            onBlur={handleOgBlur}
-            inputProps={{ min: 1 }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <InfoTooltip title={t('max_og_fetches_info')} />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </FieldContainer>
-        <FieldContainer>
-          <Typography variant="body1">{t('max_bg_images')}:</Typography>
-          <TextField
-            fullWidth
-            size="small"
-            variant="outlined"
-            type="number"
-            value={bgInput}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setBgInput(e.target.value)}
-            onBlur={handleBgBlur}
-            inputProps={{ min: 1 }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <InfoTooltip title={t('max_bg_images_info')} />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </FieldContainer>
-      </AccordionDetails>
-    </Accordion>
+    <>
+      <FieldContainer>
+        <Typography variant="body1">{t('max_og_fetches')}</Typography>
+        <TextField
+          fullWidth
+          size="small"
+          variant="outlined"
+          type="number"
+          value={ogInput}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setOgInput(e.target.value)}
+          onBlur={handleOgBlur}
+          inputProps={{ min: 1 }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <InfoTooltip title={t('max_og_fetches_info')} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </FieldContainer>
+      <FieldContainer>
+        <Typography variant="body1">{t('max_bg_images')}</Typography>
+        <TextField
+          fullWidth
+          size="small"
+          variant="outlined"
+          type="number"
+          value={bgInput}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setBgInput(e.target.value)}
+          onBlur={handleBgBlur}
+          inputProps={{ min: 1 }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <InfoTooltip title={t('max_bg_images_info')} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </FieldContainer>
+    </>
   );
 };

@@ -129,7 +129,12 @@ export const Header: FC = () => {
 
       // Show initial notification
       if (createZipArchive) {
-        showNotification(t('creating_archive'), NotificationType.INFO, null, ZIP_PROGRESS_SNACKBAR_KEY);
+        showNotification(
+          t('creating_archive'),
+          NotificationType.INFO,
+          null,
+          ZIP_PROGRESS_SNACKBAR_KEY,
+        );
       } else {
         showNotification(
           `${t('download_started_text')} (${selectedImages.length})`,
@@ -172,8 +177,15 @@ export const Header: FC = () => {
     } catch (error) {
       showNotification(t('download_error_text'), NotificationType.ERROR);
     }
-  }, [selectedImages, showNotification, closeSnackbar, t, createZipArchive, pageUrl, refreshMonetizationState]);
-
+  }, [
+    selectedImages,
+    showNotification,
+    closeSnackbar,
+    t,
+    createZipArchive,
+    pageUrl,
+    refreshMonetizationState,
+  ]);
 
   const monetizationNode = useMemo(() => {
     if (!showMonetizationUI) return null;

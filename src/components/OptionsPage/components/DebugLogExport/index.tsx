@@ -1,11 +1,11 @@
 import { FC, useCallback, useEffect, useState } from 'react';
 
-import { Button, Typography } from '@mui/material';
+import { Box, Button, SxProps, Theme, Typography } from '@mui/material';
 
 import { useTranslation } from '@utils';
 import { debugLogger } from '@utils/debugLogger';
 
-import { StyledContainer } from './styles';
+const containerSx: SxProps<Theme> = { display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 };
 
 export const DebugLogExport: FC = () => {
   const { t } = useTranslation();
@@ -29,13 +29,13 @@ export const DebugLogExport: FC = () => {
   }, []);
 
   return (
-    <StyledContainer>
+    <Box sx={containerSx}>
       <Button variant="outlined" size="small" onClick={handleExport} data-onboarding="debug-export">
         {t('export_debug_log')}
       </Button>
-      <Typography variant="caption" color="textSecondary" sx={{ ml: 1 }}>
+      <Typography variant="caption" color="textSecondary">
         ({entryCount} entries)
       </Typography>
-    </StyledContainer>
+    </Box>
   );
 };

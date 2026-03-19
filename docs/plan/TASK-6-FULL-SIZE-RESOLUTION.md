@@ -19,7 +19,7 @@ run automatically during scan, expensive ones run on-demand via an "Enhance" but
 Four strategies, ordered by cost:
 
 | Strategy                        | Runs                       | Description                                                                                                                                                                                                 |
-|---------------------------------|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **A: Parent Anchor**            | Auto (in collectImages)    | Walk up DOM from `<img>` to find `<a>` ancestor/sibling whose `href` is a direct image URL                                                                                                                  |
 | **B: URL Pattern Cleanup**      | Auto (in collectImages)    | Strip thumbnail suffixes (`_thumb`, `_small`, `_500`, `_150x150`, `-medium`) and path segments (`/thumbs/`, `/thumbnails/`) from URLs                                                                       |
 | **C: Data Attribute Deep Scan** | Auto (in collectImages)    | Check additional attrs: `data-high-res`, `data-large`, `data-full-src`, `data-hires`, `data-zoom-src`, `data-hd-src`, `data-raw-src`, plus wildcard scan for attrs containing "full"/"orig"/"large"/"hires" |
@@ -34,16 +34,18 @@ Strategy C doesn't need validation (data attrs are set by the site).
 ```typescript
 interface ImageData {
   // ... existing fields
-  originalSrc?: string;    // thumbnail URL before resolution
-  enhanced?: boolean;       // true if upgraded from thumbnail
-  linkedPageUrl?: string;   // page URL found nearby (for OG meta fetch via Enhance)
+  originalSrc?: string; // thumbnail URL before resolution
+  enhanced?: boolean; // true if upgraded from thumbnail
+  linkedPageUrl?: string; // page URL found nearby (for OG meta fetch via Enhance)
 }
 ```
 
 New fields on ImageData:
+
 - `linkedPageUrl?: string` — page URL found by Strategy A container search (for Strategy D to fetch later)
 
 New message types:
+
 - `ENHANCE_IMAGES` — triggers Strategy D from page UI via content script
 - `FETCH_PAGE_META` — background script fetches HTML page, returns og:image
 - `VALIDATE_IMAGE_URL` — background script HEAD request, returns {exists, contentType}
@@ -77,13 +79,15 @@ Functions to export:
 - Additional query params to strip: `shape`, `fidelity`, `thumb`, `thumbnail`, `preset`
 
 Strategy A detail:
+
 - **Phase 1 — Ancestor walk**: Walk up from img through parentElement (max 5 levels). At each level, check if element is `<a>` with href matching image extension.
 - **Phase 2 — Container search**: If no direct ancestor `<a>` found, find the closest "container" ancestor (max 5 levels up) and search ALL `<a>` descendants within it. This handles Flickr-style layouts where `<img>` and `<a>` are in separate subtrees of the same container:
   ```html
-  <div class="photo-container">        ← container found
-    <img src="thumb.jpg">               ← starting element
+  <div class="photo-container">
+    ← container found <img src="thumb.jpg" /> ← starting element
     <div class="interaction">
-      <div><a href="/photos/..."></a></div>  ← found via querySelectorAll('a')
+      <div><a href="/photos/..."></a></div>
+      ← found via querySelectorAll('a')
     </div>
   </div>
   ```
@@ -107,8 +111,8 @@ Test cases:
 1. Parent `<a href="full.jpg">` wrapping `<img src="thumb.jpg">` → resolves
 2. Parent `<a href="/gallery">` (not image) → returns null
 3. Sibling `<a href="full.jpg">` next to img container → resolves
-3b. Flickr-style: `<a>` is deep inside sibling subtree of container → found via container search, returns `{ pageUrl }` (not direct image)
-3c. Container search stops at reasonable boundary (doesn't escape into unrelated content)
+   3b. Flickr-style: `<a>` is deep inside sibling subtree of container → found via container search, returns `{ pageUrl }` (not direct image)
+   3c. Container search stops at reasonable boundary (doesn't escape into unrelated content)
 4. `photo_thumb.jpg` → `photo.jpg`
 5. `photo_500.jpg` → `photo.jpg`
 6. `photo_150x150.jpg` → `photo.jpg`
@@ -135,11 +139,13 @@ In `collectImages.ts`:
 - Order: C (data attrs) → A (parent anchor) → B (URL cleanup) — most reliable first
 
 In `collectImages.ts` — Strategy A stores `linkedPageUrl` on ImageData:
+
 - When Strategy A finds an `<a>` whose href is a **page URL** (not direct image), store it as `linkedPageUrl` on the candidate
 - This is cheap (DOM-only) and runs during initial scan
 - Strategy D later uses `linkedPageUrl` to know which pages to fetch
 
 In `content-script.ts`:
+
 - Add handler for `ENHANCE_IMAGES` message
 - Receives image list, for each image that has `linkedPageUrl` set:
   - Send `FETCH_PAGE_META` to background script with the `linkedPageUrl`
@@ -187,69 +193,88 @@ ImageCard/ImageInfo:
 - In list view, show `originalSrc` as muted secondary text
 
 ### Phase 6: E2E Tests
+
 **New file:** `e2e/fixtures/fullsize-test-page.html`
 
 Test page must include structures matching real-world sites from user reports:
 
 **Case 1 — Imgur-style (nested anchor wrapping img with resize params):**
+
 ```html
 <a href="/gallery/photo-of-pup-Dd0bfnF" class="Post-item">
   <div class="Post-item-container">
     <div class="Post-item-media" style="height: 400px;">
       <div class="imageContainer">
-        <img src="images/photo_d.webp?maxwidth=520&shape=thumb&fidelity=high"
-             width="300" height="400" alt="photo-of-pup">
+        <img
+          src="images/photo_d.webp?maxwidth=520&shape=thumb&fidelity=high"
+          width="300"
+          height="400"
+          alt="photo-of-pup"
+        />
       </div>
     </div>
   </div>
 </a>
 ```
+
 - Strategy A finds parent `<a>` — but href is a page, not image → stores as `linkedPageUrl`
 - Strategy B strips `_d` suffix and `maxwidth`, `shape`, `fidelity` params → auto-resolves to `images/photo.webp`
 
 **Case 2 — Classic thumbnail gallery (direct image link wrapping thumbnail):**
+
 ```html
 <a href="images/IMG_0003.jpg">
-  <img src="images/thumbs/tn_IMG_0003.jpg" class="img_thumbnail_image">
+  <img src="images/thumbs/tn_IMG_0003.jpg" class="img_thumbnail_image" />
 </a>
 ```
+
 - Strategy A finds parent `<a>` with direct image href → auto-resolves to `images/IMG_0003.jpg`
 
 **Case 3 — Flickr-style (img and link in separate subtrees of container):**
+
 ```html
 <div class="photo-list-photo-container">
-  <img loading="lazy" src="images/55145287496_a240db048f.jpg"
-       height="100%" width="100%">
+  <img loading="lazy" src="images/55145287496_a240db048f.jpg" height="100%" width="100%" />
   <div class="interaction-view">
     <div class="photo-list-photo-interaction">
-      <a class="overlay" href="/photos/125877475/55145287496/"
-         aria-label="cold evening by Rafael Zenon Wagner"></a>
+      <a
+        class="overlay"
+        href="/photos/125877475/55145287496/"
+        aria-label="cold evening by Rafael Zenon Wagner"
+      ></a>
     </div>
   </div>
 </div>
 ```
+
 - Strategy A container search finds `<a>` in sibling subtree → href is page URL → stores as `linkedPageUrl`
 - Strategy D (Enhance button) fetches the page URL to extract OG image
 
 **Case 4 — Data attribute (high-res source):**
+
 ```html
-<img data-high-res="images/photo-full.png" src="images/photo-thumb.png">
+<img data-high-res="images/photo-full.png" src="images/photo-thumb.png" />
 ```
+
 - Strategy C finds `data-high-res` → auto-resolves
 
 **Case 5 — URL suffix cleanup (no link, just URL pattern):**
+
 ```html
-<img src="images/landscape_thumb.jpg">
+<img src="images/landscape_thumb.jpg" />
 ```
+
 - `images/landscape.jpg` is also served by the fixture server
 - Strategy B strips `_thumb` suffix → validates via HEAD → auto-resolves
 
 **Fixture server updates** (`e2e/extension-fixture.ts`):
+
 - Serve the fullsize test page at a dedicated path
 - Serve test images (both thumb and full versions) from `e2e/fixtures/images/`
 - For Case 3 Flickr page URL: serve a mock HTML page at `/photos/125877475/55145287496/` that contains `<meta property="og:image" content="http://localhost:9753/images/55145287496_full.jpg">`
 
 **File:** `e2e/extension.spec.ts`
+
 - New test group: "full-size image resolution"
   - Test: "auto-resolves direct image links (Case 2)" — verify `IMG_0003.jpg` URL is collected instead of `tn_IMG_0003.jpg`
   - Test: "auto-resolves URL suffix patterns (Case 5)" — verify `landscape.jpg` URL is collected instead of `landscape_thumb.jpg`
@@ -281,6 +306,7 @@ Sentry breadcrumbs via `captureMessage` for:
 **Files:** `src/components/Page/components/Onboarding/steps.tsx`, `public/_locales/en/messages.json`
 
 Add a new onboarding step after "Reset & Rescan" (step 4) that explains the Enhance feature:
+
 - **Step definition** in `steps.tsx`:
   ```typescript
   {
@@ -313,24 +339,24 @@ New keys:
 
 ## Files to Create/Modify
 
-| Action | File                                                 | Purpose                                      |
-|--------|------------------------------------------------------|----------------------------------------------|
-| Create | `src/utils/fullSizeResolver.ts`                      | Core resolution strategies                   |
-| Create | `src/__tests__/fullSizeResolver.test.ts`             | Unit tests                                   |
-| Create | `e2e/fixtures/fullsize-test-page.html`               | E2E fixture                                  |
-| Create | `docs/plan/TASK-6-FULL-SIZE-RESOLUTION.md`           | This plan                                    |
-| Modify | `src/types/index.ts`                                 | `originalSrc`, `enhanced`, new message types |
-| Modify | `src/store/types.ts`                                 | `isEnhancing`, `updateImages` in ImageState  |
-| Modify | `src/store/imageStore.ts`                            | New state & actions                          |
-| Modify | `src/contentScript/collectImages.ts`                 | Wire strategies A/B/C                        |
-| Modify | `src/contentScript/content-script.ts`                | ENHANCE_IMAGES handler                       |
-| Modify | `src/background/index.ts`                            | FETCH_PAGE_META, VALIDATE_IMAGE_URL          |
-| Modify | `src/utils/imageSrcExtractor.ts`                     | Add extra params to RESIZE_PARAMS            |
-| Modify | `src/components/Page/components/Toolbar/index.tsx`   | Enhance button                               |
-| Modify | `src/components/Page/components/ImageCard/index.tsx` | Enhanced badge                               |
-| Modify | `src/components/Page/components/ImageInfo/index.tsx` | Enhanced indicator                           |
-| Modify | `src/components/Page/components/Onboarding/steps.tsx` | New onboarding step for Enhance |
-| Modify | `src/__tests__/onboarding.test.tsx`                   | Update step count |
+| Action | File                                                  | Purpose                                      |
+| ------ | ----------------------------------------------------- | -------------------------------------------- |
+| Create | `src/utils/fullSizeResolver.ts`                       | Core resolution strategies                   |
+| Create | `src/__tests__/fullSizeResolver.test.ts`              | Unit tests                                   |
+| Create | `e2e/fixtures/fullsize-test-page.html`                | E2E fixture                                  |
+| Create | `docs/plan/TASK-6-FULL-SIZE-RESOLUTION.md`            | This plan                                    |
+| Modify | `src/types/index.ts`                                  | `originalSrc`, `enhanced`, new message types |
+| Modify | `src/store/types.ts`                                  | `isEnhancing`, `updateImages` in ImageState  |
+| Modify | `src/store/imageStore.ts`                             | New state & actions                          |
+| Modify | `src/contentScript/collectImages.ts`                  | Wire strategies A/B/C                        |
+| Modify | `src/contentScript/content-script.ts`                 | ENHANCE_IMAGES handler                       |
+| Modify | `src/background/index.ts`                             | FETCH_PAGE_META, VALIDATE_IMAGE_URL          |
+| Modify | `src/utils/imageSrcExtractor.ts`                      | Add extra params to RESIZE_PARAMS            |
+| Modify | `src/components/Page/components/Toolbar/index.tsx`    | Enhance button                               |
+| Modify | `src/components/Page/components/ImageCard/index.tsx`  | Enhanced badge                               |
+| Modify | `src/components/Page/components/ImageInfo/index.tsx`  | Enhanced indicator                           |
+| Modify | `src/components/Page/components/Onboarding/steps.tsx` | New onboarding step for Enhance              |
+| Modify | `src/__tests__/onboarding.test.tsx`                   | Update step count                            |
 | Modify | `public/_locales/en/messages.json`                    | i18n strings                                 |
 | Modify | `e2e/extension.spec.ts`                               | E2E test                                     |
 

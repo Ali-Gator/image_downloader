@@ -218,5 +218,20 @@
   },
   "local_files_not_supported": {
     "message": "Локальные файлы не поддерживаются. Сначала загрузите файл на сайт."
+  },
+  "section_file_organization": {
+    "message": "Организация файлов"
+  },
+  "section_format_archive": {
+    "message": "Формат и архив"
+  },
+  "section_advanced": {
+    "message": "Дополнительно"
+  },
+  "section_debug": {
+    "message": "Отладка и прочее"
+  },
+  "options_auto_save_note": {
+    "message": "Настройки сохраняются автоматически и применяются ко всем загрузкам"
   }
 }

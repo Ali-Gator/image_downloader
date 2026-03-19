@@ -2,25 +2,28 @@ import { Box, styled } from '@mui/material';
 
 export const FieldContainer = styled('div')(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
+  flexDirection: 'column',
+  gap: theme.spacing(0.75),
   marginBottom: theme.spacing(2),
-  gap: theme.spacing(2),
 
-  '& .MuiTypography-root': {
-    width: '180px',
-    minWidth: '180px',
-    flexShrink: 0,
+  '&:last-child': {
+    marginBottom: 0,
   },
 
-  '& .MuiTextField-root': {
-    flex: 1,
+  '& .MuiTypography-root': {
+    fontSize: '0.8125rem',
+    fontWeight: 500,
+    color: theme.palette.text.secondary,
   },
 }));
 
 export const OptionRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1),
-  marginBottom: theme.spacing(2),
+  gap: theme.spacing(0.5),
+  marginBottom: theme.spacing(1),
+
+  '&:last-child': {
+    marginBottom: 0,
+  },
 }));

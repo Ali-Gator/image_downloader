@@ -112,11 +112,10 @@ export const Toolbar: FC = () => {
     setIsEnhancing(true);
     try {
       const { images } = useImageStore.getState();
-      const response = await sendMessageToContentScript<{ images: ImageData[]; upgradedCount: number }>(
-        sourceTabId,
-        { action: MessageActionType.ENHANCE_IMAGES, images },
-        60000,
-      );
+      const response = await sendMessageToContentScript<{
+        images: ImageData[];
+        upgradedCount: number;
+      }>(sourceTabId, { action: MessageActionType.ENHANCE_IMAGES, images }, 60000);
       if (response?.images && response.upgradedCount > 0) {
         updateImages(response.images);
         enqueueSnackbar(t('enhance_found', response.upgradedCount.toString()), {

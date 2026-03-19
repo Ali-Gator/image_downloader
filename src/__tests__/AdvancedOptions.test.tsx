@@ -5,7 +5,6 @@ import { AdvancedOptions } from '../components/OptionsPage/components/AdvancedOp
 import { useSettingsStore } from '../store/settingsStore';
 import { DEFAULT_OPTIONS } from '../utils/constants';
 
-
 vi.mock('@utils', async () => {
   const actual = await vi.importActual<typeof import('@utils')>('@utils');
   return {
@@ -29,9 +28,6 @@ describe('AdvancedOptions', () => {
   it('renders with default values', () => {
     render(<AdvancedOptions />);
 
-    // Expand the accordion
-    fireEvent.click(screen.getByText('advanced_options'));
-
     const inputs = screen.getAllByRole('spinbutton');
     expect(inputs).toHaveLength(2);
     expect(inputs[0]).toHaveValue(DEFAULT_OPTIONS.maxOgFetches);
@@ -40,11 +36,9 @@ describe('AdvancedOptions', () => {
 
   it('commits maxOgFetches on blur', () => {
     render(<AdvancedOptions />);
-    fireEvent.click(screen.getByText('advanced_options'));
 
     const inputs = screen.getAllByRole('spinbutton');
     fireEvent.change(inputs[0], { target: { value: '75' } });
-    // Not committed yet — only local state changed
     expect(useSettingsStore.getState().maxOgFetches).toBe(DEFAULT_OPTIONS.maxOgFetches);
 
     fireEvent.blur(inputs[0]);
@@ -53,7 +47,6 @@ describe('AdvancedOptions', () => {
 
   it('commits maxBgImages on blur', () => {
     render(<AdvancedOptions />);
-    fireEvent.click(screen.getByText('advanced_options'));
 
     const inputs = screen.getAllByRole('spinbutton');
     fireEvent.change(inputs[1], { target: { value: '500' } });
@@ -64,7 +57,6 @@ describe('AdvancedOptions', () => {
 
   it('clamps values to minimum of 1 on blur', () => {
     render(<AdvancedOptions />);
-    fireEvent.click(screen.getByText('advanced_options'));
 
     const inputs = screen.getAllByRole('spinbutton');
     fireEvent.change(inputs[0], { target: { value: '0' } });

@@ -1,13 +1,9 @@
 export { AdvancedOptions } from './AdvancedOptions';
 export { ConvertOptions } from './ConvertOptions';
 export { DebugLogExport } from './DebugLogExport';
-export { DownloadOptions } from './DownloadOptions';
 export { FolderField } from './FolderField';
 export { InfoTooltip } from './InfoIcon';
-export { InfoMessage } from './InfoMessage';
-export { OptionsHeader } from './OptionsHeader';
 export { RenamePatternField } from './RenamePatternField';
-export { ResetButton } from './ResetButton';
 export { OrganizeByDomainOption } from './OrganizeByDomainOption';
 export { OptionsOnboarding } from './OptionsOnboarding';
 export { ShowOnboardingCheckbox } from './ShowOnboardingCheckbox';

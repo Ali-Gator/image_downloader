@@ -1,13 +1,12 @@
 import { ChangeEvent, FC } from 'react';
 
-import { InputAdornment } from '@mui/material';
+import { InputAdornment, TextField, Typography } from '@mui/material';
 
 import { useSettingsStore } from '@store';
 import { useTranslation } from '@utils';
 
 import { InfoTooltip } from '../InfoIcon';
 import { FieldContainer } from '../styles';
-import { StyledTextField, StyledTypography } from './styles';
 
 export const FolderField: FC = () => {
   const { t } = useTranslation();
@@ -19,8 +18,8 @@ export const FolderField: FC = () => {
 
   return (
     <FieldContainer data-onboarding="folder-name">
-      <StyledTypography variant="body1">{t('folder_name')}:</StyledTypography>
-      <StyledTextField
+      <Typography variant="body1">{t('folder_name')}</Typography>
+      <TextField
         fullWidth
         size="small"
         variant="outlined"

@@ -203,9 +203,6 @@
   "options_title": {
     "message": "Extension Options"
   },
-  "download_options": {
-    "message": "Download Options"
-  },
   "folder_name": {
     "message": "Download Folder"
   },
@@ -238,12 +235,6 @@
   },
   "webp_only": {
     "message": "WebP only"
-  },
-  "browser_save_setting_message": {
-    "message": "Make sure that \"Ask where to save each file before downloading\" is unchecked in Browser Settings"
-  },
-  "options_auto_apply_message": {
-    "message": "Options are applied automatically"
   },
   "image_load_failed": {
     "message": "Failed to load image"
@@ -425,20 +416,32 @@
   "organize_by_domain_info": {
     "message": "Create a subfolder for each website domain inside the download folder (e.g. images/example.com/photo.jpg)"
   },
-  "advanced_options": {
-    "message": "Advanced"
-  },
   "max_og_fetches": {
-    "message": "Pages to check for full-size images"
+    "message": "Max pages to check for full-size images"
   },
   "max_og_fetches_info": {
     "message": "When you click Enhance, the extension visits linked pages to find higher-quality versions of images. Higher values find more images but take longer."
   },
   "max_bg_images": {
-    "message": "Background images limit"
+    "message": "Background images scan limit"
   },
   "max_bg_images_info": {
     "message": "Some images are embedded as page backgrounds rather than regular images. This sets how many of those to collect. Increase if you notice missing images."
+  },
+  "section_file_organization": {
+    "message": "File Organization"
+  },
+  "section_format_archive": {
+    "message": "Format & Archive"
+  },
+  "section_advanced": {
+    "message": "Advanced"
+  },
+  "section_debug": {
+    "message": "Debug & Other"
+  },
+  "options_auto_save_note": {
+    "message": "Settings are saved automatically and apply to all downloads"
   },
   "enhance_button": {
     "message": "Enhance"
