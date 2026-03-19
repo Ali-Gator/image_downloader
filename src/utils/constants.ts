@@ -85,7 +85,7 @@ export const DownloadConstants = {
 /**
  * Default values for download options in settings
  */
-export const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = {
+export const DEFAULT_OPTIONS: DownloadOptions = {
   folderName: 'images',
   fileName: '',
   renamePattern: '',
@@ -93,6 +93,8 @@ export const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = {
   convertTo: 'jpeg',
   createZipArchive: false,
   organizeByDomain: false,
+  maxOgFetches: 50,
+  maxBgImages: 200,
 };
 
 /**

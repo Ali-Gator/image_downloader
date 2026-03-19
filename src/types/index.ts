@@ -325,6 +325,8 @@ export interface DownloadOptions {
   convertTo: string;
   createZipArchive: boolean;
   organizeByDomain: boolean;
+  maxOgFetches: number;
+  maxBgImages: number;
 }
 
 // Props for the ErrorBoundary component

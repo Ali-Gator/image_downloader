@@ -1,6 +1,7 @@
 import { ImageCandidate, ImageData, MessageActionType, ValidateImageUrlResponse } from '../types';
 import { ContentScriptConstants, handleError } from '../utils';
 import { collectImages } from './collectImages';
+import { DEFAULT_OPTIONS } from '../utils/constants';
 import { debugLogger } from '../utils/debugLogger';
 import { ensureError } from '../utils/errorHandlers';
 import { extractMainImageFromHtml, extractOgImageFromHtml } from '../utils/fullSizeResolver';
@@ -12,6 +13,7 @@ import {
   probeImageDimensions,
 } from '../utils/performanceImageScanner';
 import { captureMessage } from '../utils/sentryCapturer';
+import { getSettingFromStorage } from '../utils/settingsReader';
 
 const ENHANCE_LOG_CONTEXT = 'fullSizeResolver';
 
@@ -76,9 +78,11 @@ const CACHE_MAX_AGE_MS = 30_000; // 30 seconds
 
 /** Runs collectImages() and updates the cache. */
 async function refreshCache(): Promise<{ images: ImageData[]; pageUrl: string }> {
+  const maxBgImages = await getSettingFromStorage('maxBgImages', DEFAULT_OPTIONS.maxBgImages);
   const result = await collectImages({
     includeXhrInPerf: isCanvasApp,
     drainPerfObserverCache,
+    maxBgImages,
   });
   cachedImages = result.images;
   cacheTimestamp = Date.now();
@@ -205,8 +209,6 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   return true; // Нужно для асинхронных обработчиков
 });
 
-const MAX_OG_FETCHES = 50;
-
 const DIMENSION_PROBE_TIMEOUT_MS = 10000;
 
 /**
@@ -216,6 +218,7 @@ const DIMENSION_PROBE_TIMEOUT_MS = 10000;
 async function enhanceImages(
   images: ImageData[],
 ): Promise<{ images: ImageData[]; upgradedCount: number }> {
+  const maxOgFetches = await getSettingFromStorage('maxOgFetches', DEFAULT_OPTIONS.maxOgFetches);
   const candidates = images.filter((img) => img.linkedPageUrl);
 
   debugLogger.log(
@@ -227,7 +230,7 @@ async function enhanceImages(
   // Deduplicate by linkedPageUrl — fetch each unique page only once
   const uniqueUrls = [...new Set(candidates.map((img) => img.linkedPageUrl!))].slice(
     0,
-    MAX_OG_FETCHES,
+    maxOgFetches,
   );
 
   // Fetch OG images for each unique page URL
@@ -252,8 +255,9 @@ async function enhanceImages(
           return;
         }
 
-        const ogImageUrl = extractOgImageFromHtml(metaResponse.html)
-          ?? extractMainImageFromHtml(metaResponse.html, pageUrl);
+        const ogImageUrl =
+          extractOgImageFromHtml(metaResponse.html) ??
+          extractMainImageFromHtml(metaResponse.html, pageUrl);
         if (!ogImageUrl) {
           ogCache.set(pageUrl, null);
           return;

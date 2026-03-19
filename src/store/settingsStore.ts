@@ -1,11 +1,41 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { DEFAULT_DOWNLOAD_OPTIONS, StorageKeys } from '@utils/constants';
+import { DEFAULT_OPTIONS, StorageKeys } from '@utils/constants';
 import { isChromeExtension } from '@utils/utils';
 
 import { fallbackStorage } from './fallbackStorage';
 import { SettingsState } from './types';
+
+/**
+ * Keys that are persisted to storage (i.e. not actions).
+ * `partialize` uses this to select which fields to persist,
+ * and `refreshSettings` / `onChanged` reuse it to pick only data fields.
+ */
+const PERSISTED_KEYS: readonly (keyof SettingsState)[] = [
+  'defaultGridView',
+  'showDownloadNotifications',
+  'folderName',
+  'renamePattern',
+  'convertFrom',
+  'convertTo',
+  'createZipArchive',
+  'organizeByDomain',
+  'showOnboardingNextTime',
+  'maxOgFetches',
+  'maxBgImages',
+] as const;
+
+/** Picks only the persisted data fields from an object. */
+function pickPersistedFields(source: Record<string, unknown>): Partial<SettingsState> {
+  const result: Record<string, unknown> = {};
+  for (const key of PERSISTED_KEYS) {
+    if (key in source) {
+      result[key] = source[key];
+    }
+  }
+  return result as Partial<SettingsState>;
+}
 
 // Use persist middleware to store settings in chrome.storage.local or localStorage
 export const useSettingsStore = create<SettingsState>()(
@@ -16,7 +46,7 @@ export const useSettingsStore = create<SettingsState>()(
       showDownloadNotifications: true,
 
       // Initialize all download options from constants
-      ...DEFAULT_DOWNLOAD_OPTIONS,
+      ...DEFAULT_OPTIONS,
 
       // Onboarding
       showOnboardingNextTime: false,
@@ -34,7 +64,9 @@ export const useSettingsStore = create<SettingsState>()(
       setConvertTo: (convertTo) => set({ convertTo }),
       setCreateZipArchive: (createZipArchive) => set({ createZipArchive }),
       setOrganizeByDomain: (organizeByDomain) => set({ organizeByDomain }),
-      resetDownloadOptions: () => set(DEFAULT_DOWNLOAD_OPTIONS),
+      setMaxOgFetches: (maxOgFetches) => set({ maxOgFetches }),
+      setMaxBgImages: (maxBgImages) => set({ maxBgImages }),
+      resetDownloadOptions: () => set(DEFAULT_OPTIONS),
 
       // Force refresh settings from storage
       refreshSettings: async () => {
@@ -42,34 +74,8 @@ export const useSettingsStore = create<SettingsState>()(
           const stored = await fallbackStorage.getItem(StorageKeys.SETTINGS_STORE_KEY);
           if (stored) {
             const parsedData = JSON.parse(stored);
-
-            // Zustand persist stores data in format: { state: {...}, version: 0 }
             const settingsData = parsedData.state || parsedData;
-
-            // Update only the settings part, not the actions
-            const {
-              defaultGridView,
-              showDownloadNotifications,
-              folderName,
-              renamePattern,
-              convertFrom,
-              convertTo,
-              createZipArchive,
-              organizeByDomain,
-              showOnboardingNextTime,
-            } = settingsData;
-
-            set({
-              defaultGridView,
-              showDownloadNotifications,
-              folderName,
-              renamePattern,
-              convertFrom,
-              convertTo,
-              createZipArchive,
-              organizeByDomain,
-              showOnboardingNextTime,
-            });
+            set(pickPersistedFields(settingsData));
           }
         } catch (error) {
           throw new Error(JSON.stringify(error));
@@ -79,19 +85,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: StorageKeys.SETTINGS_STORE_KEY,
       storage: createJSONStorage(() => fallbackStorage),
-      partialize: (state) => ({
-        defaultGridView: state.defaultGridView,
-        showDownloadNotifications: state.showDownloadNotifications,
-
-        // All download options
-        folderName: state.folderName,
-        renamePattern: state.renamePattern,
-        convertFrom: state.convertFrom,
-        convertTo: state.convertTo,
-        createZipArchive: state.createZipArchive,
-        organizeByDomain: state.organizeByDomain,
-        showOnboardingNextTime: state.showOnboardingNextTime,
-      }),
+      partialize: (state) => pickPersistedFields(state as unknown as Record<string, unknown>),
     },
   ),
 );
@@ -102,25 +96,15 @@ if (isChromeExtension() && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
     const entry = changes[StorageKeys.SETTINGS_STORE_KEY];
-    if (!entry?.newValue || JSON.stringify(entry.newValue) === JSON.stringify(entry.oldValue)) return;
+    if (!entry?.newValue || JSON.stringify(entry.newValue) === JSON.stringify(entry.oldValue))
+      return;
 
     try {
-      const parsed = typeof entry.newValue === 'string'
-        ? JSON.parse(entry.newValue)
-        : entry.newValue;
+      const parsed =
+        typeof entry.newValue === 'string' ? JSON.parse(entry.newValue) : entry.newValue;
       const data = parsed.state ?? parsed;
 
-      useSettingsStore.setState({
-        defaultGridView: data.defaultGridView,
-        showDownloadNotifications: data.showDownloadNotifications,
-        folderName: data.folderName,
-        renamePattern: data.renamePattern,
-        convertFrom: data.convertFrom,
-        convertTo: data.convertTo,
-        createZipArchive: data.createZipArchive,
-        organizeByDomain: data.organizeByDomain,
-        showOnboardingNextTime: data.showOnboardingNextTime,
-      });
+      useSettingsStore.setState(pickPersistedFields(data));
     } catch {
       // Ignore malformed storage data
     }

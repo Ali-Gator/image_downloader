@@ -1,6 +1,7 @@
 import { FC } from 'react';
 
 import {
+  AdvancedOptions,
   ConvertOptions,
   DebugLogExport,
   FolderField,
@@ -27,6 +28,7 @@ export const DownloadOptions: FC = () => {
       <ShowOnboardingCheckbox />
       <InfoMessage />
       <DebugLogExport />
+      <AdvancedOptions />
     </StyledContainer>
   );
 };

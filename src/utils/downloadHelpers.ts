@@ -5,7 +5,7 @@
 import { handleError } from '@utils/errorHandlers';
 
 import { DownloadResult, MessageActionType } from '../types';
-import { DEFAULT_DOWNLOAD_OPTIONS, DownloadConstants } from './constants';
+import { DEFAULT_OPTIONS, DownloadConstants } from './constants';
 import { debugLogger } from './debugLogger';
 import { updateFilenameExtensionFromDataUrl } from './imageUtils';
 
@@ -204,7 +204,7 @@ const createFallbackFilename = (originalFilename: string, imageUrl: string): str
   // Get the folder path if present in the original filename
   const folderPath = originalFilename.includes('/')
     ? originalFilename.substring(0, originalFilename.lastIndexOf('/') + 1)
-    : DEFAULT_DOWNLOAD_OPTIONS.folderName + '/';
+    : DEFAULT_OPTIONS.folderName + '/';
 
   // Get extension from original file or URL
   const extension = originalFilename.includes('.')

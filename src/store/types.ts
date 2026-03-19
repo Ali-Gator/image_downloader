@@ -17,6 +17,10 @@ export interface SettingsState {
   createZipArchive: boolean;
   organizeByDomain: boolean;
 
+  // Advanced
+  maxOgFetches: number;
+  maxBgImages: number;
+
   // Onboarding
   showOnboardingNextTime: boolean;
 
@@ -32,6 +36,8 @@ export interface SettingsState {
   setConvertTo: (format: string) => void;
   setCreateZipArchive: (createZip: boolean) => void;
   setOrganizeByDomain: (organize: boolean) => void;
+  setMaxOgFetches: (value: number) => void;
+  setMaxBgImages: (value: number) => void;
   resetDownloadOptions: () => void;
   refreshSettings: () => Promise<void>;
 }

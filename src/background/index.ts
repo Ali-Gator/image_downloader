@@ -12,7 +12,7 @@ import {
   ApplicationLinks,
   ConnectionName,
   ContentScriptConstants,
-  DEFAULT_DOWNLOAD_OPTIONS,
+  DEFAULT_OPTIONS,
   IMAGE_FETCH_TIMEOUTS,
   RatingConstants,
   StorageKeys,
@@ -540,10 +540,10 @@ export async function getSettings(): Promise<DownloadOptions> {
           }
         }
         // Если данных нет или ошибка, возвращаем пустые настройки
-        resolve(DEFAULT_DOWNLOAD_OPTIONS);
+        resolve(DEFAULT_OPTIONS);
       } catch (error) {
         handleError(error);
-        resolve(DEFAULT_DOWNLOAD_OPTIONS);
+        resolve(DEFAULT_OPTIONS);
       }
     });
   });
@@ -853,7 +853,10 @@ chrome.runtime.onMessage.addListener(
       (async () => {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), IMAGE_FETCH_TIMEOUTS.ENHANCE_FETCH);
+          const timeoutId = setTimeout(
+            () => controller.abort(),
+            IMAGE_FETCH_TIMEOUTS.ENHANCE_FETCH,
+          );
 
           const response = await fetch(request.url, {
             method: 'GET',
@@ -903,7 +906,10 @@ chrome.runtime.onMessage.addListener(
       (async () => {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), IMAGE_FETCH_TIMEOUTS.ENHANCE_FETCH);
+          const timeoutId = setTimeout(
+            () => controller.abort(),
+            IMAGE_FETCH_TIMEOUTS.ENHANCE_FETCH,
+          );
 
           const response = await fetch(request.url, {
             method: 'HEAD',

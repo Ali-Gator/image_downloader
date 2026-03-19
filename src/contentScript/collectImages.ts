@@ -89,6 +89,8 @@ export interface CollectImagesOptions {
   includeXhrInPerf: boolean;
   /** Cached images from PerformanceObserver; drained on read */
   drainPerfObserverCache: () => ImageCandidate[];
+  /** Maximum number of CSS background images to collect */
+  maxBgImages?: number;
 }
 
 /**
@@ -213,7 +215,7 @@ export async function collectImages(
   }
 
   // Collect background images
-  const bgImages = scanBackgroundImages(PlaceholderImages.MIN_SIZE_PX);
+  const bgImages = scanBackgroundImages(PlaceholderImages.MIN_SIZE_PX, options.maxBgImages);
   for (const bg of bgImages) {
     if (!isValidImage(bg.url) || seenUrls.has(bg.url)) continue;
     seenUrls.add(bg.url);

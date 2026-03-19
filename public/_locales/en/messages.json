@@ -425,6 +425,21 @@
   "organize_by_domain_info": {
     "message": "Create a subfolder for each website domain inside the download folder (e.g. images/example.com/photo.jpg)"
   },
+  "advanced_options": {
+    "message": "Advanced"
+  },
+  "max_og_fetches": {
+    "message": "Pages to check for full-size images"
+  },
+  "max_og_fetches_info": {
+    "message": "When you click Enhance, the extension visits linked pages to find higher-quality versions of images. Higher values find more images but take longer."
+  },
+  "max_bg_images": {
+    "message": "Background images limit"
+  },
+  "max_bg_images_info": {
+    "message": "Some images are embedded as page backgrounds rather than regular images. This sets how many of those to collect. Increase if you notice missing images."
+  },
   "enhance_button": {
     "message": "Enhance"
   },

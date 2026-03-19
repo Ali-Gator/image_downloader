@@ -1,3 +1,4 @@
+export { AdvancedOptions } from './AdvancedOptions';
 export { ConvertOptions } from './ConvertOptions';
 export { DebugLogExport } from './DebugLogExport';
 export { DownloadOptions } from './DownloadOptions';
