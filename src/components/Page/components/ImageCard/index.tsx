@@ -1,8 +1,9 @@
 import { memo, MouseEvent, useCallback, useMemo } from 'react';
 
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { Box, useTheme } from '@mui/material';
+import { Box, CircularProgress, useTheme } from '@mui/material';
 import { Theme } from '@mui/material/styles';
 import { SxProps } from '@mui/system';
 
@@ -12,7 +13,7 @@ import { SafeImage } from '@components/Page/components/SafeImage';
 import { useImageStore } from '@store';
 import { ImageCardProps } from '@types';
 import { useTranslation } from '@utils';
-import { useImageOperations } from '@utils/imageOperations';
+import { useEnhanceSingleImage, useImageOperations } from '@utils/imageOperations';
 
 import { ImageInfo } from '../ImageInfo';
 import {
@@ -40,6 +41,7 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
   const isGridView = useImageStore((s) => s.isGridView);
   const toggleSelectImage = useImageStore((s) => s.toggleSelectImage);
   const setLightboxImageId = useImageStore((s) => s.setLightboxImageId);
+  const sourceTabId = useImageStore((s) => s.sourceTabId);
   const isSelected = useImageStore((s) => s.selectedImages.some((img) => img.id === id));
   const effectiveSrc = useImageStore((s) =>
     s.imageSourceOverrides[id] === 'original' && image.enhanced && image.originalSrc
@@ -47,6 +49,10 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
       : image.src,
   );
   const { handleCopyUrl, handleDownload } = useImageOperations(effectiveSrc, filename, id);
+  const { handleEnhanceSingle, isEnhancingImage } = useEnhanceSingleImage();
+
+  const canEnhance = !!sourceTabId && !!image.linkedPageUrl && !image.enhanced;
+  const isEnhancing = isEnhancingImage(id);
 
   const isListMode = !isGridView;
 
@@ -90,6 +96,19 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
           </TopBarLeftSection>
           <TopBarRightSection>
             <ActionButtonsContainer>
+              {canEnhance && (
+                <ActionButton
+                  tooltip={t('enhance_image_tooltip')}
+                  onClick={() => handleEnhanceSingle(image)}
+                  aria-label={t('enhance_image_tooltip')}
+                >
+                  {isEnhancing ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <AutoFixHighIcon fontSize="small" />
+                  )}
+                </ActionButton>
+              )}
               <ActionButton
                 tooltip={t('copy_url_tooltip')}
                 onClick={handleCopyUrl}

@@ -1,15 +1,21 @@
 import { FC, MouseEvent, useCallback, useEffect, useRef } from 'react';
 
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { CircularProgress } from '@mui/material';
 import { createPortal } from 'react-dom';
 
 import { useImageStore } from '@store';
 import { formatFileSize, useTranslation } from '@utils';
+import { useEnhanceSingleImage, useImageOperations } from '@utils/imageOperations';
 import { getFileExtension, getQualityFromDimensions } from '@utils/imageUtils';
 
 import {
+  ActionBar,
+  ActionIconButton,
   Backdrop,
   CloseButton,
   Counter,
@@ -29,16 +35,25 @@ export const ImageLightbox: FC = () => {
   const lightboxImageId = useImageStore((s) => s.lightboxImageId);
   const setLightboxImageId = useImageStore((s) => s.setLightboxImageId);
   const filteredImages = useImageStore((s) => s.filteredImages);
+  const sourceTabId = useImageStore((s) => s.sourceTabId);
   const toggleImageSource = useImageStore((s) => s.toggleImageSource);
   const isShowingOriginal = useImageStore(
     (s) => lightboxImageId != null && s.imageSourceOverrides[lightboxImageId] === 'original',
   );
   const getEffectiveImage = useImageStore((s) => s.getEffectiveImage);
+  const { handleEnhanceSingle, isEnhancingImage } = useEnhanceSingleImage();
 
   const currentIndex = filteredImages.findIndex((img) => img.id === lightboxImageId);
   const image = currentIndex >= 0 ? filteredImages[currentIndex] : null;
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < filteredImages.length - 1;
+
+  const effectiveImg = image ? getEffectiveImage(image) : null;
+  const { handleDownload } = useImageOperations(
+    effectiveImg?.src ?? '',
+    image?.filename ?? '',
+    image?.id,
+  );
 
   const currentIndexRef = useRef(currentIndex);
   useEffect(() => {
@@ -72,10 +87,11 @@ export const ImageLightbox: FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [lightboxImageId, setLightboxImageId, goToPrev, goToNext]);
 
-  if (!image) return null;
+  if (!image || !effectiveImg) return null;
 
-  const effectiveImg = getEffectiveImage(image);
   const hasToggle = image.enhanced && image.originalSrc;
+  const canEnhance = !!sourceTabId && !!image.linkedPageUrl && !image.enhanced;
+  const isEnhancing = isEnhancingImage(image.id);
 
   const handleBackdropClick = (e: MouseEvent) => {
     if (e.target === e.currentTarget) setLightboxImageId(null);
@@ -126,6 +142,25 @@ export const ImageLightbox: FC = () => {
         alt={image.alt || image.filename}
         data-testid="lightbox-image"
       />
+
+      <ActionBar data-testid="lightbox-actions">
+        {canEnhance && (
+          <ActionIconButton
+            onClick={() => handleEnhanceSingle(image)}
+            aria-label={t('enhance_image_tooltip')}
+            data-testid="lightbox-enhance"
+          >
+            {isEnhancing ? <CircularProgress size={18} color="inherit" /> : <AutoFixHighIcon />}
+          </ActionIconButton>
+        )}
+        <ActionIconButton
+          onClick={handleDownload}
+          aria-label={t('download_image_tooltip')}
+          data-testid="lightbox-download"
+        >
+          <FileDownloadIcon />
+        </ActionIconButton>
+      </ActionBar>
 
       <MetadataBar data-testid="lightbox-metadata">
         <FileName>{image.filename}</FileName>

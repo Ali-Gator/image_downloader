@@ -1,8 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useSnackbar } from 'notistack';
 
 import { useImageStore, useRatingStore, useSettingsStore } from '@store';
+import { ImageData, MessageActionType } from '@types';
 
 import {
   downloadImageWithConversion,
@@ -11,6 +12,7 @@ import {
   useTranslation,
 } from '../utils';
 import { NOTIFICATION_DURATION, NotificationType } from './constants';
+import { sendMessageToContentScript } from './contentScriptUtils';
 
 /**
  * Hook for common image operations - copying URLs and downloading images
@@ -99,4 +101,52 @@ export const useImageOperations = (src: string, fileName: string, imageId?: stri
   }, [src, fileName, imageId, showNotification, pageUrl]);
 
   return { handleCopyUrl, handleDownload };
+};
+
+/**
+ * Hook for enhancing a single image via content script
+ */
+export const useEnhanceSingleImage = () => {
+  const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation();
+  const sourceTabId = useImageStore((s) => s.sourceTabId);
+  const updateImages = useImageStore((s) => s.updateImages);
+  const [enhancingImageIds, setEnhancingImageIds] = useState<Set<string>>(new Set());
+
+  const handleEnhanceSingle = useCallback(
+    async (image: ImageData) => {
+      if (!sourceTabId) return;
+
+      setEnhancingImageIds((prev) => new Set(prev).add(image.id));
+      try {
+        const response = await sendMessageToContentScript<{
+          images: ImageData[];
+          upgradedCount: number;
+        }>(sourceTabId, { action: MessageActionType.ENHANCE_IMAGES, images: [image] }, 60000);
+
+        if (response?.images && response.upgradedCount > 0) {
+          updateImages(response.images);
+          enqueueSnackbar(t('enhance_found', '1'), { variant: 'success' });
+        } else {
+          enqueueSnackbar(t('enhance_no_upgrades'), { variant: 'info' });
+        }
+      } catch {
+        enqueueSnackbar(t('enhance_error'), { variant: 'error' });
+      } finally {
+        setEnhancingImageIds((prev) => {
+          const next = new Set(prev);
+          next.delete(image.id);
+          return next;
+        });
+      }
+    },
+    [sourceTabId, updateImages, enqueueSnackbar, t],
+  );
+
+  const isEnhancingImage = useCallback(
+    (imageId: string) => enhancingImageIds.has(imageId),
+    [enhancingImageIds],
+  );
+
+  return { handleEnhanceSingle, isEnhancingImage };
 };

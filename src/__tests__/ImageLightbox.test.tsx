@@ -7,6 +7,9 @@ import { ImageLightbox } from '../components/Page/components/ImageLightbox';
 
 const mockSetLightboxImageId = vi.fn();
 const mockToggleImageSource = vi.fn();
+const mockHandleDownload = vi.fn();
+const mockHandleEnhanceSingle = vi.fn();
+const mockIsEnhancingImage = vi.fn().mockReturnValue(false);
 
 const images: ImageData[] = [
   {
@@ -47,6 +50,7 @@ const storeState = {
   filteredImages: images,
   toggleImageSource: mockToggleImageSource,
   imageSourceOverrides: {} as Record<string, 'original' | 'enhanced'>,
+  sourceTabId: null as number | null,
   getEffectiveImage: (img: ImageData) => {
     if (storeState.imageSourceOverrides[img.id] === 'original' && img.enhanced && img.originalSrc) {
       return {
@@ -73,13 +77,28 @@ vi.mock('@utils', async () => {
   };
 });
 
+vi.mock('@utils/imageOperations', () => ({
+  useImageOperations: () => ({
+    handleCopyUrl: vi.fn(),
+    handleDownload: mockHandleDownload,
+  }),
+  useEnhanceSingleImage: () => ({
+    handleEnhanceSingle: mockHandleEnhanceSingle,
+    isEnhancingImage: mockIsEnhancingImage,
+  }),
+}));
+
 describe('ImageLightbox', () => {
   afterEach(() => {
     storeState.lightboxImageId = null;
     storeState.filteredImages = images;
     storeState.imageSourceOverrides = {};
+    storeState.sourceTabId = null;
     mockSetLightboxImageId.mockClear();
     mockToggleImageSource.mockClear();
+    mockHandleDownload.mockClear();
+    mockHandleEnhanceSingle.mockClear();
+    mockIsEnhancingImage.mockReset().mockReturnValue(false);
   });
 
   it('renders nothing when lightboxImageId is null', () => {
@@ -221,8 +240,12 @@ describe('ImageLightbox — resolution toggle', () => {
     storeState.lightboxImageId = null;
     storeState.filteredImages = images;
     storeState.imageSourceOverrides = {};
+    storeState.sourceTabId = null;
     mockSetLightboxImageId.mockClear();
     mockToggleImageSource.mockClear();
+    mockHandleDownload.mockClear();
+    mockHandleEnhanceSingle.mockClear();
+    mockIsEnhancingImage.mockReset().mockReturnValue(false);
   });
 
   it('shows toggle pills for enhanced images', () => {
@@ -272,5 +295,99 @@ describe('ImageLightbox — resolution toggle', () => {
     // Metadata line should show original dimensions
     const metadataBar = screen.getByTestId('lightbox-metadata');
     expect(metadataBar).toHaveTextContent('200×150');
+  });
+});
+
+describe('ImageLightbox — download button', () => {
+  afterEach(() => {
+    storeState.lightboxImageId = null;
+    storeState.filteredImages = images;
+    storeState.imageSourceOverrides = {};
+    storeState.sourceTabId = null;
+    mockSetLightboxImageId.mockClear();
+    mockToggleImageSource.mockClear();
+    mockHandleDownload.mockClear();
+    mockHandleEnhanceSingle.mockClear();
+    mockIsEnhancingImage.mockReset().mockReturnValue(false);
+  });
+
+  it('shows download button', () => {
+    storeState.lightboxImageId = 'img-1';
+    render(<ImageLightbox />);
+
+    expect(screen.getByTestId('lightbox-download')).toBeInTheDocument();
+  });
+
+  it('calls handleDownload when download button is clicked', () => {
+    storeState.lightboxImageId = 'img-1';
+    render(<ImageLightbox />);
+
+    fireEvent.click(screen.getByTestId('lightbox-download'));
+    expect(mockHandleDownload).toHaveBeenCalled();
+  });
+});
+
+describe('ImageLightbox — enhance button', () => {
+  const enhanceableImages: ImageData[] = [
+    {
+      id: 'link-1',
+      src: 'https://example.com/thumb.jpg',
+      alt: 'Linked',
+      width: 200,
+      height: 150,
+      aspectRatio: 200 / 150,
+      filename: 'thumb.jpg',
+      fileSize: 10000,
+      linkedPageUrl: 'https://example.com/page',
+    },
+    ...images,
+  ];
+
+  afterEach(() => {
+    storeState.lightboxImageId = null;
+    storeState.filteredImages = images;
+    storeState.imageSourceOverrides = {};
+    storeState.sourceTabId = null;
+    mockSetLightboxImageId.mockClear();
+    mockToggleImageSource.mockClear();
+    mockHandleDownload.mockClear();
+    mockHandleEnhanceSingle.mockClear();
+    mockIsEnhancingImage.mockReset().mockReturnValue(false);
+  });
+
+  it('shows enhance button when image has linkedPageUrl and sourceTabId exists', () => {
+    storeState.filteredImages = enhanceableImages;
+    storeState.lightboxImageId = 'link-1';
+    storeState.sourceTabId = 42;
+    render(<ImageLightbox />);
+
+    expect(screen.getByTestId('lightbox-enhance')).toBeInTheDocument();
+  });
+
+  it('hides enhance button when sourceTabId is null', () => {
+    storeState.filteredImages = enhanceableImages;
+    storeState.lightboxImageId = 'link-1';
+    storeState.sourceTabId = null;
+    render(<ImageLightbox />);
+
+    expect(screen.queryByTestId('lightbox-enhance')).toBeNull();
+  });
+
+  it('hides enhance button when image has no linkedPageUrl', () => {
+    storeState.lightboxImageId = 'img-1';
+    storeState.sourceTabId = 42;
+    render(<ImageLightbox />);
+
+    expect(screen.queryByTestId('lightbox-enhance')).toBeNull();
+  });
+
+  it('calls handleEnhanceSingle when enhance button is clicked', () => {
+    storeState.filteredImages = enhanceableImages;
+    storeState.lightboxImageId = 'link-1';
+    storeState.sourceTabId = 42;
+    render(<ImageLightbox />);
+
+    fireEvent.click(screen.getByTestId('lightbox-enhance'));
+    expect(mockHandleEnhanceSingle).toHaveBeenCalledWith(enhanceableImages[0]);
   });
 });

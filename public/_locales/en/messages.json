@@ -449,11 +449,17 @@
   "enhance_button_title": {
     "message": "Find full-size versions of thumbnail images"
   },
+  "enhance_image_tooltip": {
+    "message": "Find full-size version"
+  },
   "enhance_found": {
     "message": "Upgraded $1 image(s) to full size"
   },
   "enhance_no_upgrades": {
     "message": "All images are already at best quality"
+  },
+  "enhance_error": {
+    "message": "Failed to enhance image"
   },
   "enhanced_badge_tooltip": {
     "message": "Upgraded from thumbnail"

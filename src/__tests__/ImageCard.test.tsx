@@ -8,6 +8,8 @@ import { ImageData } from '@types';
 
 const mockToggleSelectImage = vi.fn();
 const mockSetLightboxImageId = vi.fn();
+const mockHandleEnhanceSingle = vi.fn();
+const mockIsEnhancingImage = vi.fn().mockReturnValue(false);
 
 const storeState = {
   filteredImages: [] as ImageData[],
@@ -18,6 +20,7 @@ const storeState = {
   getEffectiveImage: (img: ImageData) => img,
   imageSourceOverrides: {} as Record<string, 'original' | 'enhanced'>,
   toggleImageSource: vi.fn(),
+  sourceTabId: null as number | null,
 };
 
 vi.mock('@store', () => ({
@@ -37,6 +40,10 @@ vi.mock('@utils/imageOperations', () => ({
   useImageOperations: () => ({
     handleCopyUrl: vi.fn(),
     handleDownload: vi.fn(),
+  }),
+  useEnhanceSingleImage: () => ({
+    handleEnhanceSingle: mockHandleEnhanceSingle,
+    isEnhancingImage: mockIsEnhancingImage,
   }),
 }));
 
@@ -58,6 +65,12 @@ const enhancedImage: ImageData = {
   originalSrc: 'https://example.com/photo-thumb.jpg',
 };
 
+const enhanceableImage: ImageData = {
+  ...baseImage,
+  id: 'img-3',
+  linkedPageUrl: 'https://example.com/page',
+};
+
 const theme = createTheme();
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -69,8 +82,11 @@ describe('ImageCard enhanced treatment', () => {
     storeState.isGridView = true;
     storeState.selectedImages = [];
     storeState.filteredImages = [];
+    storeState.sourceTabId = null;
     mockToggleSelectImage.mockClear();
     mockSetLightboxImageId.mockClear();
+    mockHandleEnhanceSingle.mockClear();
+    mockIsEnhancingImage.mockReset().mockReturnValue(false);
   });
 
   describe('grid mode', () => {
@@ -121,13 +137,75 @@ describe('ImageCard enhanced treatment', () => {
   });
 });
 
+describe('ImageCard enhance button', () => {
+  afterEach(() => {
+    storeState.isGridView = true;
+    storeState.selectedImages = [];
+    storeState.filteredImages = [];
+    storeState.sourceTabId = null;
+    mockToggleSelectImage.mockClear();
+    mockSetLightboxImageId.mockClear();
+    mockHandleEnhanceSingle.mockClear();
+    mockIsEnhancingImage.mockReset().mockReturnValue(false);
+  });
+
+  it('shows enhance button when image has linkedPageUrl and sourceTabId exists', () => {
+    storeState.isGridView = true;
+    storeState.sourceTabId = 42;
+    storeState.filteredImages = [enhanceableImage];
+    renderWithTheme(<ImageCard image={enhanceableImage} />);
+
+    expect(screen.getByLabelText('enhance_image_tooltip')).toBeInTheDocument();
+  });
+
+  it('hides enhance button when sourceTabId is null', () => {
+    storeState.isGridView = true;
+    storeState.sourceTabId = null;
+    storeState.filteredImages = [enhanceableImage];
+    renderWithTheme(<ImageCard image={enhanceableImage} />);
+
+    expect(screen.queryByLabelText('enhance_image_tooltip')).toBeNull();
+  });
+
+  it('hides enhance button when image has no linkedPageUrl', () => {
+    storeState.isGridView = true;
+    storeState.sourceTabId = 42;
+    storeState.filteredImages = [baseImage];
+    renderWithTheme(<ImageCard image={baseImage} />);
+
+    expect(screen.queryByLabelText('enhance_image_tooltip')).toBeNull();
+  });
+
+  it('hides enhance button when image is already enhanced', () => {
+    storeState.isGridView = true;
+    storeState.sourceTabId = 42;
+    storeState.filteredImages = [enhancedImage];
+    renderWithTheme(<ImageCard image={enhancedImage} />);
+
+    expect(screen.queryByLabelText('enhance_image_tooltip')).toBeNull();
+  });
+
+  it('calls handleEnhanceSingle when enhance button is clicked', () => {
+    storeState.isGridView = true;
+    storeState.sourceTabId = 42;
+    storeState.filteredImages = [enhanceableImage];
+    renderWithTheme(<ImageCard image={enhanceableImage} />);
+
+    fireEvent.click(screen.getByLabelText('enhance_image_tooltip'));
+    expect(mockHandleEnhanceSingle).toHaveBeenCalledWith(enhanceableImage);
+  });
+});
+
 describe('ImageCard click behavior', () => {
   afterEach(() => {
     storeState.isGridView = true;
     storeState.selectedImages = [];
     storeState.filteredImages = [];
+    storeState.sourceTabId = null;
     mockToggleSelectImage.mockClear();
     mockSetLightboxImageId.mockClear();
+    mockHandleEnhanceSingle.mockClear();
+    mockIsEnhancingImage.mockReset().mockReturnValue(false);
   });
 
   it('opens lightbox when clicking the image area', () => {

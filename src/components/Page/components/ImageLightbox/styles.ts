@@ -58,6 +58,21 @@ export const NavButton = styled(IconButton)<{ position: 'left' | 'right' }>(({ p
   },
 }));
 
+export const ActionBar = styled('div')(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  marginTop: theme.spacing(1.5),
+}));
+
+export const ActionIconButton = styled(IconButton)({
+  color: 'rgba(255,255,255,0.7)',
+  backgroundColor: 'rgba(255,255,255,0.1)',
+  '&:hover': {
+    color: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+});
+
 export const MetadataBar = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
   textAlign: 'center',
