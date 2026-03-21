@@ -2,12 +2,10 @@ import { ChangeEvent, FC, MouseEvent, useCallback, useEffect, useMemo, useState 
 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DownloadIcon from '@mui/icons-material/Download';
-import { Button, Checkbox, Menu, MenuItem, Typography } from '@mui/material';
+import { Button, Checkbox, CircularProgress, Menu, MenuItem, Typography } from '@mui/material';
 import { SnackbarKey, useSnackbar } from 'notistack';
 
 import { useImageStore, useSettingsStore } from '@store';
-
-const ZIP_PROGRESS_SNACKBAR_KEY: SnackbarKey = 'zip-progress';
 
 import {
   ControlsContainer,
@@ -36,6 +34,8 @@ import {
 import { NOTIFICATION_DURATION, NotificationType } from '../../../../utils/constants';
 import { SettingsButton } from '../SettingsButton';
 
+const ZIP_PROGRESS_SNACKBAR_KEY: SnackbarKey = 'zip-progress';
+
 export const Header: FC = () => {
   const { t } = useTranslation();
   const { filteredImages, selectedImages, selectAll, deselectAll, pageUrl } = useImageStore();
@@ -47,7 +47,13 @@ export const Header: FC = () => {
   const [usedCount, setUsedCount] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [isDownloading, setIsDownloading] = useState(false);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState<null | HTMLElement>(null);
+
+  const selectedCount = selectedImages.length;
+  const totalCount = filteredImages.length;
+  const isAllSelected = selectedCount > 0 && selectedCount === totalCount;
+  const isIndeterminate = selectedCount > 0 && selectedCount < totalCount;
 
   const refreshMonetizationState = useCallback(async () => {
     try {
@@ -123,6 +129,7 @@ export const Header: FC = () => {
   const handleDownload = useCallback(async () => {
     if (selectedImages.length === 0) return;
 
+    setIsDownloading(true);
     try {
       const gate = await maybeOpenPaywallOn11thClick({ pageUrl });
       if (gate.blocked) return;
@@ -176,6 +183,8 @@ export const Header: FC = () => {
       showNotification(completionMessage, variant, NOTIFICATION_DURATION.LONG);
     } catch (error) {
       showNotification(t('download_error_text'), NotificationType.ERROR);
+    } finally {
+      setIsDownloading(false);
     }
   }, [
     selectedImages,
@@ -232,11 +241,6 @@ export const Header: FC = () => {
     setUserMenuAnchorEl(null);
   }, []);
 
-  const selectedCount = selectedImages.length;
-  const totalCount = filteredImages.length;
-  const isAllSelected = selectedCount > 0 && selectedCount === totalCount;
-  const isIndeterminate = selectedCount > 0 && selectedCount < totalCount;
-
   return (
     <HeaderContainer>
       <TitleContainer>
@@ -263,9 +267,11 @@ export const Header: FC = () => {
           data-onboarding="download-button"
           variant="contained"
           color="secondary"
-          startIcon={<DownloadIcon />}
+          startIcon={
+            isDownloading ? <CircularProgress size={20} color="inherit" /> : <DownloadIcon />
+          }
           onClick={handleDownload}
-          disabled={selectedCount === 0}
+          disabled={selectedCount === 0 || isDownloading}
         >
           {t('download_btn')}
         </Button>
