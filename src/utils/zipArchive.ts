@@ -121,7 +121,8 @@ const downloadImageAsBlob = async (
   image: ImageData,
   options: ZipBatchOptions,
 ): Promise<{ blob: Blob; filename: string }> => {
-  const { src, filename, id } = image;
+  const effectiveImage = useImageStore.getState().getEffectiveImage(image);
+  const { src, filename, id } = effectiveImage;
   const { convertFrom, convertTo, renamePattern, domain } = options;
 
   // Check if conversion is needed

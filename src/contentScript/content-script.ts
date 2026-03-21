@@ -304,6 +304,8 @@ async function enhanceImages(
       updated.set(img.id, {
         ...img,
         originalSrc: img.originalSrc || img.src,
+        originalWidth: img.originalWidth ?? img.width,
+        originalHeight: img.originalHeight ?? img.height,
         src: ogImageUrl,
         enhanced: true,
       });

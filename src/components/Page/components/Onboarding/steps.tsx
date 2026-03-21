@@ -5,6 +5,7 @@ import {
   CollectionsOutlined,
   RefreshOutlined,
   SettingsOutlined,
+  SwapHorizOutlined,
   TuneOutlined,
 } from '@mui/icons-material';
 
@@ -43,6 +44,11 @@ export const steps: OnboardingStep[] = [
     Icon: AutoFixHighOutlined,
     targetSelector: '[data-onboarding="enhance-button"]',
     tooltipPlacement: 'bottom',
+  },
+  {
+    titleKey: 'onboarding_toggle_title',
+    textKey: 'onboarding_toggle_text',
+    Icon: SwapHorizOutlined,
   },
   {
     titleKey: 'onboarding_download_title',

@@ -3,6 +3,7 @@ import { memo } from 'react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { Tooltip } from '@mui/material';
 
 import { ActionButton } from '@components/Page/components/ActionButton';
@@ -26,6 +27,8 @@ import {
   NonClickableUrl,
   QualityBadge,
   Separator,
+  SwapGroup,
+  SwapIcon,
   UrlContainer,
   UrlText,
 } from './styles';
@@ -37,13 +40,15 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   const { t } = useTranslation();
   const isGridView = useImageStore((s) => s.isGridView);
   const image = useImageStore((s) => s.filteredImages.find((img) => img.id === imageId));
+  const toggleImageSource = useImageStore((s) => s.toggleImageSource);
+  const isShowingOriginal = useImageStore((s) => s.imageSourceOverrides[imageId] === 'original');
 
   // Hooks must always be called, even if image is not found
   const isListMode = !isGridView;
 
-  const src = image?.src || '';
-  const width = image?.width;
-  const height = image?.height;
+  const src = isShowingOriginal && image?.originalSrc ? image.originalSrc : image?.src || '';
+  const width = isShowingOriginal ? (image?.originalWidth ?? image?.width) : image?.width;
+  const height = isShowingOriginal ? (image?.originalHeight ?? image?.height) : image?.height;
   const fileName = image?.filename || '';
   const formattedFileSize = image?.fileSize ? formatFileSize(image.fileSize) : null;
 
@@ -64,6 +69,33 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
     return <ImageInfoContainer />;
   }
 
+  const canSwap = image.enhanced && image.originalSrc;
+
+  const qualityBadgeEl = (
+    <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
+      {qualityLabel}
+    </QualityBadge>
+  );
+
+  const qualitySection = canSwap ? (
+    <Tooltip title={isShowingOriginal ? t('switch_to_enhanced') : t('switch_to_original')}>
+      <SwapGroup
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleImageSource(image.id);
+        }}
+        data-testid="swap-source-button"
+      >
+        {qualityBadgeEl}
+        <SwapIcon className="swap-icon">
+          <SwapHorizIcon sx={{ fontSize: 18 }} />
+        </SwapIcon>
+      </SwapGroup>
+    </Tooltip>
+  ) : (
+    qualityBadgeEl
+  );
+
   return (
     <ImageInfoContainer className={isListMode ? 'list-mode' : ''}>
       <FileName className="file-name" variant="body1" title={fileName}>
@@ -80,9 +112,7 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
             {fileExtension}
           </MetadataLine>
           <Separator>·</Separator>
-          <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
-            {qualityLabel}
-          </QualityBadge>
+          {qualitySection}
         </DimensionsContainer>
       )}
 
@@ -91,9 +121,7 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
           <Dimensions className="dimensions">{dimensionsDisplay}</Dimensions>
           {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
           <FileExtension className="file-extension">{fileExtension}</FileExtension>
-          <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
-            {qualityLabel}
-          </QualityBadge>
+          {qualitySection}
           {image.enhanced && <EnhancedLabel>{t('enhanced_label')}</EnhancedLabel>}
         </DimensionsContainer>
       )}

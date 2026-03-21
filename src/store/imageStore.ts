@@ -15,6 +15,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
   isGridView: true,
   isEnhancing: false,
   lightboxImageId: null,
+  imageSourceOverrides: {},
   filterText: '',
   qualityFilters: [QualityLevel.ALL],
   customSizeFilter: { minWidth: 0, minHeight: 0 },
@@ -22,7 +23,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
   // Actions
   setImages: (images) => {
-    set({ images });
+    set({ images, imageSourceOverrides: {} });
     get().applyFilters();
   },
 
@@ -61,6 +62,30 @@ export const useImageStore = create<ImageState>((set, get) => ({
   setIsEnhancing: (isEnhancing) => set({ isEnhancing }),
 
   setLightboxImageId: (lightboxImageId) => set({ lightboxImageId }),
+
+  toggleImageSource: (imageId) => {
+    const { imageSourceOverrides } = get();
+    const current = imageSourceOverrides[imageId];
+    const next = current === 'original' ? 'enhanced' : 'original';
+    set({ imageSourceOverrides: { ...imageSourceOverrides, [imageId]: next } });
+  },
+
+  getEffectiveImage: (image) => {
+    const { imageSourceOverrides } = get();
+    if (
+      imageSourceOverrides[image.id] === 'original' &&
+      image.enhanced &&
+      image.originalSrc
+    ) {
+      return {
+        ...image,
+        src: image.originalSrc,
+        width: image.originalWidth ?? image.width,
+        height: image.originalHeight ?? image.height,
+      };
+    }
+    return image;
+  },
 
   updateImages: (updated) => {
     const { images, selectedImages } = get();

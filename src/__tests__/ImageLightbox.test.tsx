@@ -6,6 +6,7 @@ import { ImageData } from '@types';
 import { ImageLightbox } from '../components/Page/components/ImageLightbox';
 
 const mockSetLightboxImageId = vi.fn();
+const mockToggleImageSource = vi.fn();
 
 const images: ImageData[] = [
   {
@@ -44,6 +45,23 @@ const storeState = {
   lightboxImageId: null as string | null,
   setLightboxImageId: mockSetLightboxImageId,
   filteredImages: images,
+  toggleImageSource: mockToggleImageSource,
+  imageSourceOverrides: {} as Record<string, 'original' | 'enhanced'>,
+  getEffectiveImage: (img: ImageData) => {
+    if (
+      storeState.imageSourceOverrides[img.id] === 'original' &&
+      img.enhanced &&
+      img.originalSrc
+    ) {
+      return {
+        ...img,
+        src: img.originalSrc,
+        width: img.originalWidth ?? img.width,
+        height: img.originalHeight ?? img.height,
+      };
+    }
+    return img;
+  },
 };
 
 vi.mock('@store', () => ({
@@ -63,7 +81,9 @@ describe('ImageLightbox', () => {
   afterEach(() => {
     storeState.lightboxImageId = null;
     storeState.filteredImages = images;
+    storeState.imageSourceOverrides = {};
     mockSetLightboxImageId.mockClear();
+    mockToggleImageSource.mockClear();
   });
 
   it('renders nothing when lightboxImageId is null', () => {
@@ -170,5 +190,91 @@ describe('ImageLightbox', () => {
 
     fireEvent.click(screen.getByTestId('lightbox-close'));
     expect(mockSetLightboxImageId).toHaveBeenCalledWith(null);
+  });
+});
+
+describe('ImageLightbox — resolution toggle', () => {
+  const enhancedImages: ImageData[] = [
+    {
+      id: 'enh-1',
+      src: 'https://example.com/enhanced.jpg',
+      alt: 'Enhanced',
+      width: 1920,
+      height: 1080,
+      aspectRatio: 1920 / 1080,
+      filename: 'enhanced.jpg',
+      fileSize: 5000000,
+      enhanced: true,
+      originalSrc: 'https://example.com/thumb.jpg',
+      originalWidth: 200,
+      originalHeight: 150,
+    },
+    {
+      id: 'normal-1',
+      src: 'https://example.com/normal.jpg',
+      alt: 'Normal',
+      width: 800,
+      height: 600,
+      aspectRatio: 800 / 600,
+      filename: 'normal.jpg',
+      fileSize: 100000,
+    },
+  ];
+
+  afterEach(() => {
+    storeState.lightboxImageId = null;
+    storeState.filteredImages = images;
+    storeState.imageSourceOverrides = {};
+    mockSetLightboxImageId.mockClear();
+    mockToggleImageSource.mockClear();
+  });
+
+  it('shows toggle pills for enhanced images', () => {
+    storeState.filteredImages = enhancedImages;
+    storeState.lightboxImageId = 'enh-1';
+    render(<ImageLightbox />);
+
+    expect(screen.getByTestId('resolution-toggle')).toBeInTheDocument();
+    expect(screen.getByTestId('toggle-original')).toBeInTheDocument();
+    expect(screen.getByTestId('toggle-enhanced')).toBeInTheDocument();
+  });
+
+  it('does not show toggle for non-enhanced images', () => {
+    storeState.filteredImages = enhancedImages;
+    storeState.lightboxImageId = 'normal-1';
+    render(<ImageLightbox />);
+
+    expect(screen.queryByTestId('resolution-toggle')).toBeNull();
+  });
+
+  it('shows original dimensions in Original pill', () => {
+    storeState.filteredImages = enhancedImages;
+    storeState.lightboxImageId = 'enh-1';
+    render(<ImageLightbox />);
+
+    expect(screen.getByTestId('toggle-original')).toHaveTextContent('200×150');
+  });
+
+  it('shows enhanced dimensions in Enhanced pill', () => {
+    storeState.filteredImages = enhancedImages;
+    storeState.lightboxImageId = 'enh-1';
+    render(<ImageLightbox />);
+
+    expect(screen.getByTestId('toggle-enhanced')).toHaveTextContent('1920×1080');
+  });
+
+  it('switches displayed image when toggling to original', () => {
+    storeState.filteredImages = enhancedImages;
+    storeState.lightboxImageId = 'enh-1';
+    storeState.imageSourceOverrides = { 'enh-1': 'original' };
+    render(<ImageLightbox />);
+
+    expect(screen.getByTestId('lightbox-image')).toHaveAttribute(
+      'src',
+      'https://example.com/thumb.jpg',
+    );
+    // Metadata line should show original dimensions
+    const metadataBar = screen.getByTestId('lightbox-metadata');
+    expect(metadataBar).toHaveTextContent('200×150');
   });
 });

@@ -34,15 +34,20 @@ import { EnhancedLabel } from '../ImageInfo/styles';
  * Supports two display modes: grid and list
  */
 export const ImageCard = memo(({ image }: ImageCardProps) => {
-  const { id, src, alt, filename } = image;
+  const { id, alt, filename } = image;
   const theme = useTheme();
   const { t } = useTranslation();
-  const { handleCopyUrl, handleDownload } = useImageOperations(src, filename, id);
 
   const isGridView = useImageStore((s) => s.isGridView);
   const toggleSelectImage = useImageStore((s) => s.toggleSelectImage);
   const setLightboxImageId = useImageStore((s) => s.setLightboxImageId);
   const isSelected = useImageStore((s) => s.selectedImages.some((img) => img.id === id));
+  const effectiveSrc = useImageStore((s) =>
+    s.imageSourceOverrides[id] === 'original' && image.enhanced && image.originalSrc
+      ? image.originalSrc
+      : image.src,
+  );
+  const { handleCopyUrl, handleDownload } = useImageOperations(effectiveSrc, filename, id);
 
   const isListMode = !isGridView;
 
@@ -112,7 +117,7 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
       )}
 
       <StyledImageContainer className="image-container" onClick={handleImageClick}>
-        <SafeImage src={src} alt={alt || filename} />
+        <SafeImage src={effectiveSrc} alt={alt || filename} />
       </StyledImageContainer>
 
       <ImageInfo imageId={id} />

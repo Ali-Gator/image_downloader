@@ -101,6 +101,95 @@ describe('imageStore — quality filter hides unknown dimensions', () => {
   });
 });
 
+describe('imageStore — imageSourceOverrides', () => {
+  beforeEach(() => {
+    useImageStore.setState({
+      images: [],
+      filteredImages: [],
+      selectedImages: [],
+      imageSourceOverrides: {},
+    });
+  });
+
+  it('defaults to empty overrides', () => {
+    expect(useImageStore.getState().imageSourceOverrides).toEqual({});
+  });
+
+  it('toggles image source between original and enhanced', () => {
+    useImageStore.getState().toggleImageSource('img-1');
+    expect(useImageStore.getState().imageSourceOverrides['img-1']).toBe('original');
+
+    useImageStore.getState().toggleImageSource('img-1');
+    expect(useImageStore.getState().imageSourceOverrides['img-1']).toBe('enhanced');
+  });
+
+  it('toggles independently for different images', () => {
+    useImageStore.getState().toggleImageSource('img-1');
+    useImageStore.getState().toggleImageSource('img-2');
+    expect(useImageStore.getState().imageSourceOverrides['img-1']).toBe('original');
+    expect(useImageStore.getState().imageSourceOverrides['img-2']).toBe('original');
+
+    useImageStore.getState().toggleImageSource('img-1');
+    expect(useImageStore.getState().imageSourceOverrides['img-1']).toBe('enhanced');
+    expect(useImageStore.getState().imageSourceOverrides['img-2']).toBe('original');
+  });
+});
+
+describe('imageStore — getEffectiveImage', () => {
+  const enhancedImage = makeImage('enh-1', 'https://example.com/enhanced.jpg', {
+    width: 1920,
+    height: 1080,
+    enhanced: true,
+    originalSrc: 'https://example.com/thumb.jpg',
+    originalWidth: 200,
+    originalHeight: 150,
+  });
+
+  const normalImage = makeImage('norm-1', 'https://example.com/normal.jpg', {
+    width: 800,
+    height: 600,
+  });
+
+  beforeEach(() => {
+    useImageStore.setState({
+      images: [],
+      filteredImages: [],
+      selectedImages: [],
+      imageSourceOverrides: {},
+    });
+  });
+
+  it('returns original image when no override', () => {
+    const result = useImageStore.getState().getEffectiveImage(enhancedImage);
+    expect(result.src).toBe('https://example.com/enhanced.jpg');
+    expect(result.width).toBe(1920);
+    expect(result.height).toBe(1080);
+  });
+
+  it('swaps to original src/dimensions when override is original', () => {
+    useImageStore.getState().toggleImageSource('enh-1');
+    const result = useImageStore.getState().getEffectiveImage(enhancedImage);
+    expect(result.src).toBe('https://example.com/thumb.jpg');
+    expect(result.width).toBe(200);
+    expect(result.height).toBe(150);
+  });
+
+  it('returns enhanced after toggling back', () => {
+    useImageStore.getState().toggleImageSource('enh-1');
+    useImageStore.getState().toggleImageSource('enh-1');
+    const result = useImageStore.getState().getEffectiveImage(enhancedImage);
+    expect(result.src).toBe('https://example.com/enhanced.jpg');
+    expect(result.width).toBe(1920);
+  });
+
+  it('does not affect non-enhanced images', () => {
+    useImageStore.getState().toggleImageSource('norm-1');
+    const result = useImageStore.getState().getEffectiveImage(normalImage);
+    expect(result.src).toBe('https://example.com/normal.jpg');
+    expect(result.width).toBe(800);
+  });
+});
+
 describe('imageStore — setImages preserves sourceTabId', () => {
   beforeEach(() => {
     useImageStore.setState({

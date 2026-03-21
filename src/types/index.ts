@@ -193,6 +193,8 @@ export interface ImageData {
   filename: string;
   fileSize: number;
   originalSrc?: string;
+  originalWidth?: number;
+  originalHeight?: number;
   enhanced?: boolean;
   linkedPageUrl?: string;
 }

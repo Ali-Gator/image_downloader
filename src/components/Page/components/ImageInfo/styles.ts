@@ -131,6 +131,31 @@ export const EnhancedLabel = styled('span')(() => ({
   textTransform: 'uppercase',
 }));
 
+export const SwapGroup = styled('button')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 2,
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  cursor: 'pointer',
+  borderRadius: 4,
+  transition: 'background-color 150ms ease',
+  '&:hover': {
+    backgroundColor: 'rgba(94, 53, 177, 0.08)',
+    '& .swap-icon': {
+      color: '#5e35b1',
+    },
+  },
+});
+
+export const SwapIcon = styled('span')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  color: 'inherit',
+  transition: 'color 150ms ease',
+});
+
 export const MetadataLine = styled('span')(({ theme }) => ({
   fontSize: '0.6875rem',
   fontFamily: '"JetBrains Mono", monospace',

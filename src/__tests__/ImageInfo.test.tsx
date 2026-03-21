@@ -10,6 +10,9 @@ import { ImageInfo } from '../components/Page/components/ImageInfo';
 const storeState = {
   filteredImages: [] as ImageData[],
   isGridView: true,
+  imageSourceOverrides: {} as Record<string, 'original' | 'enhanced'>,
+  toggleImageSource: vi.fn(),
+  getEffectiveImage: (img: ImageData) => img,
 };
 
 vi.mock('@store', () => ({

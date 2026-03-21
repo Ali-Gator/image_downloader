@@ -15,6 +15,9 @@ const storeState = {
   selectedImages: [] as ImageData[],
   toggleSelectImage: mockToggleSelectImage,
   setLightboxImageId: mockSetLightboxImageId,
+  getEffectiveImage: (img: ImageData) => img,
+  imageSourceOverrides: {} as Record<string, 'original' | 'enhanced'>,
+  toggleImageSource: vi.fn(),
 };
 
 vi.mock('@store', () => ({

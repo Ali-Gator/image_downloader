@@ -19,6 +19,8 @@ import {
   MetadataLine,
   MetadataRow,
   NavButton,
+  ResolutionToggle,
+  TogglePill,
 } from './styles';
 import { QualityBadge } from '../ImageInfo/styles';
 
@@ -27,6 +29,11 @@ export const ImageLightbox: FC = () => {
   const lightboxImageId = useImageStore((s) => s.lightboxImageId);
   const setLightboxImageId = useImageStore((s) => s.setLightboxImageId);
   const filteredImages = useImageStore((s) => s.filteredImages);
+  const toggleImageSource = useImageStore((s) => s.toggleImageSource);
+  const isShowingOriginal = useImageStore(
+    (s) => lightboxImageId != null && s.imageSourceOverrides[lightboxImageId] === 'original',
+  );
+  const getEffectiveImage = useImageStore((s) => s.getEffectiveImage);
 
   const currentIndex = filteredImages.findIndex((img) => img.id === lightboxImageId);
   const image = currentIndex >= 0 ? filteredImages[currentIndex] : null;
@@ -67,17 +74,20 @@ export const ImageLightbox: FC = () => {
 
   if (!image) return null;
 
+  const effectiveImg = getEffectiveImage(image);
+  const hasToggle = image.enhanced && image.originalSrc;
+
   const handleBackdropClick = (e: MouseEvent) => {
     if (e.target === e.currentTarget) setLightboxImageId(null);
   };
 
-  const hasDimensions = image.width > 0 && image.height > 0;
+  const hasDimensions = effectiveImg.width > 0 && effectiveImg.height > 0;
   const dimensionsDisplay = hasDimensions
-    ? `${image.width}×${image.height}`
+    ? `${effectiveImg.width}×${effectiveImg.height}`
     : t('dimensions_unknown');
   const formattedFileSize = image.fileSize ? formatFileSize(image.fileSize) : null;
   const fileExtension = getFileExtension(image.filename);
-  const qualityLevel = getQualityFromDimensions(image.width, image.height);
+  const qualityLevel = getQualityFromDimensions(effectiveImg.width, effectiveImg.height);
   const qualityLabel = hasDimensions ? qualityLevel.toUpperCase() : '?';
 
   return createPortal(
@@ -112,13 +122,31 @@ export const ImageLightbox: FC = () => {
       )}
 
       <LightboxImage
-        src={image.src}
+        src={effectiveImg.src}
         alt={image.alt || image.filename}
         data-testid="lightbox-image"
       />
 
       <MetadataBar data-testid="lightbox-metadata">
         <FileName>{image.filename}</FileName>
+        {hasToggle && (
+          <ResolutionToggle data-testid="resolution-toggle">
+            <TogglePill
+              active={isShowingOriginal}
+              onClick={() => { if (!isShowingOriginal) toggleImageSource(image.id); }}
+              data-testid="toggle-original"
+            >
+              {t('original_label')} {image.originalWidth}×{image.originalHeight}
+            </TogglePill>
+            <TogglePill
+              active={!isShowingOriginal}
+              onClick={() => { if (isShowingOriginal) toggleImageSource(image.id); }}
+              data-testid="toggle-enhanced"
+            >
+              {t('enhanced_label')} {image.width}×{image.height}
+            </TogglePill>
+          </ResolutionToggle>
+        )}
         <MetadataLine>
           {dimensionsDisplay}
           {formattedFileSize && ` · ${formattedFileSize}`}

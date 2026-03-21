@@ -470,10 +470,25 @@
   "next_image": {
     "message": "Next image"
   },
+  "switch_to_original": {
+    "message": "Switch to original"
+  },
+  "switch_to_enhanced": {
+    "message": "Switch to enhanced"
+  },
+  "original_label": {
+    "message": "Original"
+  },
   "onboarding_enhance_title": {
     "message": "Find Full-Size Images"
   },
   "onboarding_enhance_text": {
     "message": "Some sites show thumbnails instead of full images. Click Enhance to automatically find and upgrade to the original full-size versions."
+  },
+  "onboarding_toggle_title": {
+    "message": "Compare Versions"
+  },
+  "onboarding_toggle_text": {
+    "message": "After enhancing, each upgraded image gets a swap button so you can switch between the original thumbnail and the full-size version. The lightbox also shows toggle pills with dimensions for both versions."
   }
 }

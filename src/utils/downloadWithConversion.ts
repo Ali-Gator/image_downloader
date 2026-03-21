@@ -23,7 +23,9 @@ export const downloadImageWithConversion = async (
   },
 ): Promise<DownloadResult> => {
   const { skipConversion = false } = options || {};
-  const { src, filename, id } = image;
+
+  const effectiveImage = useImageStore.getState().getEffectiveImage(image as ImageData);
+  const { src, filename, id } = effectiveImage;
 
   debugLogger.log('info', 'download', 'Download initiated', { src, filename, id });
 

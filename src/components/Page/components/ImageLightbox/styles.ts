@@ -91,3 +91,26 @@ export const Counter = styled('span')({
   color: 'rgba(255,255,255,0.5)',
   fontFamily: '"JetBrains Mono", monospace',
 });
+
+export const ResolutionToggle = styled('div')({
+  display: 'flex',
+  gap: 4,
+  marginTop: 4,
+});
+
+export const TogglePill = styled('button')<{ active?: boolean }>(({ active }) => ({
+  border: 'none',
+  borderRadius: 12,
+  padding: '4px 12px',
+  fontSize: '0.75rem',
+  fontFamily: '"JetBrains Mono", monospace',
+  cursor: 'pointer',
+  transition: 'all 150ms ease',
+  backgroundColor: active ? 'rgba(255,255,255,0.2)' : 'transparent',
+  color: active ? '#fff' : 'rgba(255,255,255,0.5)',
+  outline: active ? '1px solid rgba(255,255,255,0.3)' : '1px solid transparent',
+  '&:hover': {
+    backgroundColor: active ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
+    color: active ? '#fff' : 'rgba(255,255,255,0.7)',
+  },
+}));
