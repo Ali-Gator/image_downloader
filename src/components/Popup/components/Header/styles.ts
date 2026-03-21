@@ -1,5 +1,7 @@
 import { Box, Typography, keyframes, styled } from '@mui/material';
 
+import { alpha, colors } from '@theme';
+
 const shimmer = keyframes`
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -8,7 +10,7 @@ const shimmer = keyframes`
 
 export const HeaderContainer = styled(Box)(({ theme }) => ({
   padding: `${theme.spacing(2)} ${theme.spacing(2)} ${theme.spacing(1.5)}`,
-  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, #4A6CF7 50%, #6366F1 100%)`,
+  background: `linear-gradient(135deg, ${colors.primaryMain} 0%, ${colors.gradientMid} 50%, ${colors.gradientEnd} 100%)`,
   backgroundSize: '200% 200%',
   animation: `${shimmer} 8s ease infinite`,
   color: theme.palette.common.white,
@@ -26,8 +28,8 @@ export const HeaderContainer = styled(Box)(({ theme }) => ({
     right: 0,
     bottom: 0,
     background:
-      'radial-gradient(circle at 20% 80%, rgba(255,255,255,0.08) 0%, transparent 50%), ' +
-      'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%)',
+      `radial-gradient(circle at 20% 80%, ${alpha(colors.white, 0.08)} 0%, transparent 50%), ` +
+      `radial-gradient(circle at 80% 20%, ${alpha(colors.white, 0.06)} 0%, transparent 50%)`,
     pointerEvents: 'none',
   },
 }));

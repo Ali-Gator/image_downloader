@@ -1,7 +1,7 @@
 import { Box, Link, Theme, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import { colors } from '@theme';
+import { alpha, colors } from '@theme';
 import { QualityLevel } from '@utils';
 
 export const ImageInfoContainer = styled(Box)(({ theme }) => ({
@@ -96,10 +96,10 @@ export const QualityBadge = styled('span')<{ quality: QualityLevel }>(({ theme, 
   textTransform: 'uppercase',
   backgroundColor:
     quality === QualityLevel.HD
-      ? 'rgba(43, 165, 99, 0.12)'
+      ? alpha(colors.success, 0.12)
       : quality === QualityLevel.MEDIUM
-        ? 'rgba(229, 160, 0, 0.14)'
-        : 'rgba(220, 76, 76, 0.12)',
+        ? alpha(colors.warning, 0.14)
+        : alpha(colors.error, 0.12),
   color:
     quality === QualityLevel.HD
       ? colors.successDark
@@ -108,20 +108,20 @@ export const QualityBadge = styled('span')<{ quality: QualityLevel }>(({ theme, 
         : colors.errorDark,
   border: `1px solid ${
     quality === QualityLevel.HD
-      ? 'rgba(43, 165, 99, 0.35)'
+      ? alpha(colors.success, 0.35)
       : quality === QualityLevel.MEDIUM
-        ? 'rgba(229, 160, 0, 0.35)'
-        : 'rgba(220, 76, 76, 0.35)'
+        ? alpha(colors.warning, 0.35)
+        : alpha(colors.error, 0.35)
   }`,
 }));
 
 export const EnhancedLabel = styled('span')(() => ({
   fontSize: '0.625rem',
   fontWeight: 600,
-  color: '#5e35b1',
-  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+  color: colors.enhanced,
+  backgroundColor: alpha(colors.white, 0.85),
   backdropFilter: 'blur(4px)',
-  border: '1px solid rgba(103, 58, 183, 0.3)',
+  border: `1px solid ${alpha(colors.enhanced, 0.3)}`,
   borderRadius: 4,
   padding: '1px 6px',
   height: '20px',
@@ -142,9 +142,9 @@ export const SwapGroup = styled('button')({
   borderRadius: 4,
   transition: 'background-color 150ms ease',
   '&:hover': {
-    backgroundColor: 'rgba(94, 53, 177, 0.08)',
+    backgroundColor: alpha(colors.enhanced, 0.08),
     '& .swap-icon': {
-      color: '#5e35b1',
+      color: colors.enhanced,
     },
   },
 });

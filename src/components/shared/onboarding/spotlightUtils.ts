@@ -1,8 +1,10 @@
+import { colors } from '@theme';
+
 import { TargetRect, TooltipPlacement } from './types';
 
 export const SPOTLIGHT_PADDING = 8;
 export const TOOLTIP_GAP = 12;
-export const OVERLAY_COLOR = 'rgba(26, 26, 24, 0.4)';
+export const OVERLAY_COLOR = colors.backdropColor;
 
 export function getTooltipPosition(
   targetRect: TargetRect,

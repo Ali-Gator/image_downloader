@@ -2,6 +2,8 @@ import { Box } from '@mui/material';
 import { styled, Theme } from '@mui/material/styles';
 import { SxProps } from '@mui/system';
 
+import { colors, shadows } from '@theme';
+
 export const enhancedAccentStyles = {
   '&::before': {
     content: '""',
@@ -11,7 +13,7 @@ export const enhancedAccentStyles = {
     bottom: '8px',
     width: '3px',
     borderRadius: '0 3px 3px 0',
-    background: 'linear-gradient(180deg, #7c4dff 0%, #2D5BE3 100%)',
+    background: `linear-gradient(180deg, ${colors.enhancedLight} 0%, ${colors.primaryMain} 100%)`,
     zIndex: 1,
   },
 };
@@ -155,7 +157,7 @@ export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
 
   '&:hover': {
     borderColor: theme.palette.grey[400],
-    boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
+    boxShadow: shadows.large,
   },
 
   '&:hover .top-action-bar': {
@@ -197,7 +199,7 @@ export const listImageItemStyles = (theme: Theme): SxProps<Theme> => ({
 
   '&:hover': {
     borderColor: theme.palette.grey[400],
-    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    boxShadow: shadows.large,
   },
 
   '&.selected': {

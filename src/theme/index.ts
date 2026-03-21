@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 const colors = {
   // Primary colors
@@ -10,6 +11,15 @@ const colors = {
   secondaryMain: '#2D5BE3',
   secondaryLight: '#EBF0FD',
   secondaryDark: '#1E3FA0',
+
+  // Gradient colors (header shimmer, onboarding stripe)
+  gradientMid: '#4A6CF7',
+  gradientEnd: '#6366F1',
+  gradientAccent: '#5B8DEF',
+
+  // Enhanced image accent (purple)
+  enhanced: '#5e35b1',
+  enhancedLight: '#7c4dff',
 
   // Text colors
   textPrimary: '#1A1A18',
@@ -36,6 +46,10 @@ const colors = {
   successDark: '#1E8A4E',
   warningDark: '#B07800',
   errorDark: '#C03030',
+
+  // Overlay colors
+  backdropColor: 'rgba(26, 26, 24, 0.4)',
+  dialogShadow: '0 24px 48px rgba(0,0,0,0.12)',
 };
 
 const shadows = {
@@ -270,5 +284,5 @@ const theme = createTheme({
   },
 });
 
-export { colors, shadows };
+export { alpha, colors, shadows };
 export default theme;

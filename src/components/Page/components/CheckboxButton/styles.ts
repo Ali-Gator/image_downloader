@@ -1,8 +1,10 @@
 import { Checkbox } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+import { alpha, colors } from '@theme';
+
 export const StyledCheckbox = styled(Checkbox)(() => ({
-  backgroundColor: 'rgba(0, 0, 0, 0.15)',
+  backgroundColor: alpha(colors.textPrimary, 0.15),
   backdropFilter: 'blur(8px)',
   borderRadius: 5,
   padding: '4px',
@@ -14,17 +16,17 @@ export const StyledCheckbox = styled(Checkbox)(() => ({
   justifyContent: 'center',
   alignItems: 'center',
   position: 'relative',
-  border: '2px solid rgba(255, 255, 255, 0.7)',
+  border: `2px solid ${alpha(colors.white, 0.7)}`,
   transition: 'all 0.15s',
 
   '&:hover': {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderColor: 'white',
+    backgroundColor: alpha(colors.textPrimary, 0.3),
+    borderColor: colors.white,
   },
 
   '&.Mui-checked': {
-    backgroundColor: '#2D5BE3',
-    borderColor: '#2D5BE3',
+    backgroundColor: colors.primaryMain,
+    borderColor: colors.primaryMain,
   },
 
   '& .MuiSvgIcon-root': {

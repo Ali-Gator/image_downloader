@@ -9,6 +9,8 @@ import {
 } from '@mui/material';
 import { keyframes, styled } from '@mui/material/styles';
 
+import { colors } from '@theme';
+
 const float = keyframes`
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
@@ -89,8 +91,8 @@ export const ContentWrapper = styled(Box)({
 
 // ─── Dialog mode (Welcome step) ─────────────────────
 
-const BACKDROP_COLOR = 'rgba(26, 26, 24, 0.4)';
-const DIALOG_SHADOW = '0 24px 48px rgba(0,0,0,0.12)';
+const BACKDROP_COLOR = colors.backdropColor;
+const DIALOG_SHADOW = colors.dialogShadow;
 
 export const StyledDialog = styled(Dialog)(() => ({
   '& .MuiBackdrop-root': {
@@ -107,9 +109,9 @@ export const StyledDialog = styled(Dialog)(() => ({
   },
 }));
 
-export const TopStripe = styled(Box)(({ theme }) => ({
+export const TopStripe = styled(Box)(() => ({
   height: 3,
-  background: `linear-gradient(90deg, ${theme.palette.primary.main}, #5B8DEF, ${theme.palette.primary.main})`,
+  background: `linear-gradient(90deg, ${colors.primaryMain}, ${colors.gradientAccent}, ${colors.primaryMain})`,
 }));
 
 export const DialogStepContent = styled(DialogContent)(({ theme }) => ({
@@ -134,7 +136,7 @@ export const SpotlightOverlay = styled(Box)({
   pointerEvents: 'none',
 });
 
-export const SpotlightTooltip = styled(Paper)(({ theme }) => ({
+export const SpotlightTooltip = styled(Paper)(() => ({
   position: 'fixed',
   zIndex: 1301,
   maxWidth: 380,
@@ -149,7 +151,7 @@ export const SpotlightTooltip = styled(Paper)(({ theme }) => ({
     content: '""',
     display: 'block',
     height: 3,
-    background: `linear-gradient(90deg, ${theme.palette.primary.main}, #5B8DEF, ${theme.palette.primary.main})`,
+    background: `linear-gradient(90deg, ${colors.primaryMain}, ${colors.gradientAccent}, ${colors.primaryMain})`,
   },
 }));
 

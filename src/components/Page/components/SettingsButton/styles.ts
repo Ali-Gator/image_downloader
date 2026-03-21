@@ -1,5 +1,7 @@
 import { styled } from '@mui/material/styles';
 
+import { colors } from '@theme';
+
 interface StyledSettingsButtonProps {
   isHovered?: boolean;
 }
@@ -23,7 +25,7 @@ export const StyledSettingsButton = styled('button')<StyledSettingsButtonProps>(
 
     '&:focus': {
       outline: 'none',
-      boxShadow: `0 0 0 3px rgba(45, 91, 227, 0.12)`,
+      boxShadow: `0 0 0 3px ${colors.shadowColor}`,
     },
 
     '& svg': {

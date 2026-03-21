@@ -1,6 +1,8 @@
 import { Avatar, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+import { alpha, colors } from '@theme';
+
 export const HeaderContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
@@ -14,7 +16,7 @@ export const HeaderContainer = styled('div')(({ theme }) => ({
   top: 0,
   zIndex: theme.zIndex.appBar,
   backdropFilter: 'blur(12px)',
-  backgroundColor: 'rgba(255, 255, 255, 0.92)',
+  backgroundColor: alpha(colors.white, 0.92),
 }));
 
 export const LogoImage = styled('img')({
