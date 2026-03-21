@@ -57,6 +57,7 @@ export const StyledImageContainer = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   overflow: 'hidden',
   backgroundColor: theme.palette.background.default,
+  cursor: 'zoom-in',
 }));
 
 export const StyledCheckboxArea = styled(Box)(({ theme }) => ({
@@ -135,7 +136,6 @@ const listImageContainerStyles = (theme: Theme) => ({
   height: theme.spacing(CARD_STYLES.LIST.IMAGE_CONTAINER_HEIGHT),
   width: theme.spacing(CARD_STYLES.LIST.IMAGE_CONTAINER_WIDTH),
   flexShrink: 0,
-  cursor: 'default',
 });
 
 const listImageStyles = (theme: Theme) => ({
@@ -193,7 +193,7 @@ export const listImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   padding: theme.spacing(CARD_STYLES.COMMON.PADDING),
   marginBottom: theme.spacing(1.5),
   gap: theme.spacing(2),
-  cursor: 'default',
+  cursor: 'pointer',
 
   '&:hover': {
     borderColor: theme.palette.grey[400],

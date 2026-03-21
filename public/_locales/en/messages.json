@@ -461,6 +461,15 @@
   "enhanced_label": {
     "message": "Enhanced"
   },
+  "close_lightbox": {
+    "message": "Close preview"
+  },
+  "prev_image": {
+    "message": "Previous image"
+  },
+  "next_image": {
+    "message": "Next image"
+  },
   "onboarding_enhance_title": {
     "message": "Find Full-Size Images"
   },

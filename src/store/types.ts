@@ -62,6 +62,9 @@ export interface ImageState {
   isGridView: boolean;
   isEnhancing: boolean;
 
+  // Lightbox state
+  lightboxImageId: string | null;
+
   // Filter state
   filterText: string;
   qualityFilters: QualityLevel[];
@@ -80,6 +83,7 @@ export interface ImageState {
   setIsLoading: (isLoading: boolean) => void;
   setIsGridView: (isGridView: boolean) => void;
   setIsEnhancing: (isEnhancing: boolean) => void;
+  setLightboxImageId: (id: string | null) => void;
   updateImages: (updated: ImageData[]) => void;
   setFilterText: (text: string) => void;
   setQualityFilters: (filters: QualityLevel[]) => void;

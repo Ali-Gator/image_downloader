@@ -3,6 +3,7 @@ import React, { useCallback } from 'react';
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
 import { ImageCard } from '@components/Page/components';
+import { ImageLightbox } from '@components/Page/components/ImageLightbox';
 import { useImageStore } from '@store';
 import { ImageData } from '@types';
 import { useTranslation } from '@utils';
@@ -12,7 +13,8 @@ import { GridContainer, NoImagesMessage, VirtuosoGridList } from './styles';
 const gridComponents = { List: VirtuosoGridList };
 
 export const ImageGrid: React.FC = () => {
-  const { filteredImages, isGridView } = useImageStore();
+  const filteredImages = useImageStore((s) => s.filteredImages);
+  const isGridView = useImageStore((s) => s.isGridView);
   const { t } = useTranslation();
 
   const itemContent = useCallback(
@@ -36,6 +38,7 @@ export const ImageGrid: React.FC = () => {
       ) : (
         <Virtuoso data={filteredImages} itemContent={itemContent} overscan={400} />
       )}
+      <ImageLightbox />
     </GridContainer>
   );
 };

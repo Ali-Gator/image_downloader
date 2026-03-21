@@ -1,18 +1,20 @@
 import { createTheme } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ImageCard } from '@components/Page/components';
 import { ImageData } from '@types';
 
 const mockToggleSelectImage = vi.fn();
+const mockSetLightboxImageId = vi.fn();
 
 const storeState = {
   filteredImages: [] as ImageData[],
   isGridView: true,
   selectedImages: [] as ImageData[],
   toggleSelectImage: mockToggleSelectImage,
+  setLightboxImageId: mockSetLightboxImageId,
 };
 
 vi.mock('@store', () => ({
@@ -65,6 +67,7 @@ describe('ImageCard enhanced treatment', () => {
     storeState.selectedImages = [];
     storeState.filteredImages = [];
     mockToggleSelectImage.mockClear();
+    mockSetLightboxImageId.mockClear();
   });
 
   describe('grid mode', () => {
@@ -112,5 +115,39 @@ describe('ImageCard enhanced treatment', () => {
       // In list mode, there is no top-action-bar
       expect(container.querySelector('.top-action-bar')).toBeNull();
     });
+  });
+});
+
+describe('ImageCard click behavior', () => {
+  afterEach(() => {
+    storeState.isGridView = true;
+    storeState.selectedImages = [];
+    storeState.filteredImages = [];
+    mockToggleSelectImage.mockClear();
+    mockSetLightboxImageId.mockClear();
+  });
+
+  it('opens lightbox when clicking the image area', () => {
+    storeState.isGridView = true;
+    storeState.filteredImages = [baseImage];
+    const { container } = renderWithTheme(<ImageCard image={baseImage} />);
+
+    const imageContainer = container.querySelector('.image-container') as HTMLElement;
+    fireEvent.click(imageContainer);
+
+    expect(mockSetLightboxImageId).toHaveBeenCalledWith('img-1');
+    expect(mockToggleSelectImage).not.toHaveBeenCalled();
+  });
+
+  it('toggles selection when clicking outside image area', () => {
+    storeState.isGridView = true;
+    storeState.filteredImages = [baseImage];
+    const { container } = renderWithTheme(<ImageCard image={baseImage} />);
+
+    const card = container.firstElementChild as HTMLElement;
+    fireEvent.click(card);
+
+    expect(mockToggleSelectImage).toHaveBeenCalledWith(baseImage);
+    expect(mockSetLightboxImageId).not.toHaveBeenCalled();
   });
 });

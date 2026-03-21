@@ -14,6 +14,7 @@ import { ImageCardProps } from '@types';
 import { useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
 
+
 import { ImageInfo } from '../ImageInfo';
 import {
   ActionButtonsContainer,
@@ -40,6 +41,7 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
 
   const isGridView = useImageStore((s) => s.isGridView);
   const toggleSelectImage = useImageStore((s) => s.toggleSelectImage);
+  const setLightboxImageId = useImageStore((s) => s.setLightboxImageId);
   const isSelected = useImageStore((s) => s.selectedImages.some((img) => img.id === id));
 
   const isListMode = !isGridView;
@@ -54,6 +56,14 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
       toggleSelectImage(image);
     },
     [image, toggleSelectImage],
+  );
+
+  const handleImageClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation();
+      setLightboxImageId(id);
+    },
+    [id, setLightboxImageId],
   );
 
   const cardStyles: SxProps<Theme> = useMemo(() => {
@@ -101,7 +111,7 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
         </StyledCheckboxArea>
       )}
 
-      <StyledImageContainer className="image-container">
+      <StyledImageContainer className="image-container" onClick={handleImageClick}>
         <SafeImage src={src} alt={alt || filename} />
       </StyledImageContainer>
 

@@ -14,6 +14,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
   isLoading: false,
   isGridView: true,
   isEnhancing: false,
+  lightboxImageId: null,
   filterText: '',
   qualityFilters: [QualityLevel.ALL],
   customSizeFilter: { minWidth: 0, minHeight: 0 },
@@ -58,6 +59,8 @@ export const useImageStore = create<ImageState>((set, get) => ({
   setIsGridView: (isGridView) => set({ isGridView }),
 
   setIsEnhancing: (isEnhancing) => set({ isEnhancing }),
+
+  setLightboxImageId: (lightboxImageId) => set({ lightboxImageId }),
 
   updateImages: (updated) => {
     const { images, selectedImages } = get();

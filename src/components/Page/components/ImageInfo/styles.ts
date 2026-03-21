@@ -6,7 +6,6 @@ import { QualityLevel } from '@utils';
 
 export const ImageInfoContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0.5, 1),
-  cursor: 'pointer',
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
@@ -16,7 +15,6 @@ export const ImageInfoContainer = styled(Box)(({ theme }) => ({
     padding: theme.spacing(0, 1),
     justifyContent: 'center',
     flexDirection: 'column',
-    cursor: 'default',
     width: '100%',
     overflow: 'hidden',
     flexGrow: 1,
