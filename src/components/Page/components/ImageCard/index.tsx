@@ -15,7 +15,6 @@ import { useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
 
 import { ImageInfo } from '../ImageInfo';
-import { EnhancedLabel } from '../ImageInfo/styles';
 import {
   ActionButtonsContainer,
   enhancedAccentStyles,
@@ -27,6 +26,7 @@ import {
   TopBarLeftSection,
   TopBarRightSection,
 } from './styles';
+import { EnhancedLabel } from '../ImageInfo/styles';
 
 /**
  * Component for displaying an image card

@@ -78,15 +78,11 @@ describe('applyRenamePattern', () => {
   });
 
   it('should preserve extension when pattern has no dot', () => {
-    expect(applyRenamePattern('image.png', '{site}_{name}', 'test.org')).toBe(
-      'test.org_image.png',
-    );
+    expect(applyRenamePattern('image.png', '{site}_{name}', 'test.org')).toBe('test.org_image.png');
   });
 
   it('should handle filename without extension', () => {
-    expect(applyRenamePattern('photo', '{site}_{name}', 'example.com')).toBe(
-      'example.com_photo',
-    );
+    expect(applyRenamePattern('photo', '{site}_{name}', 'example.com')).toBe('example.com_photo');
   });
 
   it('should handle both placeholders in complex pattern', () => {

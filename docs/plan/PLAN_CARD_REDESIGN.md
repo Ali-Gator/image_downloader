@@ -49,43 +49,51 @@ cookiepref.png
 
 ### Files to modify
 
-| File | Change |
-|---|---|
+| File                                                 | Change                                                                                                                                                                    |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/components/Page/components/ImageInfo/index.tsx` | Restructure grid-mode rendering: replace individual badge components with a single `MetadataLine` span. Keep list-mode rendering unchanged. Remove `EnhancedBadge` usage. |
-| `src/components/Page/components/ImageInfo/styles.ts` | Add `MetadataLine` styled component. Remove `EnhancedBadge` export (move to unused). Keep `Dimensions`, `FileSize`, `FileExtension` for list-mode. |
+| `src/components/Page/components/ImageInfo/styles.ts` | Add `MetadataLine` styled component. Remove `EnhancedBadge` export (move to unused). Keep `Dimensions`, `FileSize`, `FileExtension` for list-mode.                        |
 
 ### Implementation
 
 In `ImageInfo/index.tsx`, for grid mode only (when `!isListMode`), replace the `DimensionsContainer` contents:
 
 ```tsx
-{/* Grid mode: compact inline metadata */}
-{!isListMode && (
-  <DimensionsContainer className="dimensions-container">
-    <MetadataLine>
-      {dimensionsDisplay}
-      {formattedFileSize && <Separator>·</Separator>}
-      {formattedFileSize}
-      <Separator>·</Separator>
-      {fileExtension}
-    </MetadataLine>
-    <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
-      {qualityLabel}
-    </QualityBadge>
-  </DimensionsContainer>
-)}
+{
+  /* Grid mode: compact inline metadata */
+}
+{
+  !isListMode && (
+    <DimensionsContainer className="dimensions-container">
+      <MetadataLine>
+        {dimensionsDisplay}
+        {formattedFileSize && <Separator>·</Separator>}
+        {formattedFileSize}
+        <Separator>·</Separator>
+        {fileExtension}
+      </MetadataLine>
+      <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
+        {qualityLabel}
+      </QualityBadge>
+    </DimensionsContainer>
+  );
+}
 
-{/* List mode: keep existing individual badges */}
-{isListMode && (
-  <DimensionsContainer className="dimensions-container">
-    <Dimensions className="dimensions">{dimensionsDisplay}</Dimensions>
-    {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
-    <FileExtension className="file-extension">{fileExtension}</FileExtension>
-    <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
-      {qualityLabel}
-    </QualityBadge>
-  </DimensionsContainer>
-)}
+{
+  /* List mode: keep existing individual badges */
+}
+{
+  isListMode && (
+    <DimensionsContainer className="dimensions-container">
+      <Dimensions className="dimensions">{dimensionsDisplay}</Dimensions>
+      {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
+      <FileExtension className="file-extension">{fileExtension}</FileExtension>
+      <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
+        {qualityLabel}
+      </QualityBadge>
+    </DimensionsContainer>
+  );
+}
 ```
 
 New `MetadataLine` styled component in `styles.ts`:
@@ -169,13 +177,13 @@ This works in both grid and list modes (the accent border is universal).
 
 ### Files to modify
 
-| File | Change |
-|---|---|
-| `src/components/Page/components/ImageCard/index.tsx` | Pass `image.enhanced` to card styles. Add "Enhanced" label in top action bar when enhanced. |
+| File                                                 | Change                                                                                                                    |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `src/components/Page/components/ImageCard/index.tsx` | Pass `image.enhanced` to card styles. Add "Enhanced" label in top action bar when enhanced.                               |
 | `src/components/Page/components/ImageCard/styles.ts` | Add `enhancedCardStyles` with `::before` pseudo-element for the left accent border. Add `EnhancedLabel` styled component. |
-| `public/_locales/en/messages.json` | Add key `enhanced_label`: `"Enhanced"` |
-| `src/components/Page/components/ImageInfo/index.tsx` | Remove the `EnhancedBadge` import and rendering (if not already removed in Step 1). |
-| `src/components/Page/components/ImageInfo/styles.ts` | Remove `EnhancedBadge` styled component export. |
+| `public/_locales/en/messages.json`                   | Add key `enhanced_label`: `"Enhanced"`                                                                                    |
+| `src/components/Page/components/ImageInfo/index.tsx` | Remove the `EnhancedBadge` import and rendering (if not already removed in Step 1).                                       |
+| `src/components/Page/components/ImageInfo/styles.ts` | Remove `EnhancedBadge` styled component export.                                                                           |
 
 ### Implementation
 
@@ -216,19 +224,15 @@ export const EnhancedLabel = styled('span')(({ theme }) => ({
 In `ImageCard/index.tsx`, merge enhanced styles conditionally:
 
 ```tsx
-const cardStyles = isListMode
-  ? listImageItemStyles(theme)
-  : gridImageItemStyles(theme);
+const cardStyles = isListMode ? listImageItemStyles(theme) : gridImageItemStyles(theme);
 
-const mergedStyles = image.enhanced
-  ? { ...cardStyles, ...enhancedAccentStyles }
-  : cardStyles;
+const mergedStyles = image.enhanced ? { ...cardStyles, ...enhancedAccentStyles } : cardStyles;
 
 // In the top action bar, after CheckboxButton:
 <TopBarLeftSection>
   <CheckboxButton checked={isSelected} readOnly />
   {image.enhanced && <EnhancedLabel>{t('enhanced_label')}</EnhancedLabel>}
-</TopBarLeftSection>
+</TopBarLeftSection>;
 ```
 
 ### Acceptance criteria
@@ -328,6 +332,7 @@ metadata.
 ```
 
 **Arrow buttons styling:**
+
 - Position: absolute, vertically centered, left/right edges with 16px inset
 - Size: 40px circle, `rgba(255,255,255,0.1)` background, `rgba(255,255,255,0.6)` icon
 - Hover: `rgba(255,255,255,0.2)` background, `rgba(255,255,255,0.9)` icon
@@ -344,19 +349,19 @@ Currently clicking anywhere on the card toggles selection. New behavior:
 
 ### Files to create
 
-| File | Purpose |
-|---|---|
+| File                                                     | Purpose            |
+| -------------------------------------------------------- | ------------------ |
 | `src/components/Page/components/ImageLightbox/index.tsx` | Lightbox component |
-| `src/components/Page/components/ImageLightbox/styles.ts` | Styled components |
+| `src/components/Page/components/ImageLightbox/styles.ts` | Styled components  |
 
 ### Files to modify
 
-| File | Change |
-|---|---|
-| `src/components/Page/components/ImageCard/index.tsx` | Add click handler on image container to open lightbox. Add lightbox state. |
-| `src/store/imageStore.ts` | Add `lightboxImageId: string \| null` and `setLightboxImageId(id)` action |
-| `src/components/Page/components/ImageGrid/index.tsx` | Render `<ImageLightbox />` once (portal, outside virtuoso) |
-| `public/_locales/en/messages.json` | Add keys: `close_lightbox`: `"Close preview"`, `prev_image`: `"Previous image"`, `next_image`: `"Next image"` |
+| File                                                 | Change                                                                                                        |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `src/components/Page/components/ImageCard/index.tsx` | Add click handler on image container to open lightbox. Add lightbox state.                                    |
+| `src/store/imageStore.ts`                            | Add `lightboxImageId: string \| null` and `setLightboxImageId(id)` action                                     |
+| `src/components/Page/components/ImageGrid/index.tsx` | Render `<ImageLightbox />` once (portal, outside virtuoso)                                                    |
+| `public/_locales/en/messages.json`                   | Add keys: `close_lightbox`: `"Close preview"`, `prev_image`: `"Previous image"`, `next_image`: `"Next image"` |
 
 ### Implementation
 
@@ -390,7 +395,7 @@ const handleImageClick = useCallback(
 // In JSX:
 <StyledImageContainer className="image-container" onClick={handleImageClick}>
   <SafeImage src={src} alt={alt || filename} />
-</StyledImageContainer>
+</StyledImageContainer>;
 ```
 
 **ImageLightbox component:**
@@ -453,13 +458,16 @@ export const ImageLightbox: FC = () => {
       <MetadataBar>
         <FileName>{image.filename}</FileName>
         <MetadataLine>
-          {image.width} × {image.height} · {formatFileSize(image.fileSize)} · {getFileExtension(image.filename)}
+          {image.width} × {image.height} · {formatFileSize(image.fileSize)} ·{' '}
+          {getFileExtension(image.filename)}
         </MetadataLine>
         <MetadataRow>
           <QualityBadge quality={getQualityFromDimensions(image.width, image.height)}>
             {qualityLabel}
           </QualityBadge>
-          <Counter>{currentIndex + 1} / {filteredImages.length}</Counter>
+          <Counter>
+            {currentIndex + 1} / {filteredImages.length}
+          </Counter>
         </MetadataRow>
       </MetadataBar>
     </Backdrop>,
@@ -519,22 +527,20 @@ export const MetadataBar = styled('div')(({ theme }) => ({
   gap: theme.spacing(0.5),
 }));
 
-export const NavButton = styled(IconButton)<{ position: 'left' | 'right' }>(
-  ({ position }) => ({
-    position: 'absolute',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    ...(position === 'left' ? { left: 16 } : { right: 16 }),
-    width: 40,
-    height: 40,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    color: 'rgba(255,255,255,0.6)',
-    '&:hover': {
-      backgroundColor: 'rgba(255,255,255,0.2)',
-      color: 'rgba(255,255,255,0.9)',
-    },
-  }),
-);
+export const NavButton = styled(IconButton)<{ position: 'left' | 'right' }>(({ position }) => ({
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  ...(position === 'left' ? { left: 16 } : { right: 16 }),
+  width: 40,
+  height: 40,
+  backgroundColor: 'rgba(255,255,255,0.1)',
+  color: 'rgba(255,255,255,0.6)',
+  '&:hover': {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    color: 'rgba(255,255,255,0.9)',
+  },
+}));
 
 export const MetadataRow = styled('div')({
   display: 'flex',
@@ -720,17 +726,17 @@ The override map approach means we don't mutate the image data — we just track
 
 ### Files to modify
 
-| File | Change |
-|---|---|
-| `src/types/index.ts` | Add `originalWidth?`, `originalHeight?` to ImageData |
-| `src/contentScript/content-script.ts` | Save `originalWidth`/`originalHeight` before enhancement |
-| `src/store/imageStore.ts` | Add `imageSourceOverrides` map and `toggleImageSource` action |
-| `src/components/Page/components/ImageInfo/index.tsx` | Add swap button for enhanced images in grid mode |
-| `src/components/Page/components/ImageLightbox/index.tsx` | Add resolution toggle pills |
-| `src/components/Page/components/ImageLightbox/styles.ts` | Add toggle pill styles |
-| `src/utils/downloadWithConversion.ts` | Respect source override when downloading |
-| `src/utils/zipArchive.ts` | Respect source override when adding to ZIP |
-| `public/_locales/en/messages.json` | Add keys: `switch_to_original`, `switch_to_enhanced`, `original_label`, `enhanced_label_resolution` |
+| File                                                     | Change                                                                                              |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `src/types/index.ts`                                     | Add `originalWidth?`, `originalHeight?` to ImageData                                                |
+| `src/contentScript/content-script.ts`                    | Save `originalWidth`/`originalHeight` before enhancement                                            |
+| `src/store/imageStore.ts`                                | Add `imageSourceOverrides` map and `toggleImageSource` action                                       |
+| `src/components/Page/components/ImageInfo/index.tsx`     | Add swap button for enhanced images in grid mode                                                    |
+| `src/components/Page/components/ImageLightbox/index.tsx` | Add resolution toggle pills                                                                         |
+| `src/components/Page/components/ImageLightbox/styles.ts` | Add toggle pill styles                                                                              |
+| `src/utils/downloadWithConversion.ts`                    | Respect source override when downloading                                                            |
+| `src/utils/zipArchive.ts`                                | Respect source override when adding to ZIP                                                          |
+| `public/_locales/en/messages.json`                       | Add keys: `switch_to_original`, `switch_to_enhanced`, `original_label`, `enhanced_label_resolution` |
 
 ### Implementation sketch
 
@@ -756,22 +762,18 @@ const swapButton = image.enhanced && image.originalSrc && (
 **Lightbox** (enhanced images):
 
 ```tsx
-{image.enhanced && image.originalSrc && (
-  <ResolutionToggle>
-    <TogglePill
-      active={isShowingOriginal}
-      onClick={() => setOverride('original')}
-    >
-      Original {image.originalWidth}×{image.originalHeight}
-    </TogglePill>
-    <TogglePill
-      active={!isShowingOriginal}
-      onClick={() => setOverride('enhanced')}
-    >
-      Enhanced {image.width}×{image.height}
-    </TogglePill>
-  </ResolutionToggle>
-)}
+{
+  image.enhanced && image.originalSrc && (
+    <ResolutionToggle>
+      <TogglePill active={isShowingOriginal} onClick={() => setOverride('original')}>
+        Original {image.originalWidth}×{image.originalHeight}
+      </TogglePill>
+      <TogglePill active={!isShowingOriginal} onClick={() => setOverride('enhanced')}>
+        Enhanced {image.width}×{image.height}
+      </TogglePill>
+    </ResolutionToggle>
+  );
+}
 ```
 
 ### Acceptance criteria
@@ -834,12 +836,12 @@ describe('resolution toggle', () => {
 
 ## Execution Order
 
-| Step | Scope | Depends on |
-|---|---|---|
-| Step 1 | Simplify grid info area | — |
-| Step 2 | Enhanced card treatment | Step 1 (enhanced badge already removed) |
-| Step 3 | Image lightbox | — (independent, but cleaner after Step 1) |
-| Step 4 | Resolution toggle | Step 2 + Step 3 (uses lightbox + enhanced styles) |
+| Step   | Scope                   | Depends on                                        |
+| ------ | ----------------------- | ------------------------------------------------- |
+| Step 1 | Simplify grid info area | —                                                 |
+| Step 2 | Enhanced card treatment | Step 1 (enhanced badge already removed)           |
+| Step 3 | Image lightbox          | — (independent, but cleaner after Step 1)         |
+| Step 4 | Resolution toggle       | Step 2 + Step 3 (uses lightbox + enhanced styles) |
 
 Each step is self-contained and results in a working, shippable state. Steps 1-2 can be committed together if preferred
 (they both touch ImageInfo). Steps 3-4 each introduce new components.
