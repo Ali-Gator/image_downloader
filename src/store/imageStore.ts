@@ -72,11 +72,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
   getEffectiveImage: (image) => {
     const { imageSourceOverrides } = get();
-    if (
-      imageSourceOverrides[image.id] === 'original' &&
-      image.enhanced &&
-      image.originalSrc
-    ) {
+    if (imageSourceOverrides[image.id] === 'original' && image.enhanced && image.originalSrc) {
       return {
         ...image,
         src: image.originalSrc,

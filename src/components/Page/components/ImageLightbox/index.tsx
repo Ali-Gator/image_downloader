@@ -133,14 +133,18 @@ export const ImageLightbox: FC = () => {
           <ResolutionToggle data-testid="resolution-toggle">
             <TogglePill
               active={isShowingOriginal}
-              onClick={() => { if (!isShowingOriginal) toggleImageSource(image.id); }}
+              onClick={() => {
+                if (!isShowingOriginal) toggleImageSource(image.id);
+              }}
               data-testid="toggle-original"
             >
               {t('original_label')} {image.originalWidth}×{image.originalHeight}
             </TogglePill>
             <TogglePill
               active={!isShowingOriginal}
-              onClick={() => { if (isShowingOriginal) toggleImageSource(image.id); }}
+              onClick={() => {
+                if (isShowingOriginal) toggleImageSource(image.id);
+              }}
               data-testid="toggle-enhanced"
             >
               {t('enhanced_label')} {image.width}×{image.height}

@@ -14,7 +14,6 @@ import { ImageCardProps } from '@types';
 import { useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
 
-
 import { ImageInfo } from '../ImageInfo';
 import {
   ActionButtonsContainer,

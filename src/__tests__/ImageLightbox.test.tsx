@@ -48,11 +48,7 @@ const storeState = {
   toggleImageSource: mockToggleImageSource,
   imageSourceOverrides: {} as Record<string, 'original' | 'enhanced'>,
   getEffectiveImage: (img: ImageData) => {
-    if (
-      storeState.imageSourceOverrides[img.id] === 'original' &&
-      img.enhanced &&
-      img.originalSrc
-    ) {
+    if (storeState.imageSourceOverrides[img.id] === 'original' && img.enhanced && img.originalSrc) {
       return {
         ...img,
         src: img.originalSrc,
