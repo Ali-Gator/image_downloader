@@ -1,8 +1,10 @@
-import { memo, MouseEvent, useCallback } from 'react';
+import { memo, MouseEvent, useCallback, useMemo } from 'react';
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Box, useTheme } from '@mui/material';
+import { Theme } from '@mui/material/styles';
+import { SxProps } from '@mui/system';
 
 import { ActionButton } from '@components/Page/components/ActionButton';
 import { CheckboxButton } from '@components/Page/components/CheckboxButton';
@@ -13,8 +15,10 @@ import { useTranslation } from '@utils';
 import { useImageOperations } from '@utils/imageOperations';
 
 import { ImageInfo } from '../ImageInfo';
+import { EnhancedLabel } from '../ImageInfo/styles';
 import {
   ActionButtonsContainer,
+  enhancedAccentStyles,
   gridImageItemStyles,
   listImageItemStyles,
   StyledCheckboxArea,
@@ -34,10 +38,11 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
   const { t } = useTranslation();
   const { handleCopyUrl, handleDownload } = useImageOperations(src, filename, id);
 
-  const { isGridView, selectedImages, toggleSelectImage } = useImageStore();
+  const isGridView = useImageStore((s) => s.isGridView);
+  const toggleSelectImage = useImageStore((s) => s.toggleSelectImage);
+  const isSelected = useImageStore((s) => s.selectedImages.some((img) => img.id === id));
 
   const isListMode = !isGridView;
-  const isSelected = selectedImages.some((img) => img.id === id);
 
   // Handler for clicking on the card to select the image
   const handleSelect = useCallback(
@@ -51,8 +56,10 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
     [image, toggleSelectImage],
   );
 
-  // Use theme-based styles but apply them via className with emotion
-  const cardStyles = isListMode ? listImageItemStyles(theme) : gridImageItemStyles(theme);
+  const cardStyles: SxProps<Theme> = useMemo(() => {
+    const base = isListMode ? listImageItemStyles(theme) : gridImageItemStyles(theme);
+    return image.enhanced ? { ...(base as object), ...enhancedAccentStyles } : base;
+  }, [isListMode, theme, image.enhanced]);
 
   return (
     <Box
@@ -65,6 +72,7 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
         <StyledTopActionBar className="top-action-bar">
           <TopBarLeftSection>
             <CheckboxButton checked={isSelected} readOnly />
+            {image.enhanced && <EnhancedLabel>{t('enhanced_label')}</EnhancedLabel>}
           </TopBarLeftSection>
           <TopBarRightSection>
             <ActionButtonsContainer>

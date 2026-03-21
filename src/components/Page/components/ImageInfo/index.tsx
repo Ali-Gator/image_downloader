@@ -16,14 +16,16 @@ import {
   ActionsContainer,
   Dimensions,
   DimensionsContainer,
-  EnhancedBadge,
+  EnhancedLabel,
   FileExtension,
   FileName,
   FileSize,
   ImageInfoContainer,
   ImageUrl,
+  MetadataLine,
   NonClickableUrl,
   QualityBadge,
+  Separator,
   UrlContainer,
   UrlText,
 } from './styles';
@@ -33,25 +35,22 @@ import {
  */
 export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
   const { t } = useTranslation();
-  const { filteredImages, isGridView } = useImageStore();
-  const image = filteredImages.find((img) => img.id === imageId);
+  const isGridView = useImageStore((s) => s.isGridView);
+  const image = useImageStore((s) => s.filteredImages.find((img) => img.id === imageId));
 
-  // Хуки всегда вызываются, даже если image не найден
+  // Hooks must always be called, even if image is not found
   const isListMode = !isGridView;
 
-  // Безопасно извлекаем значения, используя дефолтные, если image не найден
   const src = image?.src || '';
   const width = image?.width;
   const height = image?.height;
   const fileName = image?.filename || '';
   const formattedFileSize = image?.fileSize ? formatFileSize(image.fileSize) : null;
 
-  // Используем хуки всегда, даже если image не найден
   const { handleCopyUrl, handleDownload } = useImageOperations(src, fileName);
 
-  // Вычисляем свойства, основанные на извлеченных данных
   const hasDimensions = (width ?? 0) > 0 && (height ?? 0) > 0;
-  const dimensionsDisplay = hasDimensions ? `${width} × ${height}` : t('dimensions_unknown');
+  const dimensionsDisplay = hasDimensions ? `${width}×${height}` : t('dimensions_unknown');
   const urlDisplay = getFriendlyUrlDisplay(src);
   const canOpenExternally = !src.startsWith('data:') && !src.startsWith('blob:');
   const fileExtension = getFileExtension(fileName);
@@ -61,7 +60,6 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
 
   const qualityLabel = hasDimensions ? qualityLevel.toUpperCase() : '?';
 
-  // Если изображение не найдено, возвращаем пустой контейнер
   if (!image) {
     return <ImageInfoContainer />;
   }
@@ -72,19 +70,33 @@ export const ImageInfo = memo(({ imageId }: ImageInfoProps) => {
         {fileName}
       </FileName>
 
-      <DimensionsContainer className="dimensions-container">
-        <Dimensions className="dimensions">{dimensionsDisplay}</Dimensions>
-        {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
-        <FileExtension className="file-extension">{fileExtension}</FileExtension>
-        <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
-          {qualityLabel}
-        </QualityBadge>
-        {image.enhanced && (
-          <Tooltip title={t('enhanced_badge_tooltip')}>
-            <EnhancedBadge>&#x2728;</EnhancedBadge>
-          </Tooltip>
-        )}
-      </DimensionsContainer>
+      {!isListMode && (
+        <DimensionsContainer className="dimensions-container">
+          <MetadataLine>
+            {dimensionsDisplay}
+            {formattedFileSize && <Separator>·</Separator>}
+            {formattedFileSize}
+            <Separator>·</Separator>
+            {fileExtension}
+          </MetadataLine>
+          <Separator>·</Separator>
+          <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
+            {qualityLabel}
+          </QualityBadge>
+        </DimensionsContainer>
+      )}
+
+      {isListMode && (
+        <DimensionsContainer className="dimensions-container">
+          <Dimensions className="dimensions">{dimensionsDisplay}</Dimensions>
+          {formattedFileSize && <FileSize className="file-size">{formattedFileSize}</FileSize>}
+          <FileExtension className="file-extension">{fileExtension}</FileExtension>
+          <QualityBadge quality={qualityLevel} title={`${t('image_quality')} ${qualityLabel}`}>
+            {qualityLabel}
+          </QualityBadge>
+          {image.enhanced && <EnhancedLabel>{t('enhanced_label')}</EnhancedLabel>}
+        </DimensionsContainer>
+      )}
 
       {isListMode && (
         <>

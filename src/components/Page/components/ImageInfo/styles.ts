@@ -117,15 +117,34 @@ export const QualityBadge = styled('span')<{ quality: QualityLevel }>(({ theme, 
   }`,
 }));
 
-export const EnhancedBadge = styled('span')(({ theme }) => ({
-  ...commonBadgeStyles(theme),
-  fontWeight: 600,
+export const EnhancedLabel = styled('span')(() => ({
   fontSize: '0.625rem',
-  minWidth: '18px',
-  textAlign: 'center',
-  backgroundColor: 'rgba(103, 58, 183, 0.12)',
-  color: '#7c4dff',
-  border: '1px solid rgba(103, 58, 183, 0.35)',
+  fontWeight: 600,
+  color: '#5e35b1',
+  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+  backdropFilter: 'blur(4px)',
+  border: '1px solid rgba(103, 58, 183, 0.3)',
+  borderRadius: 4,
+  padding: '1px 6px',
+  height: '20px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  letterSpacing: '0.02em',
+  textTransform: 'uppercase',
+}));
+
+export const MetadataLine = styled('span')(({ theme }) => ({
+  fontSize: '0.6875rem',
+  fontFamily: '"JetBrains Mono", monospace',
+  color: theme.palette.text.secondary,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+}));
+
+export const Separator = styled('span')(({ theme }) => ({
+  margin: '0 3px',
+  color: theme.palette.text.disabled,
 }));
 
 export const ActionsContainer = styled(Box)(({ theme }) => ({

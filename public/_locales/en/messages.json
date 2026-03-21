@@ -458,6 +458,9 @@
   "enhanced_badge_tooltip": {
     "message": "Upgraded from thumbnail"
   },
+  "enhanced_label": {
+    "message": "Enhanced"
+  },
   "onboarding_enhance_title": {
     "message": "Find Full-Size Images"
   },

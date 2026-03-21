@@ -2,6 +2,20 @@ import { Box } from '@mui/material';
 import { styled, Theme } from '@mui/material/styles';
 import { SxProps } from '@mui/system';
 
+export const enhancedAccentStyles = {
+  '&::before': {
+    content: '""',
+    position: 'absolute' as const,
+    left: 0,
+    top: '8px',
+    bottom: '8px',
+    width: '3px',
+    borderRadius: '0 3px 3px 0',
+    background: 'linear-gradient(180deg, #7c4dff 0%, #2D5BE3 100%)',
+    zIndex: 1,
+  },
+};
+
 // ===== STYLED COMPONENTS =====
 export const ActionButtonsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
