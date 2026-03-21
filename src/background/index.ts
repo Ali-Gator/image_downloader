@@ -40,7 +40,7 @@ const REFERRER_RULE_ID = 842751963;
 // Per-download metadata: original filename and source page URL (for domain subfolders)
 interface DownloadMeta {
   filename: string;
-  domainSegment: string;
+  domain: string;
 }
 const downloadMetaMap: Record<number, DownloadMeta> = {};
 
@@ -556,18 +556,11 @@ chrome.runtime.onMessage.addListener((message: RegisterFilenameMessage, _, sendR
     message.downloadId &&
     message.filename
   ) {
-    // Pre-compute sanitized domain segment at registration time
-    let domainSegment = '';
-    if (message.pageUrl) {
-      const domain = extractDomain(message.pageUrl);
-      if (domain) {
-        domainSegment = `${sanitizeFileName(domain)}/`;
-      }
-    }
+    const domain = message.pageUrl ? extractDomain(message.pageUrl) : '';
 
     downloadMetaMap[message.downloadId] = {
       filename: message.filename,
-      domainSegment,
+      domain,
     };
 
     // Backstop cleanup in case onDeterminingFilename never fires
@@ -616,12 +609,13 @@ if (typeof chrome !== 'undefined' && chrome.downloads) {
 
         // Apply rename pattern if specified
         if (renamePattern) {
-          finalFilename = applyRenamePattern(finalFilename, renamePattern);
+          finalFilename = applyRenamePattern(finalFilename, renamePattern, meta?.domain);
           finalFilename = sanitizeFileName(finalFilename);
         }
 
-        // Domain subfolder segment (pre-computed at registration time)
-        const domainSegment = organizeByDomain && meta?.domainSegment ? meta.domainSegment : '';
+        // Domain subfolder segment (derived from stored domain)
+        const domainSegment =
+          organizeByDomain && meta?.domain ? `${sanitizeFileName(meta.domain)}/` : '';
 
         // Apply folder to filename if needed
         if (folderName) {

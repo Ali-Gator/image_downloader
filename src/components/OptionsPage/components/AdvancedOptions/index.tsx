@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, useState } from 'react';
+import { ChangeEvent, FC, useEffect, useState } from 'react';
 
 import { InputAdornment, TextField, Typography } from '@mui/material';
 
@@ -16,6 +16,10 @@ export const AdvancedOptions: FC = () => {
 
   const [ogInput, setOgInput] = useState(String(maxOgFetches));
   const [bgInput, setBgInput] = useState(String(maxBgImages));
+
+  // Sync local input state when store values change (e.g. after reset)
+  useEffect(() => setOgInput(String(maxOgFetches)), [maxOgFetches]);
+  useEffect(() => setBgInput(String(maxBgImages)), [maxBgImages]);
 
   const handleOgBlur = () => {
     const value = clampPositive(ogInput);

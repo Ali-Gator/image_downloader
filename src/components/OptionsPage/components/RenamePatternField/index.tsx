@@ -21,7 +21,7 @@ export const RenamePatternField: FC = () => {
         variant="outlined"
         value={renamePattern}
         onChange={(e) => setRenamePattern(e.target.value)}
-        placeholder="example_{name}"
+        placeholder="{site}_{name}"
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">

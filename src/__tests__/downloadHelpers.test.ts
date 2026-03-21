@@ -1,6 +1,6 @@
 import { MessageActionType } from '../types';
 import { debugLogger } from '../utils/debugLogger';
-import { downloadImage, extractDomain } from '../utils/downloadHelpers';
+import { applyRenamePattern, downloadImage, extractDomain } from '../utils/downloadHelpers';
 
 vi.mock('../utils/debugLogger', () => ({
   debugLogger: {
@@ -38,6 +38,61 @@ describe('extractDomain', () => {
 
   it('should return empty string for chrome-extension:// URLs', () => {
     expect(extractDomain('chrome-extension://abcdefghijklmnop')).toBe('');
+  });
+});
+
+describe('applyRenamePattern', () => {
+  it('should return original name when pattern is empty', () => {
+    expect(applyRenamePattern('photo.jpg', '')).toBe('photo.jpg');
+  });
+
+  it('should replace {name} with filename without extension', () => {
+    expect(applyRenamePattern('photo.jpg', 'prefix_{name}')).toBe('prefix_photo.jpg');
+  });
+
+  it('should replace {site} with domain', () => {
+    expect(applyRenamePattern('photo.jpg', '{site}_{name}', 'example.com')).toBe(
+      'example.com_photo.jpg',
+    );
+  });
+
+  it('should use "unknown" when domain is not provided and pattern has {site}', () => {
+    expect(applyRenamePattern('photo.jpg', '{site}_{name}')).toBe('unknown_photo.jpg');
+  });
+
+  it('should use "unknown" when domain is empty string', () => {
+    expect(applyRenamePattern('photo.jpg', '{site}_{name}', '')).toBe('unknown_photo.jpg');
+  });
+
+  it('should handle pattern with only {site}', () => {
+    expect(applyRenamePattern('photo.jpg', '{site}', 'reddit.com')).toBe('reddit.com.jpg');
+  });
+
+  it('should handle pattern with only {name}', () => {
+    expect(applyRenamePattern('photo.jpg', 'img_{name}')).toBe('img_photo.jpg');
+  });
+
+  it('should not double-append extension when {name} already included it conceptually', () => {
+    // Pattern replaces {name} with name-without-ext, then appends original ext
+    expect(applyRenamePattern('photo.jpg', '{name}')).toBe('photo.jpg');
+  });
+
+  it('should preserve extension when pattern has no dot', () => {
+    expect(applyRenamePattern('image.png', '{site}_{name}', 'test.org')).toBe(
+      'test.org_image.png',
+    );
+  });
+
+  it('should handle filename without extension', () => {
+    expect(applyRenamePattern('photo', '{site}_{name}', 'example.com')).toBe(
+      'example.com_photo',
+    );
+  });
+
+  it('should handle both placeholders in complex pattern', () => {
+    expect(applyRenamePattern('banner.webp', 'dl_{site}_{name}_hd', 'imgur.com')).toBe(
+      'dl_imgur.com_banner_hd.webp',
+    );
   });
 });
 

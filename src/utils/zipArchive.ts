@@ -70,11 +70,11 @@ const loadJSZip = async (): Promise<JSZipClass> => {
   return JSZip as JSZipClass;
 };
 
-import { useRatingStore, useSettingsStore } from '@store';
+import { useImageStore, useRatingStore, useSettingsStore } from '@store';
 import { ImageData, MessageActionType } from '@types';
 
 import { getImageSrcFromDOM } from './domImageUtils';
-import { sanitizeFileName, applyRenamePattern } from './downloadHelpers';
+import { sanitizeFileName, applyRenamePattern, extractDomain } from './downloadHelpers';
 import { convertImageElementToFormat } from './imageConverter';
 import { shouldConvertImage, updateFileExtension } from './imageFormats';
 import { updateFilenameExtensionFromDataUrl } from './imageUtils';
@@ -104,17 +104,25 @@ export const generateZipArchiveName = (imageCount: number): string => {
   return sanitizeFileName(filename, 100);
 };
 
+interface ZipBatchOptions {
+  convertFrom: string;
+  convertTo: string;
+  renamePattern: string;
+  domain: string;
+}
+
 /**
  * Downloads an image as a blob for adding to ZIP archive
  * @param image Image data object
+ * @param options Batch-level settings (shared across all images)
  * @returns Promise with blob data and processed filename
  */
-const downloadImageAsBlob = async (image: ImageData): Promise<{ blob: Blob; filename: string }> => {
+const downloadImageAsBlob = async (
+  image: ImageData,
+  options: ZipBatchOptions,
+): Promise<{ blob: Blob; filename: string }> => {
   const { src, filename, id } = image;
-
-  // Get settings for conversion
-  const settings = useSettingsStore.getState();
-  const { convertFrom, convertTo, renamePattern } = settings;
+  const { convertFrom, convertTo, renamePattern, domain } = options;
 
   // Check if conversion is needed
   const needsConversion = shouldConvertImage(filename, convertFrom);
@@ -126,7 +134,7 @@ const downloadImageAsBlob = async (image: ImageData): Promise<{ blob: Blob; file
 
   // Apply rename pattern if specified
   if (renamePattern) {
-    finalFilename = applyRenamePattern(finalFilename, renamePattern);
+    finalFilename = applyRenamePattern(finalFilename, renamePattern, domain);
   }
 
   try {
@@ -233,12 +241,22 @@ export const createAndDownloadZipArchive = async (
     const failures: string[] = [];
     const usedFilenames = new Set<string>();
 
+    // Pre-compute batch-level options (invariant across all images)
+    const settings = useSettingsStore.getState();
+    const pageUrl = useImageStore.getState().pageUrl;
+    const batchOptions: ZipBatchOptions = {
+      convertFrom: settings.convertFrom,
+      convertTo: settings.convertTo,
+      renamePattern: settings.renamePattern,
+      domain: pageUrl ? extractDomain(pageUrl) : '',
+    };
+
     // Add images to ZIP archive
     for (let i = 0; i < images.length; i++) {
       const image = images[i];
 
       try {
-        const { blob, filename } = await downloadImageAsBlob(image);
+        const { blob, filename } = await downloadImageAsBlob(image, batchOptions);
 
         // Add to ZIP with sanitized and deduplicated filename
         let sanitizedFilename = sanitizeFileName(filename);

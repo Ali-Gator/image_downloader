@@ -213,10 +213,10 @@
     "message": "Rename Files"
   },
   "rename_pattern_info": {
-    "message": "Use pattern to rename files: {name} - original filename without extension"
+    "message": "Use pattern to rename files: {name} - original filename, {site} - website domain"
   },
   "rename_pattern_example": {
-    "message": "Example: photo_{name}"
+    "message": "Example: {site}_{name} or photo_{name}"
   },
   "convert": {
     "message": "Convert"
@@ -375,7 +375,7 @@
     "message": "Rename Pattern"
   },
   "options_onboarding_rename_text": {
-    "message": "Batch-rename files using patterns like prefix_{name}. The {name} placeholder keeps the original filename."
+    "message": "Batch-rename files using patterns like prefix_{name}. Use {name} for original filename and {site} for website domain."
   },
   "options_onboarding_convert_title": {
     "message": "Format Conversion"

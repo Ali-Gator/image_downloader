@@ -112,10 +112,15 @@ export const sanitizeFileName = (filename: string, maxLength = 150): string => {
 /**
  * Applies the rename pattern to a filename
  * @param originalName Original filename
- * @param pattern Rename pattern
+ * @param pattern Rename pattern with placeholders: {name} for filename, {site} for domain
+ * @param domain Optional domain name for {site} placeholder
  * @returns Renamed filename
  */
-export const applyRenamePattern = (originalName: string, pattern: string): string => {
+export const applyRenamePattern = (
+  originalName: string,
+  pattern: string,
+  domain?: string,
+): string => {
   if (!pattern) return originalName;
 
   // Get extension to preserve it
@@ -127,13 +132,12 @@ export const applyRenamePattern = (originalName: string, pattern: string): strin
     nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
   }
 
-  // Replace name placeholder only
+  // Replace placeholders
   let result = pattern.replace('{name}', nameWithoutExt);
+  result = result.replace('{site}', domain || 'unknown');
 
-  // Always preserve the original extension
-  if (!result.includes('.')) {
-    result += extension;
-  }
+  // Always append the original extension
+  result += extension;
 
   return result;
 };
