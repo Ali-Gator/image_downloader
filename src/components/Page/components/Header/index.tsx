@@ -218,6 +218,8 @@ export const Header: FC = () => {
       pageUrl: currentPageUrl ?? '',
       sourceTabId,
     });
+
+    window.close();
   }, []);
 
   const monetizationNode = useMemo(() => {
