@@ -5,7 +5,7 @@ import { Box, Button, SxProps, Theme, Typography } from '@mui/material';
 import { useTranslation } from '@utils';
 import { debugLogger } from '@utils/debugLogger';
 
-const containerSx: SxProps<Theme> = { display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 };
+const containerSx: SxProps<Theme> = { display: 'flex', alignItems: 'center', gap: 1 };
 
 export const DebugLogExport: FC = () => {
   const { t } = useTranslation();

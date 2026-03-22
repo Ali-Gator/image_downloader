@@ -1,4 +1,4 @@
-import { ChangeEvent, FC } from 'react';
+import { FC } from 'react';
 
 import { InputAdornment, TextField, Typography } from '@mui/material';
 
@@ -7,14 +7,12 @@ import { useTranslation } from '@utils';
 
 import { InfoTooltip } from '../InfoIcon';
 import { FieldContainer } from '../styles';
+import { useDebouncedInput } from '../useDebouncedInput';
 
 export const FolderField: FC = () => {
   const { t } = useTranslation();
   const { folderName, setFolderName } = useSettingsStore();
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFolderName(e.target.value);
-  };
+  const input = useDebouncedInput(folderName, setFolderName);
 
   return (
     <FieldContainer data-onboarding="folder-name">
@@ -23,9 +21,9 @@ export const FolderField: FC = () => {
         fullWidth
         size="small"
         variant="outlined"
-        value={folderName}
+        value={input.value}
         placeholder="eg. images"
-        onChange={handleChange}
+        onChange={input.onChange}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">

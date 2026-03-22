@@ -7,7 +7,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import TransformOutlinedIcon from '@mui/icons-material/TransformOutlined';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, Stack, Tooltip } from '@mui/material';
 
 import { useSettingsStore } from '@store';
 import { useTranslation } from '@utils';
@@ -101,8 +101,10 @@ export const OptionsPage: FC = () => {
             <BugReportOutlinedIcon />
             <SectionTitle>{t('section_debug')}</SectionTitle>
           </SectionHeader>
-          <DebugLogExport />
-          <ReportBugLink />
+          <Stack direction="row" spacing={1.5} sx={{ mb: 1.5 }}>
+            <ReportBugLink />
+            <DebugLogExport />
+          </Stack>
           <ShowOnboardingCheckbox />
         </SectionCard>
 

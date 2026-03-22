@@ -7,10 +7,12 @@ import { useTranslation } from '@utils';
 
 import { InfoTooltip } from '../InfoIcon';
 import { FieldContainer } from '../styles';
+import { useDebouncedInput } from '../useDebouncedInput';
 
 export const RenamePatternField: FC = () => {
   const { t } = useTranslation();
   const { renamePattern, setRenamePattern } = useSettingsStore();
+  const input = useDebouncedInput(renamePattern, setRenamePattern);
 
   return (
     <FieldContainer data-onboarding="rename-pattern">
@@ -19,8 +21,8 @@ export const RenamePatternField: FC = () => {
         fullWidth
         size="small"
         variant="outlined"
-        value={renamePattern}
-        onChange={(e) => setRenamePattern(e.target.value)}
+        value={input.value}
+        onChange={input.onChange}
         placeholder="{site}_{name}"
         InputProps={{
           endAdornment: (
