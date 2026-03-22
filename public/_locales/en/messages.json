@@ -372,7 +372,7 @@
     "message": "Debug & Bug Reporting"
   },
   "options_onboarding_debug_text": {
-    "message": "If something goes wrong, export the debug log. It captures what the extension did so you can share it when reporting issues."
+    "message": "Found a bug? Use the 'Report a bug' link to let us know. You can also export the debug log to attach it to your report."
   },
   "options_onboarding_done_title": {
     "message": "All Set!"

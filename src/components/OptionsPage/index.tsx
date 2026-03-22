@@ -20,6 +20,7 @@ import {
   OptionsOnboarding,
   OrganizeByDomainOption,
   RenamePatternField,
+  ReportBugLink,
   ShowOnboardingCheckbox,
   SidePanelOption,
   ZipArchiveOption,
@@ -101,6 +102,7 @@ export const OptionsPage: FC = () => {
             <SectionTitle>{t('section_debug')}</SectionTitle>
           </SectionHeader>
           <DebugLogExport />
+          <ReportBugLink />
           <ShowOnboardingCheckbox />
         </SectionCard>
 

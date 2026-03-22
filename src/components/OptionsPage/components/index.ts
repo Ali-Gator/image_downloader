@@ -6,6 +6,7 @@ export { InfoTooltip } from './InfoIcon';
 export { RenamePatternField } from './RenamePatternField';
 export { OrganizeByDomainOption } from './OrganizeByDomainOption';
 export { OptionsOnboarding } from './OptionsOnboarding';
+export { ReportBugLink } from './ReportBugLink';
 export { ShowOnboardingCheckbox } from './ShowOnboardingCheckbox';
 export { SidePanelOption } from './SidePanelOption';
 export { ZipArchiveOption } from './ZipArchiveOption';

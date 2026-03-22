@@ -42,7 +42,7 @@ export const steps: OnboardingStep[] = [
     titleKey: 'options_onboarding_debug_title',
     textKey: 'options_onboarding_debug_text',
     Icon: BugReportOutlined,
-    targetSelector: '[data-onboarding="debug-export"]',
+    targetSelector: '[data-onboarding="report-bug"]',
     tooltipPlacement: 'top',
   },
   {
