@@ -21,6 +21,9 @@ const manifest: ManifestV3Export = {
     default_icon: 'img/logo-48.png',
     default_popup: 'popup.html',
   },
+  side_panel: {
+    default_path: 'sidepanel.html',
+  },
   background: {
     service_worker: 'src/background/index.ts',
     type: 'module',
@@ -28,7 +31,15 @@ const manifest: ManifestV3Export = {
   externally_connectable: {
     matches: ['https://appbox.space/*'],
   },
-  permissions: ['activeTab', 'tabs', 'storage', 'downloads', 'declarativeNetRequest', 'scripting'],
+  permissions: [
+    'activeTab',
+    'tabs',
+    'storage',
+    'downloads',
+    'declarativeNetRequest',
+    'scripting',
+    'sidePanel',
+  ],
   host_permissions: ['<all_urls>'],
   content_scripts: [
     {

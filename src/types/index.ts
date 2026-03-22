@@ -296,28 +296,6 @@ export interface ViewButtonProps {
   active: boolean;
 }
 
-/**
- * Props for the Popup Header component
- */
-export interface PopupHeaderProps {
-  title: string;
-}
-
-/**
- * Props for the Popup DownloadButton component
- */
-export interface PopupDownloadButtonProps {
-  onClick: () => void;
-  isLoading: boolean;
-}
-
-/**
- * Props for the HelpText component
- */
-export interface HelpTextProps {
-  text: string;
-}
-
 // Download options for background script
 export interface DownloadOptions {
   fileName: string;
@@ -327,6 +305,7 @@ export interface DownloadOptions {
   convertTo: string;
   createZipArchive: boolean;
   organizeByDomain: boolean;
+  openInSidePanel: boolean;
   maxOgFetches: number;
   maxBgImages: number;
 }

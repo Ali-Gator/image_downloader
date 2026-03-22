@@ -1,6 +1,7 @@
 import { FC } from 'react';
 
 import BugReportOutlinedIcon from '@mui/icons-material/BugReportOutlined';
+import DisplaySettingsOutlinedIcon from '@mui/icons-material/DisplaySettingsOutlined';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -20,6 +21,7 @@ import {
   OrganizeByDomainOption,
   RenamePatternField,
   ShowOnboardingCheckbox,
+  SidePanelOption,
   ZipArchiveOption,
 } from './components';
 import {
@@ -52,6 +54,15 @@ export const OptionsPage: FC = () => {
             </IconButton>
           </Tooltip>
         </PageHeader>
+
+        {/* Behavior */}
+        <SectionCard>
+          <SectionHeader>
+            <DisplaySettingsOutlinedIcon />
+            <SectionTitle>{t('section_behavior')}</SectionTitle>
+          </SectionHeader>
+          <SidePanelOption />
+        </SectionCard>
 
         {/* File Organization */}
         <SectionCard>

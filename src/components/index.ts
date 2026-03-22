@@ -6,10 +6,7 @@ export { ErrorBoundary };
 // Re-export Page component
 export * from './Page';
 
-// Re-export Popup component
-export * from './Popup';
-
-// Re-export Popup component
+// Re-export OptionsPage component
 export * from './OptionsPage';
 
 // Re-export RatingWidget component

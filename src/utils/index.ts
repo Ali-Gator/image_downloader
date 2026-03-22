@@ -49,6 +49,11 @@ export * from './imagePreview';
 // Re-export content script utilities
 export * from './contentScriptUtils';
 
+// Side panel utilities and autoGrabImages are NOT re-exported from barrel
+// to avoid pulling `window`-dependent code into the service worker context.
+// Import directly: import { ... } from '@utils/sidePanelUtils'
+// Import directly: import { ... } from '@utils/autoGrabImages'
+
 // Re-export Monetize helpers
 export * from './monetization';
 

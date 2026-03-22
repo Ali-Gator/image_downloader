@@ -1,5 +1,6 @@
 import { styled } from '@mui/material/styles';
 
+import { sidePanelMedia } from '@theme';
 import { ViewButtonProps } from '@types';
 
 export const ToolbarContainer = styled('div')(({ theme }) => ({
@@ -15,6 +16,10 @@ export const ToolbarContainer = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
     flexDirection: 'column',
     alignItems: 'stretch',
+  },
+
+  [sidePanelMedia]: {
+    padding: `${theme.spacing(1)} ${theme.spacing(1.5)}`,
   },
 }));
 
@@ -45,6 +50,13 @@ export const RightSection = styled('div')(({ theme }) => ({
     justifyContent: 'space-between',
     marginTop: theme.spacing(1),
   },
+
+  [sidePanelMedia]: {
+    flexWrap: 'wrap',
+    width: '100%',
+    justifyContent: 'space-between',
+    marginTop: theme.spacing(1),
+  },
 }));
 
 export const ControlsRow = styled('div')(({ theme }) => ({
@@ -53,6 +65,12 @@ export const ControlsRow = styled('div')(({ theme }) => ({
   alignItems: 'center',
 
   [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    width: '100%',
+  },
+
+  [sidePanelMedia]: {
     flexDirection: 'column',
     alignItems: 'stretch',
     width: '100%',

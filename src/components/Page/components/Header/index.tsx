@@ -2,7 +2,16 @@ import { ChangeEvent, FC, MouseEvent, useCallback, useEffect, useMemo, useState 
 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DownloadIcon from '@mui/icons-material/Download';
-import { Button, Checkbox, CircularProgress, Menu, MenuItem, Typography } from '@mui/material';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import {
+  Button,
+  Checkbox,
+  CircularProgress,
+  IconButton,
+  Menu,
+  MenuItem,
+  Typography,
+} from '@mui/material';
 import { SnackbarKey, useSnackbar } from 'notistack';
 
 import { useImageStore, useSettingsStore } from '@store';
@@ -27,11 +36,13 @@ import {
   getMonetizationLimitState,
   handleError,
   maybeOpenPaywallOn11thClick,
+  openPageTabAndSendImages,
   openPaywallForPurchase,
   recordSuccessfulDownloadPageUrl,
   useTranslation,
 } from '../../../../utils';
 import { NOTIFICATION_DURATION, NotificationType } from '../../../../utils/constants';
+import { isSidePanelContext } from '../../../../utils/sidePanelUtils';
 import { SettingsButton } from '../SettingsButton';
 
 const ZIP_PROGRESS_SNACKBAR_KEY: SnackbarKey = 'zip-progress';
@@ -196,6 +207,19 @@ export const Header: FC = () => {
     refreshMonetizationState,
   ]);
 
+  const inSidePanel = isSidePanelContext();
+
+  const handleOpenInTab = useCallback(async () => {
+    const { images, pageUrl: currentPageUrl, sourceTabId } = useImageStore.getState();
+    if (!images.length || !sourceTabId) return;
+
+    await openPageTabAndSendImages({
+      images,
+      pageUrl: currentPageUrl ?? '',
+      sourceTabId,
+    });
+  }, []);
+
   const monetizationNode = useMemo(() => {
     if (!showMonetizationUI) return null;
 
@@ -275,6 +299,17 @@ export const Header: FC = () => {
         >
           {t('download_btn')}
         </Button>
+
+        {inSidePanel && (
+          <IconButton
+            onClick={handleOpenInTab}
+            title={t('open_in_tab')}
+            aria-label={t('open_in_tab')}
+            size="small"
+          >
+            <OpenInNewIcon fontSize="small" />
+          </IconButton>
+        )}
 
         <SettingsButton />
 

@@ -17,6 +17,9 @@ export interface SettingsState {
   createZipArchive: boolean;
   organizeByDomain: boolean;
 
+  // Behavior
+  openInSidePanel: boolean;
+
   // Advanced
   maxOgFetches: number;
   maxBgImages: number;
@@ -36,6 +39,7 @@ export interface SettingsState {
   setConvertTo: (format: string) => void;
   setCreateZipArchive: (createZip: boolean) => void;
   setOrganizeByDomain: (organize: boolean) => void;
+  setOpenInSidePanel: (open: boolean) => void;
   setMaxOgFetches: (value: number) => void;
   setMaxBgImages: (value: number) => void;
   resetDownloadOptions: () => void;

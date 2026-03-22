@@ -1,7 +1,7 @@
 import { Avatar, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import { alpha, colors } from '@theme';
+import { alpha, colors, sidePanelMedia } from '@theme';
 
 export const HeaderContainer = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -17,6 +17,10 @@ export const HeaderContainer = styled('div')(({ theme }) => ({
   zIndex: theme.zIndex.appBar,
   backdropFilter: 'blur(12px)',
   backgroundColor: alpha(colors.white, 0.92),
+
+  [sidePanelMedia]: {
+    padding: `0 ${theme.spacing(1.5)}`,
+  },
 }));
 
 export const LogoImage = styled('img')({
@@ -41,6 +45,10 @@ export const ControlsContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
+
+  [sidePanelMedia]: {
+    flexWrap: 'wrap',
+  },
 }));
 
 export const SelectAllContainer = styled('div')(({ theme }) => ({
@@ -66,6 +74,12 @@ export const SelectAllContainer = styled('div')(({ theme }) => ({
 
   '& .MuiCheckbox-root': {
     padding: 0,
+  },
+
+  [sidePanelMedia]: {
+    '& label': {
+      display: 'none',
+    },
   },
 }));
 

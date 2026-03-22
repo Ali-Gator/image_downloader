@@ -8,9 +8,9 @@ import {
   RegisterFilenameMessage,
   ValidateImageUrlMessage,
 } from '../types';
+import { openPageTabWithImages } from '../utils/autoGrabImages';
 import {
   ApplicationLinks,
-  ConnectionName,
   ContentScriptConstants,
   DEFAULT_OPTIONS,
   IMAGE_FETCH_TIMEOUTS,
@@ -25,6 +25,7 @@ import {
 } from '../utils/downloadHelpers';
 import { ensureError, handleError } from '../utils/errorHandlers';
 import { blobToDataUrl } from '../utils/imageUtils';
+import { isSidePanelSupported } from '../utils/sidePanelUtils';
 
 // Global variable for storing download options
 let activeTabOrigin = '';
@@ -527,6 +528,55 @@ async function removeReferrerRules() {
   }
 }
 
+/**
+ * Syncs action click behavior with the persisted `openInSidePanel` setting.
+ * - Side panel ON: Chrome opens the side panel on click, no popup.
+ * - Side panel OFF (or unsupported): popup.html opens, grabs images, shows alert() on error.
+ */
+async function syncSidePanelBehavior() {
+  const settings = await getSettings();
+  const sidePanelSupported = isSidePanelSupported();
+  const useSidePanel = sidePanelSupported && settings.openInSidePanel;
+
+  if (sidePanelSupported) {
+    await chrome.sidePanel
+      .setPanelBehavior({ openPanelOnActionClick: useSidePanel })
+      .catch(() => {});
+  }
+
+  // When side panel is off, set popup so the user gets alert() on errors.
+  // When side panel is on, clear popup so Chrome opens the panel instead.
+  await chrome.action.setPopup({ popup: useSidePanel ? '' : 'popup.html' });
+}
+
+// Initial sync on service worker start
+syncSidePanelBehavior();
+
+// Re-sync only when openInSidePanel actually changes
+if (chrome.storage?.onChanged) {
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local' || !changes[StorageKeys.SETTINGS_STORE_KEY]) return;
+    try {
+      const oldVal = changes[StorageKeys.SETTINGS_STORE_KEY].oldValue;
+      const newVal = changes[StorageKeys.SETTINGS_STORE_KEY].newValue;
+      const oldSetting = oldVal ? JSON.parse(oldVal)?.state?.openInSidePanel : undefined;
+      const newSetting = newVal ? JSON.parse(newVal)?.state?.openInSidePanel : undefined;
+      if (oldSetting !== newSetting) syncSidePanelBehavior();
+    } catch {
+      syncSidePanelBehavior();
+    }
+  });
+}
+
+// Fires only when openPanelOnActionClick is false (side panel disabled or unsupported)
+chrome.action.onClicked.addListener(async (tab) => {
+  try {
+    await openPageTabWithImages(tab);
+  } catch (error) {
+    handleError(error);
+  }
+});
+
 export async function getSettings(): Promise<DownloadOptions> {
   return new Promise((resolve) => {
     const storageKey = StorageKeys.SETTINGS_STORE_KEY;
@@ -989,16 +1039,6 @@ try {
       injectContentScriptIntoAllTabs();
     } catch (error) {
       handleError(error);
-    }
-  });
-
-  // Clean up CORS rules when popup is closed to avoid interference with normal browsing
-  chrome.runtime.onConnect.addListener((port) => {
-    if (port.name === ConnectionName.POPUP) {
-      port.onDisconnect.addListener(() => {
-        // Remove CORS rules when popup is closed
-        removeReferrerRules().catch(handleError);
-      });
     }
   });
 

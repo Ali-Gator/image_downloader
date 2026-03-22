@@ -45,6 +45,14 @@ global.chrome = {
   scripting: {
     executeScript: vi.fn(),
   },
+  sidePanel: {
+    open: vi.fn(),
+    setOptions: vi.fn(),
+    setPanelBehavior: vi.fn(),
+  },
+  action: {
+    onClicked: { addListener: vi.fn() },
+  },
   declarativeNetRequest: {
     getSessionRules: vi.fn(async () => []),
     updateSessionRules: vi.fn(async () => {}),

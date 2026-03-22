@@ -1,13 +1,6 @@
 import { DownloadOptions } from '@types';
 
 /**
- * Connection names for runtime communication
- */
-export enum ConnectionName {
-  POPUP = 'popup',
-}
-
-/**
  * Standard responses for inter-component communication
  */
 export enum MessageResponse {
@@ -93,6 +86,7 @@ export const DEFAULT_OPTIONS: DownloadOptions = {
   convertTo: 'jpeg',
   createZipArchive: false,
   organizeByDomain: false,
+  openInSidePanel: true,
   maxOgFetches: 50,
   maxBgImages: 200,
 };

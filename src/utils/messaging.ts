@@ -1,5 +1,7 @@
 import { ImageData, PageImagesPayload } from '@types';
-import { handleError, MessageResponse } from '@utils';
+
+import { MessageResponse } from './constants';
+import { handleError } from './errorHandlers';
 
 /**
  * Sends image data to an active tab and handles the response
@@ -25,6 +27,56 @@ export const sendImagesToTab = async (
   } catch (error) {
     if (!silent) handleError(error);
     return false;
+  }
+};
+
+/**
+ * Waits for a tab to reach 'complete' status.
+ */
+const waitForTabComplete = (tabId: number): Promise<void> =>
+  new Promise<void>((resolve) => {
+    let settled = false;
+    const cleanup = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      chrome.tabs.onUpdated.removeListener(onUpdated);
+      chrome.tabs.onRemoved.removeListener(onRemoved);
+      resolve();
+    };
+    const timeoutId = setTimeout(cleanup, 10_000);
+    const onUpdated = (id: number, info: chrome.tabs.TabChangeInfo) => {
+      if (id === tabId && info.status === 'complete') cleanup();
+    };
+    const onRemoved = (id: number) => {
+      if (id === tabId) cleanup();
+    };
+    chrome.tabs.onUpdated.addListener(onUpdated);
+    chrome.tabs.onRemoved.addListener(onRemoved);
+    chrome.tabs
+      .get(tabId)
+      .then((t) => {
+        if (t.status === 'complete') cleanup();
+      })
+      .catch(cleanup);
+  });
+
+/**
+ * Creates a page.html tab, waits for it to load, and sends images to it with retry.
+ */
+export const openPageTabAndSendImages = async (payload: PageImagesPayload): Promise<void> => {
+  const newTab = await chrome.tabs.create({ url: 'page.html', active: false });
+  if (!newTab.id) return;
+
+  const tabId = newTab.id;
+  await waitForTabComplete(tabId);
+
+  const MAX_ATTEMPTS = 10;
+  const RETRY_DELAY_MS = 150;
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    const success = await sendImagesToTab(tabId, payload, { silent: i < MAX_ATTEMPTS - 1 });
+    if (success) break;
+    if (i < MAX_ATTEMPTS - 1) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
   }
 };
 

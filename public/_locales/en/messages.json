@@ -32,9 +32,6 @@
   "ok_btn": {
     "message": "OK"
   },
-  "help_text": {
-    "message": "Click the button and select images to download"
-  },
   "info_text": {
     "message": "Information"
   },
@@ -143,6 +140,24 @@
   "no_images_found": {
     "message": "No images found"
   },
+  "webstore_not_supported": {
+    "message": "Extension stores are not supported. Try on a regular website."
+  },
+  "internal_pages_not_supported": {
+    "message": "Internal browser pages (chrome://) are not supported."
+  },
+  "local_files_not_supported": {
+    "message": "Local files (file://) are not supported."
+  },
+  "unsupported_page_type": {
+    "message": "This page type is not supported."
+  },
+  "content_script_not_loaded": {
+    "message": "Could not connect to the page. Try refreshing the page."
+  },
+  "no_images_found_detailed": {
+    "message": "No images found. Try scrolling down to load more images, then try again."
+  },
   "loading_dimension": {
     "message": "Loading..."
   },
@@ -184,18 +199,6 @@
   },
   "copy_url_tooltip": {
     "message": "Copy URL"
-  },
-  "no_active_tabs": {
-    "message": "No active tabs"
-  },
-  "cannot_access_tab": {
-    "message": "Cannot access active tab"
-  },
-  "content_script_failed": {
-    "message": "Content script communication failed"
-  },
-  "no_response_from_script": {
-    "message": "No response from content script"
   },
   "settings_btn_tooltip": {
     "message": "Extension settings"
@@ -242,18 +245,6 @@
   "image_alt_fallback": {
     "message": "Image"
   },
-  "tab_url_unavailable": {
-    "message": "Tab URL is not available"
-  },
-  "unsupported_page_type": {
-    "message": "This page type is not supported. Please navigate to a regular website."
-  },
-  "webstore_not_supported": {
-    "message": "Extension stores are not supported. Please navigate to a regular website."
-  },
-  "content_script_not_loaded": {
-    "message": "Extension failed to load on this page. Please refresh the page and try again."
-  },
   "create_zip_archive": {
     "message": "Create ZIP archive"
   },
@@ -265,18 +256,6 @@
   },
   "image_quality": {
     "message": "Image Quality:"
-  },
-  "failed_to_send_images": {
-    "message": "Failed to open images tab. Please try again."
-  },
-  "invalid_tab_id": {
-    "message": "Something went wrong when opening a tab. Please try again."
-  },
-  "internal_pages_not_supported": {
-    "message": "Chrome internal pages are not supported. Please navigate to a regular website."
-  },
-  "local_files_not_supported": {
-    "message": "Local files are not supported. Upload the file to a website first."
   },
   "monetize_free_counter": {
     "message": "Free: $1/10"
@@ -496,5 +475,17 @@
   },
   "onboarding_toggle_text": {
     "message": "After enhancing, each upgraded image gets a swap button so you can switch between the original thumbnail and the full-size version. The lightbox also shows toggle pills with dimensions for both versions."
+  },
+  "open_in_side_panel": {
+    "message": "Open in side panel"
+  },
+  "open_in_side_panel_info": {
+    "message": "When enabled, clicking the extension icon opens images in a side panel instead of a new tab"
+  },
+  "open_in_tab": {
+    "message": "Open in new tab"
+  },
+  "section_behavior": {
+    "message": "Behavior"
   }
 }

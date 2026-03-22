@@ -58,11 +58,12 @@ async function openHelperPage(context: BrowserContext, extensionId: string): Pro
 }
 
 test.describe('Extension loads and works', () => {
-  test('popup renders with download button', async ({ context, extensionId }) => {
-    const popupPage = await context.newPage();
-    await popupPage.goto(`chrome-extension://${extensionId}/popup.html`);
-    await expect(popupPage.locator('button')).toBeVisible();
-    await popupPage.close();
+  test('sidepanel.html loads and renders UI', async ({ context, extensionId }) => {
+    const sidepanelPage = await context.newPage();
+    await sidepanelPage.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+    await sidepanelPage.waitForLoadState('domcontentloaded');
+    await expect(sidepanelPage.locator('#root')).not.toBeEmpty();
+    await sidepanelPage.close();
   });
 
   test('page.html loads and renders UI', async ({ context, extensionId }) => {
