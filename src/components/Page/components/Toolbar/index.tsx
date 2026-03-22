@@ -27,6 +27,7 @@ import { RatingWidget } from '@components';
 import { useImageStore, useSettingsStore } from '@store';
 import { GrabImagesResponse, ImageData, MessageActionType } from '@types';
 import { QualityLevel, SortOption, sendMessageToContentScript, useTranslation } from '@utils';
+import { isSidePanelContext } from '@utils/sidePanelUtils';
 
 import {
   ControlItem,
@@ -77,26 +78,47 @@ export const Toolbar: FC = () => {
   const [isEnhancing, setIsEnhancing] = useState(false);
 
   const handleRescan = useCallback(async () => {
-    if (!sourceTabId) return;
-
     setIsRescanning(true);
     try {
+      let targetTabId = sourceTabId;
+
+      if (isSidePanelContext()) {
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!activeTab?.id) {
+          enqueueSnackbar(t('rescan_tab_closed'), { variant: 'warning' });
+          return;
+        }
+        targetTabId = activeTab.id;
+      }
+
+      if (!targetTabId) return;
+
+      const isSwitchedTab = targetTabId !== sourceTabId;
+
       const response = await sendMessageToContentScript<GrabImagesResponse>(
-        sourceTabId,
-        { action: MessageActionType.RESCAN_IMAGES },
+        targetTabId,
+        { action: isSwitchedTab ? MessageActionType.GRAB_IMAGES : MessageActionType.RESCAN_IMAGES },
         10000,
       );
       if (response?.images) {
-        const { images, setImages } = useImageStore.getState();
-        const existingSrcs = new Set(images.map((img) => img.src));
-        const newImages = response.images.filter((img) => !existingSrcs.has(img.src));
-        if (newImages.length > 0) {
-          setImages([...images, ...newImages]);
-          enqueueSnackbar(t('rescan_found_new', newImages.length.toString()), {
+        if (isSwitchedTab) {
+          useImageStore.setState({ pageUrl: response.pageUrl ?? '', sourceTabId: targetTabId });
+          useImageStore.getState().setImages(response.images);
+          enqueueSnackbar(t('rescan_found_new', response.images.length.toString()), {
             variant: 'success',
           });
         } else {
-          enqueueSnackbar(t('rescan_no_new'), { variant: 'info' });
+          const { images, setImages } = useImageStore.getState();
+          const existingSrcs = new Set(images.map((img) => img.src));
+          const newImages = response.images.filter((img) => !existingSrcs.has(img.src));
+          if (newImages.length > 0) {
+            setImages([...images, ...newImages]);
+            enqueueSnackbar(t('rescan_found_new', newImages.length.toString()), {
+              variant: 'success',
+            });
+          } else {
+            enqueueSnackbar(t('rescan_no_new'), { variant: 'info' });
+          }
         }
       } else {
         enqueueSnackbar(t('rescan_tab_closed'), { variant: 'warning' });
@@ -443,7 +465,7 @@ export const Toolbar: FC = () => {
           </ViewButton>
         </ViewOptionsContainer>
 
-        {sourceTabId && (
+        {(sourceTabId || isSidePanelContext()) && (
           <>
             <Button
               data-onboarding="enhance-button"

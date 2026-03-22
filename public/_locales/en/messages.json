@@ -279,10 +279,10 @@
     "message": "Found $1 new image(s)"
   },
   "rescan_no_new": {
-    "message": "No new images found. Try scrolling the original tab"
+    "message": "No new images found. Try scrolling the page and rescan again"
   },
   "rescan_tab_closed": {
-    "message": "Could not rescan — the original tab may have been closed"
+    "message": "Could not rescan — the tab may have been closed or is not accessible"
   },
   "bulk_download_partial": {
     "message": "Downloaded $1/$2 images. $3 failed."
@@ -312,7 +312,7 @@
     "message": "Rescan"
   },
   "onboarding_actions_text": {
-    "message": "If the page has changed since you opened the extension, hit Rescan to find new images."
+    "message": "Hit Rescan to find new images — after scrolling the page, or after switching to a different tab."
   },
   "onboarding_download_title": {
     "message": "Download"
