@@ -64,6 +64,7 @@ export const Page: FC = () => {
       'https://onlineapp.pro',
       'https://onlineapp.live',
       'https://onlineapp.stream',
+      'https://appbox.space',
     ]);
 
     const listener = (event: MessageEvent) => {
