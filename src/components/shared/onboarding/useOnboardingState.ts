@@ -40,6 +40,12 @@ export function useOnboardingState({ steps, storageKey, shouldOpen }: UseOnboard
       return;
     }
 
+    // Scroll target into view when step changes
+    const el = document.querySelector(currentStep.targetSelector);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     const measure = () => {
       const el = document.querySelector(currentStep.targetSelector!);
       if (!el) {
