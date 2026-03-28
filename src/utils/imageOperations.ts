@@ -5,11 +5,7 @@ import { useSnackbar } from 'notistack';
 import { useImageStore, useRatingStore, useSettingsStore } from '@store';
 import { ImageData, MessageActionType } from '@types';
 
-import {
-  downloadImageWithConversion,
-  gateDownloadWithPaywall,
-  useTranslation,
-} from '../utils';
+import { downloadImageWithConversion, gateDownloadWithPaywall, useTranslation } from '../utils';
 import { NOTIFICATION_DURATION, NotificationType } from './constants';
 import { sendMessageToContentScript } from './contentScriptUtils';
 

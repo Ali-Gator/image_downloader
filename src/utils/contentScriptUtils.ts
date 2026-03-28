@@ -141,7 +141,9 @@ export const sendMessageToContentScript = async <T = never>(
 
       if (chrome.runtime.lastError) {
         handleError(
-          new Error(`Content script message failed after injection: ${chrome.runtime.lastError.message}`),
+          new Error(
+            `Content script message failed after injection: ${chrome.runtime.lastError.message}`,
+          ),
           { extra: { source: 'sendMessageToContentScript.retry', tabUrl } },
         );
         resolve(null);

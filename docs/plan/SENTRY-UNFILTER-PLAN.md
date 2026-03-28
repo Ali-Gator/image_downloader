@@ -25,23 +25,23 @@ Reduce dropped events by fixing root causes, not by adding more filters.
 
 These are Chrome API limitations. We cannot fix them. Keep the filters.
 
-| #  | Pattern                                                  | Why unfixable                                    |
-|----|----------------------------------------------------------|--------------------------------------------------|
-| 1  | `cannot access a chrome://`                              | Chrome blocks extension access to internal pages |
-| 2  | `cannot access a chrome-extension://`                    | Cross-extension access is forbidden              |
-| 3  | `cannot access contents of url "chrome`                  | Same as #1, different wording                    |
-| 4  | `extensions gallery`                                     | Chrome Web Store blocks all extensions           |
-| 5  | `this page cannot be scripted`                           | Enterprise/managed policy                        |
-| 6  | `extensionssettings policy`                              | Enterprise/managed policy                        |
-| 7  | `cannot be scripted due to an extensionssettings policy` | Enterprise/managed policy                        |
-| 8  | `cannot excute script on this site`                      | Chrome typo variant of "cannot execute"          |
-| 9  | `cannot execute script on this site`                     | Chrome blocks injection on certain pages         |
-| 10 | `the browser is shutting down`                           | Nothing to do during shutdown                    |
-| 11 | `tab creation is restricted`                             | Sidebar mode limitation                          |
-| 12 | `unable to create writable file`                         | Chrome storage IO, not our problem               |
-| 13 | `unable to create sequential file`                       | Chrome storage IO                                |
-| 14 | `io error`                                               | Chrome storage IO                                |
-| 15 | `access denied`                                          | Chrome file lock                                 |
+| #   | Pattern                                                  | Why unfixable                                    |
+| --- | -------------------------------------------------------- | ------------------------------------------------ |
+| 1   | `cannot access a chrome://`                              | Chrome blocks extension access to internal pages |
+| 2   | `cannot access a chrome-extension://`                    | Cross-extension access is forbidden              |
+| 3   | `cannot access contents of url "chrome`                  | Same as #1, different wording                    |
+| 4   | `extensions gallery`                                     | Chrome Web Store blocks all extensions           |
+| 5   | `this page cannot be scripted`                           | Enterprise/managed policy                        |
+| 6   | `extensionssettings policy`                              | Enterprise/managed policy                        |
+| 7   | `cannot be scripted due to an extensionssettings policy` | Enterprise/managed policy                        |
+| 8   | `cannot excute script on this site`                      | Chrome typo variant of "cannot execute"          |
+| 9   | `cannot execute script on this site`                     | Chrome blocks injection on certain pages         |
+| 10  | `the browser is shutting down`                           | Nothing to do during shutdown                    |
+| 11  | `tab creation is restricted`                             | Sidebar mode limitation                          |
+| 12  | `unable to create writable file`                         | Chrome storage IO, not our problem               |
+| 13  | `unable to create sequential file`                       | Chrome storage IO                                |
+| 14  | `io error`                                               | Chrome storage IO                                |
+| 15  | `access denied`                                          | Chrome file lock                                 |
 
 **15 patterns — no action needed.**
 
@@ -51,7 +51,7 @@ These errors might be fixable with better error handling or UX. Plan: unfilter o
 observe what comes in, fix the root cause, then either remove the filter or narrow it.
 
 | #   | Pattern                              | Last 30d count | Hypothesis                                                                                                                                  | Phase |
-|-----|--------------------------------------|----------------|---------------------------------------------------------------------------------------------------------------------------------------------|-------|
+| --- | ------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
 | B1  | `blocked`                            | 1,342          | Too broad — matches ANY error with "blocked". Could hide CORS, CSP, real fetch failures. Replace with specific patterns or fix the cause.   | 1     |
 | B2  | `unknown error.`                     | 182            | Generic Chrome error. Need to see stack traces — might reveal a real bug.                                                                   | 1     |
 | B3  | `no sw`                              | 119            | Service Worker not running. Could be fixable — re-register SW or handle gracefully.                                                         | 2     |
@@ -89,8 +89,8 @@ observe what comes in, fix the root cause, then either remove the filter or narr
 - [ ] Document findings below in Phase 1 Results
 
 **Phase 1 Results**:
-> _Deployed on: 2026-03-28_
-> _Check after: 2026-04-04_
+
+> _Deployed on: 2026-03-28_ > _Check after: 2026-04-04_
 
 ---
 
@@ -101,9 +101,9 @@ observe what comes in, fix the root cause, then either remove the filter or narr
 **Steps**:
 
 - [ ] **B4 (cannot access contents of the page)**: Instead of throwing, show user a message like "Cannot access this
-  page — try granting permission or open a different page". Suppress the error after showing the message.
+      page — try granting permission or open a different page". Suppress the error after showing the message.
 - [ ] **B3 (no sw)**: Investigate when SW dies. Add SW registration check + recovery. If unrecoverable, show user a
-  message to reload the extension.
+      message to reload the extension.
 - [ ] Deploy, wait 3-5 days, check Sentry
 - [ ] Document findings below
 
@@ -111,6 +111,7 @@ observe what comes in, fix the root cause, then either remove the filter or narr
 improve UX.
 
 **Phase 2 Results**:
+
 > _Not started yet._
 
 ---
@@ -122,9 +123,9 @@ improve UX.
 **Steps**:
 
 - [ ] **B6+B7 (receiving end / could not establish connection)**: Add retry with health check before sending messages to
-  content script. Use `HEALTH_CHECK` message pattern that already exists in codebase.
+      content script. Use `HEALTH_CHECK` message pattern that already exists in codebase.
 - [ ] **B5 (could not load file)**: Detect stale extension state, prompt user to reload. Or use
-  `chrome.runtime.reload()` if in background.
+      `chrome.runtime.reload()` if in background.
 - [ ] **B9 (frame with id 0)**: Check `tab.status` and `tab.url` before sending messages. Skip error pages.
 - [ ] **B10 (no tab with id)**: Wrap tab operations in try/catch, handle gracefully.
 - [ ] **B11 (tabs cannot be edited)**: Add short retry (500ms) when tab is being dragged.
@@ -133,6 +134,7 @@ improve UX.
 - [ ] Deploy, wait 3-5 days, check Sentry
 
 **Phase 3 Results**:
+
 > _Not started yet._
 
 ---
@@ -175,7 +177,7 @@ Fill in the "Phase N Results" section with:
 ## Success Metrics
 
 | Metric                     | Before (Mar 2026) | Target            |
-|----------------------------|-------------------|-------------------|
+| -------------------------- | ----------------- | ----------------- |
 | Dropped events/week        | ~8,400            | < 2,000           |
 | Filters in Category B      | 11                | < 4               |
 | User-facing error handling | Silent failures   | Friendly messages |

@@ -99,11 +99,7 @@ export const Header: FC = () => {
       area,
     ) => {
       if (area !== 'local') return;
-      if (
-        changes.seenPageUrls ||
-        changes.paywallVisibilityOff ||
-        changes.monetizationRefreshAt
-      ) {
+      if (changes.seenPageUrls || changes.paywallVisibilityOff || changes.monetizationRefreshAt) {
         refreshMonetizationState().catch(handleError);
       }
     };
@@ -260,7 +256,15 @@ export const Header: FC = () => {
     }
 
     return null;
-  }, [inSidePanel, trialExpired, totalActions, remainingActions, refreshMonetizationState, showMonetizationUI, t]);
+  }, [
+    inSidePanel,
+    trialExpired,
+    totalActions,
+    remainingActions,
+    refreshMonetizationState,
+    showMonetizationUI,
+    t,
+  ]);
 
   const isUserMenuOpen = Boolean(userMenuAnchorEl);
 

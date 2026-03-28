@@ -6,10 +6,7 @@ const DEBOUNCE_MS = 300;
  * Local state + debounce for text inputs backed by async storage (chrome.storage).
  * Prevents flickering caused by storage change events arriving out of order during fast typing.
  */
-export function useDebouncedInput(
-  storeValue: string,
-  setStoreValue: (value: string) => void,
-) {
+export function useDebouncedInput(storeValue: string, setStoreValue: (value: string) => void) {
   const [localValue, setLocalValue] = useState(storeValue);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const isTypingRef = useRef(false);
