@@ -258,7 +258,7 @@
     "message": "Image Quality:"
   },
   "monetize_free_counter": {
-    "message": "Free: $1/10"
+    "message": "Free: $1/$2"
   },
   "monetize_free_limit_reached": {
     "message": "Free limit reached. Upgrade to continue."

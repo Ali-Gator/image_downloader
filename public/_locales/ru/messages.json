@@ -105,7 +105,7 @@
     "message": "Фильтр по качеству"
   },
   "monetize_free_counter": {
-    "message": "Бесплатно: $1/10"
+    "message": "Бесплатно: $1/$2"
   },
   "monetize_free_limit_reached": {
     "message": "Лимит бесплатных загрузок исчерпан. Обновитесь, чтобы продолжить."

@@ -7,8 +7,7 @@ import { ImageData, MessageActionType } from '@types';
 
 import {
   downloadImageWithConversion,
-  maybeOpenPaywallOn11thClick,
-  recordSuccessfulDownloadPageUrl,
+  gateDownloadWithPaywall,
   useTranslation,
 } from '../utils';
 import { NOTIFICATION_DURATION, NotificationType } from './constants';
@@ -73,7 +72,7 @@ export const useImageOperations = (src: string, fileName: string, imageId?: stri
    */
   const handleDownload = useCallback(async () => {
     try {
-      const gate = await maybeOpenPaywallOn11thClick({ pageUrl });
+      const gate = await gateDownloadWithPaywall({ pageUrl });
       if (gate.blocked) return;
 
       // Show notification about download start
@@ -87,11 +86,6 @@ export const useImageOperations = (src: string, fileName: string, imageId?: stri
 
       if (result.success) {
         useRatingStore.getState().setHasSuccessfulDownload(true);
-      }
-
-      // Count only after a successful download
-      if (gate.eligibility.showMonetizationUI) {
-        await recordSuccessfulDownloadPageUrl(pageUrl);
       }
 
       showNotification(NotificationType.SUCCESS);

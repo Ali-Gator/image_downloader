@@ -80,10 +80,26 @@ declare global {
     };
   }
 
+  interface PaywallTrialInfoOpens {
+    remainingActions: number;
+    totalActions: number;
+    expired: boolean;
+  }
+
+  interface PaywallTrialInfoTime {
+    expirationStart: number;
+    expirationEnd: number;
+    expirationTime: number;
+    expired: boolean;
+  }
+
+  type PaywallTrialInfo = PaywallTrialInfoOpens | PaywallTrialInfoTime | 'no trial';
+
   interface PaywallSDK {
     init: (paywallId: string) => Promise<boolean> | boolean;
     open: (options?: PaywallOpenOptions) => Promise<unknown>;
     getUser: () => Promise<PaywallUser>;
+    getTrialInfo: () => Promise<PaywallTrialInfo>;
     renew: () => Promise<unknown>;
     destroy: () => Promise<void>;
   }

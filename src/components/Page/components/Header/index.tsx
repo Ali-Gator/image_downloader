@@ -30,15 +30,14 @@ import {
 } from './styles';
 import {
   downloadImagesWithConversion,
+  gateDownloadWithPaywall,
   getCustomerPortalSupportUrl,
   getCustomerPortalUrl,
   getMonetizationEligibilityWithUser,
-  getMonetizationLimitState,
+  getTrialState,
   handleError,
-  maybeOpenPaywallOn11thClick,
   openPageTabAndSendImages,
   openPaywallForPurchase,
-  recordSuccessfulDownloadPageUrl,
   useTranslation,
 } from '../../../../utils';
 import { NOTIFICATION_DURATION, NotificationType } from '../../../../utils/constants';
@@ -55,8 +54,9 @@ export const Header: FC = () => {
 
   const [showMonetizationUI, setShowMonetizationUI] = useState(false);
   const [paid, setPaid] = useState(false);
-  const [usedCount, setUsedCount] = useState(0);
-  const [limitReached, setLimitReached] = useState(false);
+  const [remainingActions, setRemainingActions] = useState(0);
+  const [totalActions, setTotalActions] = useState(0);
+  const [trialExpired, setTrialExpired] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>('');
   const [isDownloading, setIsDownloading] = useState(false);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -68,15 +68,16 @@ export const Header: FC = () => {
 
   const refreshMonetizationState = useCallback(async () => {
     try {
-      const [{ eligibility, user }, limit] = await Promise.all([
+      const [{ eligibility, user }, trial] = await Promise.all([
         getMonetizationEligibilityWithUser(),
-        getMonetizationLimitState(),
+        getTrialState(),
       ]);
 
       setShowMonetizationUI(eligibility.showMonetizationUI);
       setPaid(eligibility.paid);
-      setUsedCount(limit.usedCount);
-      setLimitReached(limit.limitReached);
+      setRemainingActions(trial.remainingActions);
+      setTotalActions(trial.totalActions);
+      setTrialExpired(trial.expired);
 
       const maybeAvatar = user?.user?.avatar;
       setAvatarUrl(
@@ -91,7 +92,7 @@ export const Header: FC = () => {
     refreshMonetizationState().catch(handleError);
   }, [refreshMonetizationState]);
 
-  // Keep UI in sync when local storage changes (successful downloads update usedPageUrls/limitReachedAt)
+  // Keep UI in sync when local storage changes (successful downloads update seenPageUrls)
   useEffect(() => {
     const listener: Parameters<typeof chrome.storage.onChanged.addListener>[0] = (
       changes,
@@ -99,8 +100,7 @@ export const Header: FC = () => {
     ) => {
       if (area !== 'local') return;
       if (
-        changes.usedPageUrls ||
-        changes.limitReachedAt ||
+        changes.seenPageUrls ||
         changes.paywallVisibilityOff ||
         changes.monetizationRefreshAt
       ) {
@@ -142,7 +142,7 @@ export const Header: FC = () => {
 
     setIsDownloading(true);
     try {
-      const gate = await maybeOpenPaywallOn11thClick({ pageUrl });
+      const gate = await gateDownloadWithPaywall({ pageUrl });
       if (gate.blocked) return;
 
       // Show initial notification
@@ -171,9 +171,7 @@ export const Header: FC = () => {
         closeSnackbar(ZIP_PROGRESS_SNACKBAR_KEY);
       }
 
-      // Count only after at least one successful download
-      if (gate.eligibility.showMonetizationUI && successCount > 0) {
-        await recordSuccessfulDownloadPageUrl(pageUrl);
+      if (successCount > 0) {
         refreshMonetizationState().catch(handleError);
       }
 
@@ -225,7 +223,7 @@ export const Header: FC = () => {
   const monetizationNode = useMemo(() => {
     if (!showMonetizationUI) return null;
 
-    if (limitReached) {
+    if (trialExpired) {
       return (
         <MonetizationStatusContainer>
           <MonetizationBanner>
@@ -248,16 +246,21 @@ export const Header: FC = () => {
       );
     }
 
-    return (
-      <MonetizationStatusContainer>
-        <MonetizationBadge>
-          <Typography variant="body2">
-            {t('monetize_free_counter', usedCount.toString())}
-          </Typography>
-        </MonetizationBadge>
-      </MonetizationStatusContainer>
-    );
-  }, [inSidePanel, limitReached, refreshMonetizationState, showMonetizationUI, t, usedCount]);
+    if (totalActions > 0) {
+      const usedActions = totalActions - remainingActions;
+      return (
+        <MonetizationStatusContainer>
+          <MonetizationBadge>
+            <Typography variant="body2">
+              {t('monetize_free_counter', [usedActions.toString(), totalActions.toString()])}
+            </Typography>
+          </MonetizationBadge>
+        </MonetizationStatusContainer>
+      );
+    }
+
+    return null;
+  }, [inSidePanel, trialExpired, totalActions, remainingActions, refreshMonetizationState, showMonetizationUI, t]);
 
   const isUserMenuOpen = Boolean(userMenuAnchorEl);
 

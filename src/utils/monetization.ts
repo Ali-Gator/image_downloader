@@ -1,8 +1,7 @@
 import { PAYWALL_ID } from './constants';
 import { handleError } from './errorHandlers';
 
-const USED_PAGE_URLS_KEY = 'usedPageUrls';
-const LIMIT_REACHED_AT_KEY = 'limitReachedAt';
+const SEEN_PAGE_URLS_KEY = 'seenPageUrls';
 const PAYWALL_VISIBILITY_OFF_KEY = 'paywallVisibilityOff';
 const MONETIZATION_REFRESH_AT_KEY = 'monetizationRefreshAt';
 
@@ -99,11 +98,10 @@ async function touchMonetizationRefresh(): Promise<void> {
   }
 }
 
-export type MonetizationLimitState = {
-  usedPageUrls: string[];
-  usedCount: number;
-  limitReached: boolean;
-  limitReachedAt: string | null;
+export type TrialState = {
+  remainingActions: number;
+  totalActions: number;
+  expired: boolean;
 };
 
 export type PaywallOpenOutcome =
@@ -240,104 +238,98 @@ export async function getMonetizationEligibility(): Promise<MonetizationEligibil
   return eligibility;
 }
 
-export async function getMonetizationLimitState(): Promise<MonetizationLimitState> {
+export async function getTrialState(): Promise<TrialState> {
   try {
-    const result = await chrome.storage.local.get([USED_PAGE_URLS_KEY, LIMIT_REACHED_AT_KEY]);
+    await ensurePaywallReady();
+    const info = await window.paywall?.getTrialInfo?.();
 
-    const usedPageUrlsRaw = result[USED_PAGE_URLS_KEY];
-    const usedPageUrls = Array.isArray(usedPageUrlsRaw)
-      ? usedPageUrlsRaw.filter((v) => typeof v === 'string')
-      : [];
-
-    const limitReachedAtRaw = result[LIMIT_REACHED_AT_KEY];
-    const limitReachedAt = typeof limitReachedAtRaw === 'string' ? limitReachedAtRaw : null;
-
-    const usedCount = usedPageUrls.length;
-
-    const limitReached = usedCount >= 10 || Boolean(limitReachedAt);
-
-    return { usedPageUrls, usedCount, limitReached, limitReachedAt };
-  } catch (error) {
-    handleError(error);
-    return { usedPageUrls: [], usedCount: 0, limitReached: false, limitReachedAt: null };
-  }
-}
-
-export async function recordSuccessfulDownloadPageUrl(pageUrl: string | null): Promise<void> {
-  if (!pageUrl) return;
-
-  const normalized = normalizePageUrl(pageUrl);
-  if (!normalized) return;
-
-  try {
-    const current = await chrome.storage.local.get([USED_PAGE_URLS_KEY, LIMIT_REACHED_AT_KEY]);
-
-    const usedPageUrlsRaw = current[USED_PAGE_URLS_KEY];
-    const usedPageUrls: string[] = Array.isArray(usedPageUrlsRaw)
-      ? usedPageUrlsRaw.filter((v) => typeof v === 'string')
-      : [];
-
-    if (usedPageUrls.includes(normalized)) return;
-
-    const nextUsed = [...usedPageUrls, normalized].slice(0, 10);
-
-    const updates: Record<string, unknown> = {
-      [USED_PAGE_URLS_KEY]: nextUsed,
-    };
-
-    const currentLimitReachedAt = current[LIMIT_REACHED_AT_KEY];
-    const alreadyReached =
-      typeof currentLimitReachedAt === 'string' && currentLimitReachedAt.length > 0;
-
-    if (nextUsed.length >= 10 && !alreadyReached) {
-      updates[LIMIT_REACHED_AT_KEY] = new Date().toISOString();
+    if (info && typeof info === 'object' && 'remainingActions' in info) {
+      return {
+        remainingActions: info.remainingActions,
+        totalActions: info.totalActions,
+        expired: info.expired,
+      };
     }
 
-    await chrome.storage.local.set(updates);
+    // No action-based trial configured or 'no trial' — treat as expired so paywall shows.
+    return { remainingActions: 0, totalActions: 0, expired: true };
   } catch (error) {
     handleError(error);
+    return { remainingActions: 0, totalActions: 0, expired: true };
   }
 }
 
-export async function maybeOpenPaywallOn11thClick(params: { pageUrl: string | null }): Promise<{
+async function getSeenPageUrls(): Promise<string[]> {
+  try {
+    const result = await chrome.storage.local.get([SEEN_PAGE_URLS_KEY]);
+    const raw = result[SEEN_PAGE_URLS_KEY];
+    return Array.isArray(raw) ? raw.filter((v) => typeof v === 'string') : [];
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+}
+
+async function checkAndRecordSeenPageUrl(
+  pageUrl: string,
+  mode: 'check' | 'record',
+): Promise<boolean> {
+  const normalized = normalizePageUrl(pageUrl);
+  if (!normalized) return false;
+
+  try {
+    const seen = await getSeenPageUrls();
+    if (seen.includes(normalized)) return true;
+    if (mode === 'record') {
+      await chrome.storage.local.set({ [SEEN_PAGE_URLS_KEY]: [...seen, normalized] });
+    }
+    return false;
+  } catch (error) {
+    handleError(error);
+    return false;
+  }
+}
+
+export async function gateDownloadWithPaywall(params: { pageUrl: string | null }): Promise<{
   blocked: boolean;
   eligibility: MonetizationEligibility;
-  limit: MonetizationLimitState;
 }> {
   const eligibility = await getMonetizationEligibility();
-  const limit = await getMonetizationLimitState();
 
   // Guardrail: if we're not showing monetization UI, behavior must not change at all.
   if (!eligibility.showMonetizationUI) {
-    return { blocked: false, eligibility, limit };
+    return { blocked: false, eligibility };
   }
 
   // If we can't determine pageUrl, do not block and do not count.
   if (!params.pageUrl) {
-    return { blocked: false, eligibility, limit };
+    return { blocked: false, eligibility };
   }
 
-  if (!limit.limitReached) {
-    return { blocked: false, eligibility, limit };
+  // Already counted this URL — allow without consuming another trial open.
+  if (await checkAndRecordSeenPageUrl(params.pageUrl, 'check')) {
+    return { blocked: false, eligibility };
   }
 
-  // Limit reached and unpaid -> open paywall on click (11th+)
+  // New URL → call open() which consumes a trial open (or shows paywall when trial exhausted).
   const result = await openPaywallForPurchase();
 
-  // Successful purchase -> allow this click and return fresh eligibility so caller can avoid counting.
-  if (result.ok && result.outcome === 'success-purchase') {
+  const shouldAllow =
+    (result.ok && result.outcome === 'success-purchase') ||
+    (!result.ok && result.outcome === 'prevented' && shouldAllowAccessForReason(result.reason));
+
+  if (shouldAllow) {
+    // After a successful purchase the trial tracking is no longer needed — clear it
+    // so that if the subscription expires later the user gets a fresh trial.
+    if (result.ok && result.outcome === 'success-purchase') {
+      await chrome.storage.local.remove(SEEN_PAGE_URLS_KEY);
+    } else {
+      await checkAndRecordSeenPageUrl(params.pageUrl, 'record');
+    }
     const nextEligibility = await getMonetizationEligibility();
-    return { blocked: false, eligibility: nextEligibility, limit };
+    return { blocked: false, eligibility: nextEligibility };
   }
 
-  // If Monetize prevented opening because user already has access (active payment / trial / etc.),
-  // do not block the download.
-  if (!result.ok && result.outcome === 'prevented' && shouldAllowAccessForReason(result.reason)) {
-    const nextEligibility = await getMonetizationEligibility();
-    return { blocked: false, eligibility: nextEligibility, limit };
-  }
-
-  // Otherwise block this click (user closed paywall or paywall unavailable), consistent with UX:
-  // banner already warned; next clicks keep prompting upgrade.
-  return { blocked: true, eligibility, limit };
+  // User closed paywall or error → block.
+  return { blocked: true, eligibility };
 }

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getMonetizationLimitState } from '@utils/monetization';
+import { getTrialState } from '@utils/monetization';
 
 import { OptionsPrompt } from '../components/Page/components/OptionsPrompt';
 import { StorageKeys } from '../utils/constants';
@@ -15,15 +15,15 @@ vi.mock('@utils', async () => {
 });
 
 vi.mock('@utils/monetization', () => ({
-  getMonetizationLimitState: vi.fn(),
+  getTrialState: vi.fn(),
 }));
 
 function mockMonetization(usedCount: number) {
-  vi.mocked(getMonetizationLimitState).mockResolvedValue({
-    usedCount,
-    limitReached: false,
-    limitReachedAt: null,
-    usedPageUrls: [],
+  const totalActions = 10;
+  vi.mocked(getTrialState).mockResolvedValue({
+    remainingActions: totalActions - usedCount,
+    totalActions,
+    expired: false,
   });
 }
 
