@@ -284,9 +284,5 @@ const theme = createTheme({
   },
 });
 
-/** Breakpoint for the side panel narrow viewport (px). */
-const SIDE_PANEL_BP = 500;
-const sidePanelMedia = `@media (max-width: ${SIDE_PANEL_BP}px)`;
-
-export { alpha, colors, shadows, sidePanelMedia };
+export { alpha, colors, shadows };
 export default theme;

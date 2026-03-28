@@ -2,8 +2,6 @@ import React from 'react';
 
 import { styled } from '@mui/material/styles';
 
-import { sidePanelMedia } from '@theme';
-
 export const GridContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -45,7 +43,7 @@ const GridListContainer = styled('div')(({ theme }) => ({
     gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
   },
 
-  [sidePanelMedia]: {
+  [theme.breakpoints.down('sm')]: {
     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
     padding: theme.spacing(1, 1.5, 2, 1.5),
     gap: theme.spacing(1),
