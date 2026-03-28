@@ -263,6 +263,9 @@
   "monetize_free_limit_reached": {
     "message": "Free limit reached. Upgrade to continue."
   },
+  "monetize_limit_short": {
+    "message": "Limit reached"
+  },
   "upgrade_btn": {
     "message": "Upgrade"
   },

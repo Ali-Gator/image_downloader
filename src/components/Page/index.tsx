@@ -2,7 +2,7 @@ import { FC, useEffect } from 'react';
 
 import { useSnackbar } from 'notistack';
 
-import { RatingReminderModal } from '@components';
+import { RatingReminderModal, RatingWidget } from '@components';
 import {
   Header,
   ImageGrid,
@@ -11,12 +11,12 @@ import {
   OptionsPrompt,
   Toolbar,
 } from '@components/Page/components';
-import { useImageStore, useSettingsStore } from '@store';
+import { useImageStore, useRatingStore, useSettingsStore } from '@store';
 import { setupImageListener } from '@utils';
 import { autoGrabImages, isAutoGrabError } from '@utils/autoGrabImages';
 import { isSidePanelContext } from '@utils/sidePanelUtils';
 
-import { PageContainer } from './styles';
+import { PageContainer, StickyRatingBar } from './styles';
 
 export const Page: FC = () => {
   const { setImages, setIsLoading, setPageUrl, setSourceTabId, isLoading, setIsGridView } =
@@ -91,6 +91,8 @@ export const Page: FC = () => {
     return () => window.removeEventListener('message', listener);
   }, []);
 
+  const hasRatedApp = useRatingStore((s) => s.hasRatedApp);
+
   return (
     <>
       <PageContainer>
@@ -101,6 +103,11 @@ export const Page: FC = () => {
         <Toolbar />
         <ImageGrid />
         {isLoading && <LoadingOverlay />}
+        {!hasRatedApp && (
+          <StickyRatingBar>
+            <RatingWidget />
+          </StickyRatingBar>
+        )}
       </PageContainer>
     </>
   );

@@ -273,17 +273,25 @@ export const Toolbar: FC = () => {
     return `${qualityFilters.length} ${t('quality_filters_selected')}`;
   };
 
+  const inSidePanel = isSidePanelContext();
+
   return (
     <ToolbarContainer>
       <LeftSection>
         <ControlsRow data-onboarding="filter-section">
-          <ControlItem>
+          <ControlItem
+            sx={{
+              flex: { xs: '1 1 0', sm: 'initial' },
+              minWidth: { xs: 100, sm: 'auto' },
+            }}
+          >
             <TextField
               placeholder={t('filter_text')}
               variant="outlined"
               size="small"
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
               InputProps={{
                 startAdornment: (
                   <SearchIcon sx={{ color: 'text.secondary', fontSize: '1.1rem', mr: 0.5 }} />
@@ -431,7 +439,7 @@ export const Toolbar: FC = () => {
 
       <RightSection>
         <SortContainer>
-          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+          <FormControl variant="outlined" size="small" sx={{ minWidth: { xs: 120, sm: 150 } }}>
             <InputLabel id="sort-images-label">{t('sort_text')}</InputLabel>
             <Select
               labelId="sort-images-label"
@@ -465,7 +473,7 @@ export const Toolbar: FC = () => {
           </ViewButton>
         </ViewOptionsContainer>
 
-        {(sourceTabId || isSidePanelContext()) && (
+        {(sourceTabId || inSidePanel) && (
           <>
             <Button
               data-onboarding="enhance-button"

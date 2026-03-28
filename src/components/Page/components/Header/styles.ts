@@ -1,7 +1,7 @@
 import { Avatar, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import { alpha, colors, sidePanelMedia } from '@theme';
+import { alpha, colors } from '@theme';
 
 export const HeaderContainer = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -18,8 +18,11 @@ export const HeaderContainer = styled('div')(({ theme }) => ({
   backdropFilter: 'blur(12px)',
   backgroundColor: alpha(colors.white, 0.92),
 
-  [sidePanelMedia]: {
-    padding: `0 ${theme.spacing(1.5)}`,
+  [theme.breakpoints.down('sm')]: {
+    padding: `${theme.spacing(0.75)} ${theme.spacing(1.5)}`,
+    height: 'auto',
+    minHeight: 48,
+    gap: theme.spacing(0.5),
   },
 }));
 
@@ -33,11 +36,20 @@ export const TitleContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1.5),
+  flexShrink: 0,
 
   '& .MuiTypography-root': {
     fontSize: '0.9375rem',
     fontWeight: 600,
     letterSpacing: '-0.01em',
+  },
+
+  [theme.breakpoints.down('sm')]: {
+    gap: 0,
+
+    '& .MuiTypography-root': {
+      display: 'none',
+    },
   },
 }));
 
@@ -46,7 +58,7 @@ export const ControlsContainer = styled('div')(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1),
 
-  [sidePanelMedia]: {
+  [theme.breakpoints.down('sm')]: {
     flexWrap: 'wrap',
   },
 }));
@@ -76,9 +88,23 @@ export const SelectAllContainer = styled('div')(({ theme }) => ({
     padding: 0,
   },
 
-  [sidePanelMedia]: {
-    '& label': {
+  '& .full-label': {
+    display: 'inline',
+  },
+
+  '& .compact-label': {
+    display: 'none',
+  },
+
+  [theme.breakpoints.down('sm')]: {
+    padding: `${theme.spacing(0.5)} ${theme.spacing(0.75)}`,
+
+    '& .full-label': {
       display: 'none',
+    },
+
+    '& .compact-label': {
+      display: 'inline',
     },
   },
 }));
@@ -96,7 +122,7 @@ export const MonetizationBadge = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.primary.light,
   color: theme.palette.primary.main,
   borderRadius: 20,
-  padding: `${theme.spacing(0.25)} ${theme.spacing(1)}`,
+  padding: `${theme.spacing(1)} ${theme.spacing(1.25)}`,
   whiteSpace: 'nowrap',
   fontSize: '0.75rem',
   fontWeight: 500,

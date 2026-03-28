@@ -94,6 +94,7 @@ export const QualityBadge = styled('span')<{ quality: QualityLevel }>(({ theme, 
   textAlign: 'center',
   fontSize: '0.625rem',
   textTransform: 'uppercase',
+  flexShrink: 0,
   backgroundColor:
     quality === QualityLevel.HD
       ? alpha(colors.success, 0.12)
@@ -168,6 +169,7 @@ export const MetadataLine = styled('span')(({ theme }) => ({
 export const Separator = styled('span')(({ theme }) => ({
   margin: '0 3px',
   color: theme.palette.text.disabled,
+  flexShrink: 0,
 }));
 
 export const ActionsContainer = styled(Box)(({ theme }) => ({

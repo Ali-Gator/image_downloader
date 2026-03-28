@@ -229,7 +229,9 @@ export const Header: FC = () => {
       return (
         <MonetizationStatusContainer>
           <MonetizationBanner>
-            <Typography variant="body2">{t('monetize_free_limit_reached')}</Typography>
+            <Typography variant="body2">
+              {inSidePanel ? t('monetize_limit_short') : t('monetize_free_limit_reached')}
+            </Typography>
             <Button
               variant="contained"
               color="secondary"
@@ -255,7 +257,7 @@ export const Header: FC = () => {
         </MonetizationBadge>
       </MonetizationStatusContainer>
     );
-  }, [limitReached, refreshMonetizationState, showMonetizationUI, t, usedCount]);
+  }, [inSidePanel, limitReached, refreshMonetizationState, showMonetizationUI, t, usedCount]);
 
   const isUserMenuOpen = Boolean(userMenuAnchorEl);
 
@@ -282,8 +284,11 @@ export const Header: FC = () => {
             indeterminate={isIndeterminate}
             onChange={handleSelectAllChange}
           />
-          <label htmlFor="selectAll">
+          <label htmlFor="selectAll" className="full-label">
             Select All ({selectedCount} of {totalCount} images)
+          </label>
+          <label htmlFor="selectAll" className="compact-label">
+            All {selectedCount}/{totalCount}
           </label>
         </SelectAllContainer>
 
@@ -294,12 +299,29 @@ export const Header: FC = () => {
           variant="contained"
           color="secondary"
           startIcon={
-            isDownloading ? <CircularProgress size={20} color="inherit" /> : <DownloadIcon />
+            inSidePanel ? undefined : isDownloading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <DownloadIcon />
+            )
           }
           onClick={handleDownload}
           disabled={selectedCount === 0 || isDownloading}
+          sx={
+            inSidePanel
+              ? { minWidth: 'auto', p: 1, '& .MuiSvgIcon-root': { mr: '0px' } }
+              : undefined
+          }
         >
-          {t('download_btn')}
+          {inSidePanel ? (
+            isDownloading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <DownloadIcon />
+            )
+          ) : (
+            t('download_btn')
+          )}
         </Button>
 
         {inSidePanel && (

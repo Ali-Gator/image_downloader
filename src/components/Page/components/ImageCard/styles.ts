@@ -182,7 +182,8 @@ export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
 
   '& .dimensions-container': {
     justifyContent: 'flex-start',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
+    overflow: 'hidden',
     gap: theme.spacing(0.25),
   },
 });

@@ -110,6 +110,9 @@
   "monetize_free_limit_reached": {
     "message": "Лимит бесплатных загрузок исчерпан. Обновитесь, чтобы продолжить."
   },
+  "monetize_limit_short": {
+    "message": "Лимит исчерпан"
+  },
   "upgrade_btn": {
     "message": "Обновить"
   },

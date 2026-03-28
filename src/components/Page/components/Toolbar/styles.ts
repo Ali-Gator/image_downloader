@@ -1,6 +1,5 @@
 import { styled } from '@mui/material/styles';
 
-import { sidePanelMedia } from '@theme';
 import { ViewButtonProps } from '@types';
 
 export const ToolbarContainer = styled('div')(({ theme }) => ({
@@ -18,7 +17,7 @@ export const ToolbarContainer = styled('div')(({ theme }) => ({
     alignItems: 'stretch',
   },
 
-  [sidePanelMedia]: {
+  [theme.breakpoints.down('sm')]: {
     padding: `${theme.spacing(1)} ${theme.spacing(1.5)}`,
   },
 }));
@@ -38,6 +37,10 @@ export const MiddleSection = styled('div')(({ theme }) => ({
     marginTop: theme.spacing(1),
     justifyContent: 'center',
   },
+
+  [theme.breakpoints.down('sm')]: {
+    display: 'none',
+  },
 }));
 
 export const RightSection = styled('div')(({ theme }) => ({
@@ -46,15 +49,9 @@ export const RightSection = styled('div')(({ theme }) => ({
   gap: theme.spacing(1.5),
 
   [theme.breakpoints.down('sm')]: {
-    width: '100%',
-    justifyContent: 'space-between',
-    marginTop: theme.spacing(1),
-  },
-
-  [sidePanelMedia]: {
     flexWrap: 'wrap',
     width: '100%',
-    justifyContent: 'space-between',
+    gap: theme.spacing(1),
     marginTop: theme.spacing(1),
   },
 }));
@@ -65,15 +62,9 @@ export const ControlsRow = styled('div')(({ theme }) => ({
   alignItems: 'center',
 
   [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column',
-    alignItems: 'stretch',
+    flexWrap: 'wrap',
     width: '100%',
-  },
-
-  [sidePanelMedia]: {
-    flexDirection: 'column',
-    alignItems: 'stretch',
-    width: '100%',
+    gap: theme.spacing(1),
   },
 }));
 
@@ -85,13 +76,6 @@ export const ControlItem = styled('div')(({ theme }) => ({
   '& .MuiSvgIcon-root': {
     color: theme.palette.text.secondary,
     fontSize: '1.1rem',
-  },
-
-  [theme.breakpoints.down('sm')]: {
-    width: '100%',
-    '& .MuiFormControl-root, & .MuiTextField-root': {
-      width: '100%',
-    },
   },
 }));
 
