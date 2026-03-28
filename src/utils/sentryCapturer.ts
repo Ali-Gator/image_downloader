@@ -12,6 +12,11 @@ import {
 import { SENTRY_FILTER_ERRORS } from './constants';
 import packageData from '../../package.json';
 
+export interface CaptureContext {
+  errorInfo?: ErrorInfo;
+  [key: string]: unknown;
+}
+
 const isDev: boolean = process.env.NODE_ENV == 'development';
 
 // Configure client without global state
@@ -48,12 +53,14 @@ function shouldIgnoreError(errorMessage: string): boolean {
 }
 
 // Function to capture exceptions
-export const captureException = (error: Error, errorInfo?: ErrorInfo) => {
+export const captureException = (error: Error, context?: CaptureContext) => {
   // beforeSend covers SDK-internal captures (GlobalHandlers etc.)
   // This early return avoids unnecessary scope tag pollution for manual calls
   if (shouldIgnoreError(error.message || '')) {
     return null;
   }
+
+  const { errorInfo, ...extra } = context ?? {};
 
   // Set additional context to help with debugging
   scope.setTag('error.type', error.name);
@@ -72,28 +79,20 @@ export const captureException = (error: Error, errorInfo?: ErrorInfo) => {
     stack: error.stack,
   };
 
-  // Add componentStack if available
   if (errorInfo?.componentStack) {
     errorDetails.componentStack = errorInfo.componentStack;
-    // If componentStack contains tabUrl, also set it as a separate tag for easier filtering
-    if (errorInfo.componentStack.includes('tabUrl:')) {
-      const tabUrlMatch = errorInfo.componentStack.match(/tabUrl:\s*([^\s]+)/);
-      if (tabUrlMatch?.[1]) {
-        scope.setTag('tab.url', tabUrlMatch[1]);
-        scope.setContext('Tab Context', {
-          url: tabUrlMatch[1],
-        });
-      }
-    }
   }
 
   scope.setContext('Error Details', errorDetails);
+
+  if (Object.keys(extra).length > 0) {
+    scope.setContext('Extra Context', extra);
+  }
 
   const hint: EventHint = {
     data: {
       react: errorInfo,
       handled: true,
-      source: 'manual-test',
     },
   };
 
@@ -114,7 +113,6 @@ export const captureMessage = (message: string, level: 'info' | 'warning' | 'err
   scope.setContext('Message Details', {
     timestamp: new Date().toISOString(),
     message,
-    source: 'manual-test',
   });
 
   // Capture the message and log the result

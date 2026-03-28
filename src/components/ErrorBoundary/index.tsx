@@ -22,7 +22,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Only capture errors, not warnings or info messages
-    captureException(error, errorInfo);
+    captureException(error, { errorInfo });
   }
 
   render(): ReactNode {

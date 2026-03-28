@@ -236,12 +236,8 @@ export const SENTRY_FILTER_ERRORS = [
   'could not load file',
   // Chrome window/tab context — expected in background or headless contexts
   'no current window',
-  // Generic Chrome API error — not actionable
-  'unknown error.',
   // Paywall SDK / Chrome SW unavailable
   'no sw',
-  // Chrome fetch blocked by Safe Browsing or browser policy
-  'blocked',
   // Extension store pages
   'extensions gallery',
   // Chrome internal messaging edge cases

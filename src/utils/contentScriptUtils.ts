@@ -62,11 +62,7 @@ const injectContentScript = async (tabId: number, tabUrl?: string): Promise<bool
     });
     return true;
   } catch (error) {
-    // enrich error with tabUrl
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    (error as unknown).tabUrl = tabUrl;
-    handleError(error);
+    handleError(error, { extra: { source: 'injectContentScript', tabUrl } });
     return false;
   }
 };
@@ -96,7 +92,9 @@ export const sendMessageToContentScript = async <T = never>(
           // Content script not loaded
           resolve(null);
         } else {
-          handleError(new Error(`Content script message failed: ${errorMessage}`));
+          handleError(new Error(`Content script message failed: ${errorMessage}`), {
+            extra: { source: 'sendMessageToContentScript', tabId, messageAction: message.action },
+          });
           resolve(null);
         }
       } else {
@@ -142,13 +140,10 @@ export const sendMessageToContentScript = async <T = never>(
       clearTimeout(timeoutId);
 
       if (chrome.runtime.lastError) {
-        const error = new Error(
-          `Content script message failed after injection: ${chrome.runtime.lastError.message}`,
+        handleError(
+          new Error(`Content script message failed after injection: ${chrome.runtime.lastError.message}`),
+          { extra: { source: 'sendMessageToContentScript.retry', tabUrl } },
         );
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        (error as unknown).tabUrl = tabUrl;
-        handleError(error);
         resolve(null);
       } else {
         resolve(response);

@@ -30,10 +30,10 @@ describe('captureException', () => {
     mockCaptureException.mockClear();
   });
 
-  it('filters "Blocked" errors', () => {
+  it('does NOT filter "Blocked" errors (unfiltered for investigation)', () => {
     const result = captureException(new Error('Blocked'));
-    expect(result).toBeNull();
-    expect(mockCaptureException).not.toHaveBeenCalled();
+    expect(result).toBe('event-id-123');
+    expect(mockCaptureException).toHaveBeenCalled();
   });
 
   it('filters "Cannot access a chrome://" errors', () => {

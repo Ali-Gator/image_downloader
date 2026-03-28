@@ -573,7 +573,9 @@ chrome.action.onClicked.addListener(async (tab) => {
   try {
     await openPageTabWithImages(tab);
   } catch (error) {
-    handleError(error);
+    handleError(error, {
+      extra: { source: 'action.onClicked', tabUrl: tab.url, tabId: tab.id },
+    });
   }
 });
 
@@ -874,7 +876,9 @@ chrome.runtime.onMessage.addListener((request: FetchImageMessage, _, sendRespons
           cleanupRules();
         }
       } catch (error) {
-        handleError(error);
+        handleError(error, {
+          extra: { source: 'FETCH_IMAGE', requestUrl: request.url },
+        });
         sendResponse({ success: false, error: String(error) });
       }
     })();

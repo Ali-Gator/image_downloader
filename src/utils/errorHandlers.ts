@@ -1,5 +1,3 @@
-import type { ErrorInfo } from 'react';
-
 import { captureException } from './sentryCapturer';
 
 /**
@@ -11,30 +9,21 @@ export function ensureError(error: unknown): Error {
   return error instanceof Error ? error : new Error(String(error));
 }
 
-/**
- * Обрабатывает ошибку: отправляет в Sentry и показывает пользователю (опционально)
- * @param error Ошибка для обработки
- * @param showAlert Показать ли alert (по умолчанию false)
- * @param customMessage Пользовательское сообщение для alert
- */
-export function handleError(error: unknown, showAlert = false, customMessage?: string): void {
+export interface HandleErrorOptions {
+  showAlert?: boolean;
+  customMessage?: string;
+  extra?: Record<string, unknown>;
+}
+
+export function handleError(error: unknown, options?: HandleErrorOptions): void {
   const errorObj = ensureError(error);
   const message = errorObj?.message || errorObj?.toString() || '';
 
-  if (showAlert) {
-    alert(customMessage || message);
+  if (options?.showAlert) {
+    alert(options.customMessage || message);
   }
 
-  // captureException handles filtering internally
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const tabUrl = (error as unknown)?.tabUrl;
-
-  if (tabUrl) {
-    captureException(errorObj, { componentStack: `tabUrl: ${tabUrl}` } as ErrorInfo);
-  } else {
-    captureException(errorObj);
-  }
+  captureException(errorObj, options?.extra);
 }
 
 /**
@@ -53,7 +42,7 @@ export async function withErrorHandling<T>(
   try {
     return await action();
   } catch (error) {
-    handleError(error, true, errorMessage);
+    handleError(error, { showAlert: true, customMessage: errorMessage });
     return undefined;
   } finally {
     setLoading(false);
@@ -71,12 +60,21 @@ export function setupGlobalErrorHandlers(): void {
       event.reason instanceof Error ? event.reason : `Unhandled rejection: ${String(event.reason)}`,
     );
 
-    captureException(error);
+    captureException(error, {
+      source: 'unhandledrejection',
+      url: globalThis.location?.href,
+    });
   });
 
   // Handle uncaught errors
   window.addEventListener('error', (event) => {
     // Only report actual errors, not warnings or info
-    captureException(event.error ? ensureError(event.error) : new Error(event.message));
+    captureException(event.error ? ensureError(event.error) : new Error(event.message), {
+      source: 'uncaught-error',
+      url: globalThis.location?.href,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    });
   });
 }
