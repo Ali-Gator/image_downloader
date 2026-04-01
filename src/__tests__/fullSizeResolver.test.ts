@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   extractMainImageFromHtml,
   extractOgImageFromHtml,
+  isEnhancementLarger,
+  isSameImagePath,
   resolveDataAttributes,
   resolveParentAnchorUrl,
   resolveUrlPatternCleanup,
@@ -279,6 +281,29 @@ describe('extractOgImageFromHtml (Strategy D parser)', () => {
     const html = `<meta property='og:image' content='https://example.com/img.jpg'>`;
     expect(extractOgImageFromHtml(html)).toBe('https://example.com/img.jpg');
   });
+
+  it('rejects placeholder og:image URLs (1x1, pixel, spacer, blank)', () => {
+    const placeholderUrls = [
+      'https://images.unsplash.com/opengraph/1x1.png?mark=foo&blend=bar',
+      'https://example.com/images/pixel.gif',
+      'https://example.com/spacer.png',
+      'https://example.com/assets/blank.gif',
+    ];
+    for (const url of placeholderUrls) {
+      const html = `<meta property="og:image" content="${url}">`;
+      expect(extractOgImageFromHtml(html)).toBeNull();
+    }
+  });
+
+  it('falls back to twitter:image when og:image is a placeholder', () => {
+    const html = `
+      <html><head>
+        <meta property="og:image" content="https://example.com/opengraph/1x1.png">
+        <meta name="twitter:image" content="https://example.com/real-image.jpg">
+      </head></html>
+    `;
+    expect(extractOgImageFromHtml(html)).toBe('https://example.com/real-image.jpg');
+  });
 });
 
 describe('extractMainImageFromHtml (Strategy D fallback)', () => {
@@ -327,5 +352,71 @@ describe('extractMainImageFromHtml (Strategy D fallback)', () => {
 
   it('returns null for empty HTML', () => {
     expect(extractMainImageFromHtml('', 'https://example.com/page.html')).toBeNull();
+  });
+});
+
+describe('isSameImagePath', () => {
+  it('returns true for same pathname with different query params', () => {
+    expect(
+      isSameImagePath(
+        'https://images.unsplash.com/photo-123?mark=logo&w=1200',
+        'https://images.unsplash.com/photo-123?w=3000&ixlib=rb-4.1.0',
+      ),
+    ).toBe(true);
+  });
+
+  it('returns true for identical URLs', () => {
+    expect(isSameImagePath('https://example.com/img.jpg', 'https://example.com/img.jpg')).toBe(
+      true,
+    );
+  });
+
+  it('returns false for different pathnames', () => {
+    expect(
+      isSameImagePath(
+        'https://images.unsplash.com/photo-123?w=1200',
+        'https://images.unsplash.com/photo-456?w=1200',
+      ),
+    ).toBe(false);
+  });
+
+  it('returns false for different hosts with same pathname', () => {
+    expect(
+      isSameImagePath('https://cdn1.example.com/img.jpg', 'https://cdn2.example.com/img.jpg'),
+    ).toBe(false);
+  });
+
+  it('returns false for invalid URLs', () => {
+    expect(isSameImagePath('not-a-url', 'https://example.com/img.jpg')).toBe(false);
+  });
+
+  it('returns false when both URLs are invalid', () => {
+    expect(isSameImagePath('not-a-url', 'also-not-a-url')).toBe(false);
+  });
+});
+
+describe('isEnhancementLarger', () => {
+  it('returns true when new image is larger', () => {
+    expect(isEnhancementLarger(1920, 1080, 800, 600)).toBe(true);
+  });
+
+  it('returns false when new image is same size', () => {
+    expect(isEnhancementLarger(800, 600, 800, 600)).toBe(false);
+  });
+
+  it('returns false when new image is smaller', () => {
+    expect(isEnhancementLarger(1, 1, 800, 600)).toBe(false);
+  });
+
+  it('returns false for 1x1 placeholder vs real image', () => {
+    expect(isEnhancementLarger(1, 1, 338, 225)).toBe(false);
+  });
+
+  it('returns true when aspect ratio differs but total pixels increase', () => {
+    expect(isEnhancementLarger(2000, 1000, 1500, 1200)).toBe(true);
+  });
+
+  it('returns false for social card (1200x630) vs original (3000x2000)', () => {
+    expect(isEnhancementLarger(1200, 630, 3000, 2000)).toBe(false);
   });
 });

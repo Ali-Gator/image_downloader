@@ -198,12 +198,18 @@ const OG_META_PATTERNS = ['og:image', 'twitter:image'].flatMap((tag) => [
 ]);
 
 /**
+ * Patterns in og:image URLs that indicate placeholder/compositing images, not real content.
+ * E.g. Unsplash uses `opengraph/1x1.png` as a compositing base for social cards.
+ */
+const OG_PLACEHOLDER_PATTERN = /\/(?:1x1|pixel|spacer|blank)\b/i;
+
+/**
  * Strategy D parser: Extract og:image or twitter:image from HTML string.
  */
 export function extractOgImageFromHtml(html: string): string | null {
   for (const pattern of OG_META_PATTERNS) {
     const match = html.match(pattern);
-    if (match?.[1]) return match[1];
+    if (match?.[1] && !OG_PLACEHOLDER_PATTERN.test(match[1])) return match[1];
   }
   return null;
 }
@@ -249,6 +255,34 @@ export function extractMainImageFromHtml(html: string, pageUrl: string): string 
   }
 
   return null;
+}
+
+/**
+ * Check if two image URLs share the same base path (ignoring query params).
+ * Used to skip "enhancements" that are the same image with different params
+ * (e.g. Imgix social-card overlays on Unsplash).
+ */
+export function isSameImagePath(url1: string, url2: string): boolean {
+  try {
+    const a = new URL(url1);
+    const b = new URL(url2);
+    return a.hostname === b.hostname && a.pathname === b.pathname;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if the enhanced image dimensions are strictly larger than the original.
+ * Returns false if the enhancement provides no size improvement.
+ */
+export function isEnhancementLarger(
+  newWidth: number,
+  newHeight: number,
+  origWidth: number,
+  origHeight: number,
+): boolean {
+  return newWidth * newHeight > origWidth * origHeight;
 }
 
 // --- Internal helpers ---

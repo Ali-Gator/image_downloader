@@ -4,7 +4,12 @@ import { collectImages } from './collectImages';
 import { DEFAULT_OPTIONS } from '../utils/constants';
 import { debugLogger } from '../utils/debugLogger';
 import { ensureError } from '../utils/errorHandlers';
-import { extractMainImageFromHtml, extractOgImageFromHtml } from '../utils/fullSizeResolver';
+import {
+  extractMainImageFromHtml,
+  extractOgImageFromHtml,
+  isEnhancementLarger,
+  isSameImagePath,
+} from '../utils/fullSizeResolver';
 import { blobToDataUrl } from '../utils/imageUtils';
 import {
   isCanvasHeavyApp,
@@ -219,7 +224,7 @@ async function enhanceImages(
   images: ImageData[],
 ): Promise<{ images: ImageData[]; upgradedCount: number }> {
   const maxOgFetches = await getSettingFromStorage('maxOgFetches', DEFAULT_OPTIONS.maxOgFetches);
-  const candidates = images.filter((img) => img.linkedPageUrl);
+  const candidates = images.filter((img) => img.linkedPageUrl && img.width > 0 && img.height > 0);
 
   debugLogger.log(
     'info',
@@ -296,6 +301,15 @@ async function enhanceImages(
   for (const img of candidates) {
     const ogImageUrl = ogCache.get(img.linkedPageUrl!);
     if (ogImageUrl && ogImageUrl !== img.src) {
+      if (isSameImagePath(ogImageUrl, img.src)) {
+        debugLogger.log(
+          'info',
+          ENHANCE_LOG_CONTEXT,
+          `Strategy D skipped (same base path): ${img.src} vs ${ogImageUrl}`,
+        );
+        continue;
+      }
+
       debugLogger.log(
         'info',
         ENHANCE_LOG_CONTEXT,
@@ -324,8 +338,25 @@ async function enhanceImages(
     for (const result of dimensionResults) {
       if (result.status === 'fulfilled' && result.value.dims.width > 0) {
         const img = updated.get(result.value.id)!;
-        img.width = result.value.dims.width;
-        img.height = result.value.dims.height;
+        const origW = img.originalWidth ?? img.width;
+        const origH = img.originalHeight ?? img.height;
+        const newW = result.value.dims.width;
+        const newH = result.value.dims.height;
+
+        if (!isEnhancementLarger(newW, newH, origW, origH)) {
+          debugLogger.log(
+            'warn',
+            ENHANCE_LOG_CONTEXT,
+            `Rejecting enhancement for ${img.src}: ${newW}x${newH} <= original ${origW}x${origH}`,
+          );
+          updated.delete(result.value.id);
+        } else {
+          img.width = newW;
+          img.height = newH;
+        }
+      } else if (result.status === 'fulfilled') {
+        // Probe returned 0×0 (CORS, timeout, non-image URL)
+        updated.delete(result.value.id);
       }
     }
   }

@@ -890,6 +890,7 @@ chrome.runtime.onMessage.addListener((request: FetchImageMessage, _, sendRespons
 });
 
 const MAX_PAGE_HTML_SIZE = 50 * 1024; // 50KB
+const MIN_OG_IMAGE_BYTES = 1024; // Tracking pixels (1x1 GIF/PNG) are typically < 1 KB
 
 /**
  * FETCH_PAGE_META: Fetch an HTML page and return raw text (for OG meta extraction).
@@ -969,11 +970,13 @@ chrome.runtime.onMessage.addListener(
 
           const contentType = response.headers.get('content-type') || '';
           const contentLength = response.headers.get('content-length');
+          const size = contentLength ? parseInt(contentLength, 10) : null;
+          const tooSmall = size !== null && size > 0 && size < MIN_OG_IMAGE_BYTES;
 
           sendResponse({
-            exists: response.ok && contentType.startsWith('image/'),
+            exists: response.ok && contentType.startsWith('image/') && !tooSmall,
             contentType,
-            ...(contentLength ? { contentLength: parseInt(contentLength, 10) } : {}),
+            ...(size !== null ? { contentLength: size } : {}),
           });
         } catch {
           sendResponse({ exists: false, contentType: '' });
