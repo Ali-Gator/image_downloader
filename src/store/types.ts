@@ -1,5 +1,5 @@
 import { CustomSizeFilter, ImageData } from '../types';
-import { QualityLevel, SortOption } from '../utils';
+import { CardSize, QualityLevel, SortOption } from '../utils';
 
 /**
  * State for settings store - manages user preferences and download options
@@ -8,6 +8,7 @@ export interface SettingsState {
   // Display settings
   defaultGridView: boolean;
   showDownloadNotifications: boolean;
+  cardSize: CardSize;
 
   // Download options
   folderName: string;
@@ -31,6 +32,7 @@ export interface SettingsState {
   setDefaultGridView: (isGridView: boolean) => void;
   setShowDownloadNotifications: (show: boolean) => void;
   setShowOnboardingNextTime: (show: boolean) => void;
+  setCardSize: (size: CardSize) => void;
 
   // Download options actions
   setFolderName: (name: string) => void;

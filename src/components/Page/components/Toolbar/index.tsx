@@ -26,7 +26,7 @@ import { useSnackbar } from 'notistack';
 import { RatingWidget } from '@components';
 import { useImageStore, useSettingsStore } from '@store';
 import { GrabImagesResponse, ImageData, MessageActionType } from '@types';
-import { QualityLevel, SortOption, sendMessageToContentScript, useTranslation } from '@utils';
+import { CardSize, QualityLevel, SortOption, sendMessageToContentScript, useTranslation } from '@utils';
 import { isSidePanelContext } from '@utils/sidePanelUtils';
 
 import {
@@ -38,6 +38,7 @@ import {
   LeftSection,
   MiddleSection,
   RightSection,
+  SizeButton,
   SizePopoverContent,
   SortContainer,
   ToolbarContainer,
@@ -64,7 +65,7 @@ export const Toolbar: FC = () => {
     updateImages,
   } = useImageStore();
 
-  const { setDefaultGridView } = useSettingsStore();
+  const { setDefaultGridView, cardSize, setCardSize } = useSettingsStore();
 
   const handleSetIsGridView = useCallback(
     (value: boolean) => {
@@ -472,6 +473,29 @@ export const Toolbar: FC = () => {
             <ViewListIcon />
           </ViewButton>
         </ViewOptionsContainer>
+
+        {!inSidePanel && (
+          <ViewOptionsContainer title={t('thumbnail_size_title')}>
+            <SizeButton
+              onClick={() => setCardSize(CardSize.SMALL)}
+              active={cardSize === CardSize.SMALL}
+            >
+              {t('thumbnail_size_small')}
+            </SizeButton>
+            <SizeButton
+              onClick={() => setCardSize(CardSize.MEDIUM)}
+              active={cardSize === CardSize.MEDIUM}
+            >
+              {t('thumbnail_size_medium')}
+            </SizeButton>
+            <SizeButton
+              onClick={() => setCardSize(CardSize.LARGE)}
+              active={cardSize === CardSize.LARGE}
+            >
+              {t('thumbnail_size_large')}
+            </SizeButton>
+          </ViewOptionsContainer>
+        )}
 
         {(sourceTabId || inSidePanel) && (
           <>

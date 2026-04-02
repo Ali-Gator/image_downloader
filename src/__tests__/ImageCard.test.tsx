@@ -23,9 +23,15 @@ const storeState = {
   sourceTabId: null as number | null,
 };
 
+const settingsState = {
+  cardSize: 'medium',
+};
+
 vi.mock('@store', () => ({
   useImageStore: (selector?: (s: typeof storeState) => unknown) =>
     selector ? selector(storeState) : storeState,
+  useSettingsStore: (selector?: (s: typeof settingsState) => unknown) =>
+    selector ? selector(settingsState) : settingsState,
 }));
 
 vi.mock('@utils', async () => {

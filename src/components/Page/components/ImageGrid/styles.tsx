@@ -27,21 +27,8 @@ const GridListContainer = styled('div')(({ theme }) => ({
   padding: theme.spacing(1, 3, 2.5, 3),
   gap: theme.spacing(1.75),
   alignContent: 'flex-start',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(var(--grid-min-col-width, 180px), 1fr))',
   gridAutoRows: 'max-content',
-
-  [theme.breakpoints.up('md')]: {
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-  },
-  [theme.breakpoints.up('lg')]: {
-    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-  },
-  [theme.breakpoints.up(1440)]: {
-    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-  },
-  [theme.breakpoints.up(2000)]: {
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-  },
 
   [theme.breakpoints.down('sm')]: {
     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',

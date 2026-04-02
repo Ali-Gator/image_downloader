@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { DEFAULT_OPTIONS, StorageKeys } from '@utils/constants';
+import { CardSize, DEFAULT_OPTIONS, StorageKeys } from '@utils/constants';
 import { isChromeExtension } from '@utils/utils';
 
 import { fallbackStorage } from './fallbackStorage';
@@ -25,6 +25,7 @@ const PERSISTED_KEYS: readonly (keyof SettingsState)[] = [
   'showOnboardingNextTime',
   'maxOgFetches',
   'maxBgImages',
+  'cardSize',
 ] as const;
 
 /** Picks only the persisted data fields from an object. */
@@ -45,6 +46,7 @@ export const useSettingsStore = create<SettingsState>()(
       // Initial settings
       defaultGridView: true,
       showDownloadNotifications: true,
+      cardSize: CardSize.MEDIUM,
 
       // Initialize all download options from constants
       ...DEFAULT_OPTIONS,
@@ -54,6 +56,7 @@ export const useSettingsStore = create<SettingsState>()(
 
       // Settings actions
       setDefaultGridView: (defaultGridView) => set({ defaultGridView }),
+      setCardSize: (cardSize) => set({ cardSize }),
       setShowOnboardingNextTime: (showOnboardingNextTime) => set({ showOnboardingNextTime }),
       setShowDownloadNotifications: (showDownloadNotifications) =>
         set({ showDownloadNotifications }),

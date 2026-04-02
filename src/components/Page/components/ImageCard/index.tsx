@@ -10,9 +10,10 @@ import { SxProps } from '@mui/system';
 import { ActionButton } from '@components/Page/components/ActionButton';
 import { CheckboxButton } from '@components/Page/components/CheckboxButton';
 import { SafeImage } from '@components/Page/components/SafeImage';
-import { useImageStore } from '@store';
+import { useImageStore, useSettingsStore } from '@store';
 import { ImageCardProps } from '@types';
-import { useTranslation } from '@utils';
+import { CardSize, useTranslation } from '@utils';
+import { isSidePanelContext } from '@utils/sidePanelUtils';
 import { useEnhanceSingleImage, useImageOperations } from '@utils/imageOperations';
 
 import { ImageInfo } from '../ImageInfo';
@@ -54,6 +55,9 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
   const canEnhance = !!sourceTabId && !!image.linkedPageUrl && !image.enhanced;
   const isEnhancing = isEnhancingImage(id);
 
+  const storedCardSize = useSettingsStore((s) => s.cardSize);
+  const cardSize = isSidePanelContext() ? CardSize.MEDIUM : storedCardSize;
+
   const isListMode = !isGridView;
 
   // Handler for clicking on the card to select the image
@@ -77,9 +81,11 @@ export const ImageCard = memo(({ image }: ImageCardProps) => {
   );
 
   const cardStyles: SxProps<Theme> = useMemo(() => {
-    const base = isListMode ? listImageItemStyles(theme) : gridImageItemStyles(theme);
+    const base = isListMode
+      ? listImageItemStyles(theme, cardSize)
+      : gridImageItemStyles(theme, cardSize);
     return image.enhanced ? { ...(base as object), ...enhancedAccentStyles } : base;
-  }, [isListMode, theme, image.enhanced]);
+  }, [isListMode, theme, image.enhanced, cardSize]);
 
   return (
     <Box

@@ -83,6 +83,18 @@
   "list_view_text": {
     "message": "List"
   },
+  "thumbnail_size_title": {
+    "message": "Thumbnail size"
+  },
+  "thumbnail_size_small": {
+    "message": "S"
+  },
+  "thumbnail_size_medium": {
+    "message": "M"
+  },
+  "thumbnail_size_large": {
+    "message": "L"
+  },
   "filter_text": {
     "message": "Filter by name..."
   },

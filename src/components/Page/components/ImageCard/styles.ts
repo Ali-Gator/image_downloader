@@ -3,6 +3,7 @@ import { styled, Theme } from '@mui/material/styles';
 import { SxProps } from '@mui/system';
 
 import { colors, shadows } from '@theme';
+import { CARD_SIZE_CONFIG, CardSize } from '@utils/constants';
 
 export const enhancedAccentStyles = {
   '&::before': {
@@ -74,28 +75,6 @@ export const StyledCheckboxArea = styled(Box)(({ theme }) => ({
   height: '100%',
 }));
 
-// ===== CONSTANTS =====
-const CARD_STYLES = {
-  GRID: {
-    IMAGE_CONTAINER_MIN_HEIGHT: 16,
-    IMAGE_MAX_HEIGHT: 22,
-    INFO_SECTION_HEIGHT: 3,
-    ASPECT_RATIO: 1.2,
-    TOP_BAR_HEIGHT: 6,
-  },
-  LIST: {
-    IMAGE_CONTAINER_HEIGHT: 12,
-    IMAGE_CONTAINER_WIDTH: 15,
-    IMAGE_MAX_HEIGHT: 12.5,
-    IMAGE_MAX_WIDTH: 18.75,
-    CHECKBOX_AREA_WIDTH: 5,
-  },
-  COMMON: {
-    CHECKBOX_SIZE: 1,
-    PADDING: 1,
-  },
-};
-
 // ===== COMMON STYLES =====
 const commonCardStyles = (theme: Theme) => ({
   position: 'relative',
@@ -119,35 +98,47 @@ const commonImageStyles = {
 };
 
 // ===== GRID MODE STYLES =====
-const gridImageContainerStyles = (theme: Theme) => ({
-  position: 'relative',
-  height: theme.spacing(CARD_STYLES.GRID.IMAGE_CONTAINER_MIN_HEIGHT),
-  display: 'flex',
-  alignItems: 'center',
-  marginBottom: theme.spacing(0.5),
-});
+const gridImageContainerStyles = (theme: Theme, cardSize: CardSize) => {
+  const config = CARD_SIZE_CONFIG[cardSize].grid;
+  return {
+    position: 'relative',
+    height: theme.spacing(config.imageContainerMinHeight),
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: theme.spacing(0.5),
+  };
+};
 
-const gridImageStyles = (theme: Theme) => ({
-  maxWidth: '100%',
-  maxHeight: theme.spacing(CARD_STYLES.GRID.IMAGE_MAX_HEIGHT),
-  margin: '0 auto',
-});
+const gridImageStyles = (theme: Theme, cardSize: CardSize) => {
+  const config = CARD_SIZE_CONFIG[cardSize].grid;
+  return {
+    maxWidth: '100%',
+    maxHeight: theme.spacing(config.imageMaxHeight),
+    margin: '0 auto',
+  };
+};
 
 // ===== LIST MODE STYLES =====
-const listImageContainerStyles = (theme: Theme) => ({
-  height: theme.spacing(CARD_STYLES.LIST.IMAGE_CONTAINER_HEIGHT),
-  width: theme.spacing(CARD_STYLES.LIST.IMAGE_CONTAINER_WIDTH),
-  flexShrink: 0,
-});
+const listImageContainerStyles = (theme: Theme, cardSize: CardSize) => {
+  const config = CARD_SIZE_CONFIG[cardSize].list;
+  return {
+    height: theme.spacing(config.imageContainerHeight),
+    width: theme.spacing(config.imageContainerWidth),
+    flexShrink: 0,
+  };
+};
 
-const listImageStyles = (theme: Theme) => ({
-  maxHeight: theme.spacing(CARD_STYLES.LIST.IMAGE_MAX_HEIGHT),
-  maxWidth: theme.spacing(CARD_STYLES.LIST.IMAGE_MAX_WIDTH),
-  margin: 'auto',
-});
+const listImageStyles = (theme: Theme, cardSize: CardSize) => {
+  const config = CARD_SIZE_CONFIG[cardSize].list;
+  return {
+    maxHeight: theme.spacing(config.imageMaxHeight),
+    maxWidth: theme.spacing(config.imageMaxWidth),
+    margin: 'auto',
+  };
+};
 
 // ===== EXPORTED STYLES =====
-export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
+export const gridImageItemStyles = (theme: Theme, cardSize: CardSize): SxProps<Theme> => ({
   ...commonCardStyles(theme),
   display: 'flex',
   flexDirection: 'column',
@@ -170,12 +161,12 @@ export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   },
 
   '.image-container': {
-    ...gridImageContainerStyles(theme),
+    ...gridImageContainerStyles(theme, cardSize),
   },
 
   img: {
     ...commonImageStyles,
-    ...gridImageStyles(theme),
+    ...gridImageStyles(theme, cardSize),
     maxWidth: '100%',
     objectFit: 'contain',
   },
@@ -188,12 +179,12 @@ export const gridImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   },
 });
 
-export const listImageItemStyles = (theme: Theme): SxProps<Theme> => ({
+export const listImageItemStyles = (theme: Theme, cardSize: CardSize): SxProps<Theme> => ({
   ...commonCardStyles(theme),
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
-  padding: theme.spacing(CARD_STYLES.COMMON.PADDING),
+  padding: theme.spacing(1),
   marginBottom: theme.spacing(1.5),
   gap: theme.spacing(2),
   cursor: 'pointer',
@@ -209,11 +200,11 @@ export const listImageItemStyles = (theme: Theme): SxProps<Theme> => ({
   },
 
   '.image-container': {
-    ...listImageContainerStyles(theme),
+    ...listImageContainerStyles(theme, cardSize),
   },
 
   img: {
     ...commonImageStyles,
-    ...listImageStyles(theme),
+    ...listImageStyles(theme, cardSize),
   },
 });

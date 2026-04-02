@@ -262,3 +262,58 @@ export const SENTRY_FILTER_ERRORS = [
 ];
 
 export const PAYWALL_ID = '711';
+
+/**
+ * Card/thumbnail size presets for grid and list views
+ */
+export enum CardSize {
+  SMALL = 'small',
+  MEDIUM = 'medium',
+  LARGE = 'large',
+}
+
+/**
+ * Sizing configuration for each CardSize preset.
+ * Grid values in px, card values in MUI spacing units (1 unit = 8px).
+ */
+export const CARD_SIZE_CONFIG = {
+  [CardSize.SMALL]: {
+    grid: {
+      minColWidth: 140,
+      imageContainerMinHeight: 12,
+      imageMaxHeight: 17,
+    },
+    list: {
+      imageContainerHeight: 8,
+      imageContainerWidth: 11,
+      imageMaxHeight: 8.5,
+      imageMaxWidth: 13.75,
+    },
+  },
+  [CardSize.MEDIUM]: {
+    grid: {
+      minColWidth: 180,
+      imageContainerMinHeight: 16,
+      imageMaxHeight: 22,
+    },
+    list: {
+      imageContainerHeight: 12,
+      imageContainerWidth: 15,
+      imageMaxHeight: 12.5,
+      imageMaxWidth: 18.75,
+    },
+  },
+  [CardSize.LARGE]: {
+    grid: {
+      minColWidth: 240,
+      imageContainerMinHeight: 22,
+      imageMaxHeight: 28,
+    },
+    list: {
+      imageContainerHeight: 16,
+      imageContainerWidth: 20,
+      imageMaxHeight: 16.5,
+      imageMaxWidth: 25,
+    },
+  },
+} as const;

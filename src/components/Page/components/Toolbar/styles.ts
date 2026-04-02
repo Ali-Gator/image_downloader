@@ -142,6 +142,30 @@ export const ViewButton = styled('button')<ViewButtonProps>(({ theme, active }) 
   },
 }));
 
+export const SizeButton = styled('button')<ViewButtonProps>(({ theme, active }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(0.5),
+  width: 26,
+  height: 30,
+  backgroundColor: active ? theme.palette.primary.light : 'transparent',
+  color: active ? theme.palette.primary.main : theme.palette.text.secondary,
+  border: 'none',
+  cursor: 'pointer',
+  fontSize: '0.7rem',
+  fontWeight: 600,
+  transition: theme.transitions.create(['background-color', 'color']),
+
+  '&:not(:last-of-type)': {
+    borderRight: `1px solid ${theme.palette.divider}`,
+  },
+
+  '&:hover': {
+    backgroundColor: active ? theme.palette.primary.light : theme.palette.action.hover,
+  },
+}));
+
 // New components for size filter popover UI
 export const SizePopoverContent = styled('div')(({ theme }) => ({
   padding: theme.spacing(2),
