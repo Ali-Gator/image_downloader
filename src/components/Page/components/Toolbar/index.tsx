@@ -26,7 +26,13 @@ import { useSnackbar } from 'notistack';
 import { RatingWidget } from '@components';
 import { useImageStore, useSettingsStore } from '@store';
 import { GrabImagesResponse, ImageData, MessageActionType } from '@types';
-import { CardSize, QualityLevel, SortOption, sendMessageToContentScript, useTranslation } from '@utils';
+import {
+  CardSize,
+  QualityLevel,
+  SortOption,
+  sendMessageToContentScript,
+  useTranslation,
+} from '@utils';
 import { isSidePanelContext } from '@utils/sidePanelUtils';
 
 import {

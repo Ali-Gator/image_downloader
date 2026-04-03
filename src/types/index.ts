@@ -181,6 +181,7 @@ export interface PageImagesPayload {
   images: ImageData[];
   pageUrl: string;
   sourceTabId: number;
+  selectedImages?: ImageData[];
 }
 
 export interface ImageData {

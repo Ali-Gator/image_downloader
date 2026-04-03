@@ -204,13 +204,19 @@ export const Header: FC = () => {
   const inSidePanel = isSidePanelContext();
 
   const handleOpenInTab = useCallback(async () => {
-    const { images, pageUrl: currentPageUrl, sourceTabId } = useImageStore.getState();
+    const {
+      images,
+      selectedImages,
+      pageUrl: currentPageUrl,
+      sourceTabId,
+    } = useImageStore.getState();
     if (!images.length || !sourceTabId) return;
 
     await openPageTabAndSendImages({
       images,
       pageUrl: currentPageUrl ?? '',
       sourceTabId,
+      selectedImages,
     });
 
     window.close();

@@ -13,8 +13,8 @@ import { SafeImage } from '@components/Page/components/SafeImage';
 import { useImageStore, useSettingsStore } from '@store';
 import { ImageCardProps } from '@types';
 import { CardSize, useTranslation } from '@utils';
-import { isSidePanelContext } from '@utils/sidePanelUtils';
 import { useEnhanceSingleImage, useImageOperations } from '@utils/imageOperations';
+import { isSidePanelContext } from '@utils/sidePanelUtils';
 
 import { ImageInfo } from '../ImageInfo';
 import {

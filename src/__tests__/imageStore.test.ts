@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { useImageStore } from '../store/imageStore';
 import { ImageData } from '../types';
@@ -187,6 +187,79 @@ describe('imageStore — getEffectiveImage', () => {
     const result = useImageStore.getState().getEffectiveImage(normalImage);
     expect(result.src).toBe('https://example.com/normal.jpg');
     expect(result.width).toBe(800);
+  });
+});
+
+describe('imageStore — setImages auto-selects all', () => {
+  beforeEach(() => {
+    useImageStore.setState({
+      images: [],
+      filteredImages: [],
+      selectedImages: [],
+      qualityFilters: [QualityLevel.ALL],
+    });
+  });
+
+  it('selects all images after setImages', () => {
+    const images = [
+      makeImage('a', 'https://example.com/a.jpg'),
+      makeImage('b', 'https://example.com/b.jpg'),
+    ];
+    useImageStore.getState().setImages(images);
+    const { selectedImages, filteredImages } = useImageStore.getState();
+    expect(selectedImages).toHaveLength(2);
+    expect(selectedImages.map((i) => i.id)).toEqual(filteredImages.map((i) => i.id));
+  });
+
+  it('selects only filtered images when quality filter is active', () => {
+    useImageStore.setState({ qualityFilters: [QualityLevel.HD] });
+    const hdImage = makeImage('hd', 'https://example.com/hd.jpg', { width: 1920, height: 1080 });
+    const lowImage = makeImage('low', 'https://example.com/low.jpg', { width: 50, height: 50 });
+    useImageStore.getState().setImages([hdImage, lowImage]);
+    const { selectedImages } = useImageStore.getState();
+    expect(selectedImages).toHaveLength(1);
+    expect(selectedImages[0].id).toBe('hd');
+  });
+
+  it('selects all on rescan when all were previously selected', () => {
+    const img1 = makeImage('a', 'https://example.com/a.jpg');
+    const img2 = makeImage('b', 'https://example.com/b.jpg');
+    useImageStore.getState().setImages([img1]);
+    expect(useImageStore.getState().selectedImages).toHaveLength(1);
+
+    const img3 = makeImage('c', 'https://example.com/c.jpg');
+    useImageStore.getState().setImages([img1, img2, img3]);
+    const ids = useImageStore.getState().selectedImages.map((i) => i.id);
+    expect(ids).toEqual(['a', 'b', 'c']);
+  });
+
+  it('preserves partial selection on rescan', () => {
+    const img1 = makeImage('a', 'https://example.com/a.jpg');
+    const img2 = makeImage('b', 'https://example.com/b.jpg');
+    useImageStore.getState().setImages([img1, img2]);
+    // Deselect one — partial selection
+    useImageStore.getState().toggleSelectImage(img2);
+    expect(useImageStore.getState().selectedImages).toHaveLength(1);
+
+    const img3 = makeImage('c', 'https://example.com/c.jpg');
+    useImageStore.getState().setImages([img1, img2, img3]);
+    const ids = useImageStore.getState().selectedImages.map((i) => i.id);
+    expect(ids).toEqual(['a']);
+  });
+
+  it('drops selection for images removed on rescan', () => {
+    const img1 = makeImage('a', 'https://example.com/a.jpg');
+    const img2 = makeImage('b', 'https://example.com/b.jpg');
+    const img3 = makeImage('c', 'https://example.com/c.jpg');
+    useImageStore.getState().setImages([img1, img2, img3]);
+    // Deselect one — partial selection
+    useImageStore.getState().toggleSelectImage(img3);
+    expect(useImageStore.getState().selectedImages.map((i) => i.id)).toEqual(['a', 'b']);
+
+    // Rescan returns only img1 and img3 (img2 gone)
+    useImageStore.getState().setImages([img1, img3]);
+    const ids = useImageStore.getState().selectedImages.map((i) => i.id);
+    expect(ids).toEqual(['a']);
   });
 });
 

@@ -66,6 +66,43 @@ describe('setupImageListener', () => {
     expect(setSourceTabId).not.toHaveBeenCalled();
   });
 
+  it('calls setSelectedImages when payload has selectedImages', () => {
+    const setSelectedImages = vi.fn();
+    setupImageListener(setImages, setIsLoading, setPageUrl, setSourceTabId, setSelectedImages);
+
+    const selected = [makeImage('1', 'https://example.com/photo.jpg')];
+    const payload = {
+      images: [
+        makeImage('1', 'https://example.com/photo.jpg'),
+        makeImage('2', 'https://example.com/photo2.jpg'),
+      ],
+      pageUrl: 'https://example.com',
+      sourceTabId: 42,
+      selectedImages: selected,
+    };
+    const sendResponse = vi.fn();
+
+    registeredListener(payload, {}, sendResponse);
+
+    expect(setSelectedImages).toHaveBeenCalledWith(selected);
+  });
+
+  it('does not call setSelectedImages when payload has no selectedImages', () => {
+    const setSelectedImages = vi.fn();
+    setupImageListener(setImages, setIsLoading, setPageUrl, setSourceTabId, setSelectedImages);
+
+    const payload = {
+      images: [makeImage('1', 'https://example.com/photo.jpg')],
+      pageUrl: 'https://example.com',
+      sourceTabId: 42,
+    };
+    const sendResponse = vi.fn();
+
+    registeredListener(payload, {}, sendResponse);
+
+    expect(setSelectedImages).not.toHaveBeenCalled();
+  });
+
   it('ignores empty payloads', () => {
     setupImageListener(setImages, setIsLoading, setPageUrl, setSourceTabId);
 

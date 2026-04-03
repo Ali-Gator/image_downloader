@@ -93,6 +93,7 @@ export const setupImageListener = (
   setIsLoading: (isLoading: boolean) => void,
   setPageUrl: (pageUrl: string | null) => void,
   setSourceTabId?: (tabId: number | null) => void,
+  setSelectedImages?: (images: ImageData[]) => void,
 ): (() => void) => {
   const listener = (
     payload: PageImagesPayload,
@@ -101,6 +102,9 @@ export const setupImageListener = (
   ) => {
     if (payload && Array.isArray(payload.images) && payload.images.length > 0) {
       setImages(payload.images);
+      if (setSelectedImages && payload.selectedImages) {
+        setSelectedImages(payload.selectedImages);
+      }
       setPageUrl(payload.pageUrl);
       if (setSourceTabId && payload.sourceTabId) {
         setSourceTabId(payload.sourceTabId);

@@ -23,8 +23,20 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
   // Actions
   setImages: (images) => {
+    const { selectedImages: prevSelected, filteredImages: prevFiltered } = get();
+    const hadImages = prevFiltered.length > 0;
+    const allWereSelected = hadImages && prevSelected.length === prevFiltered.length;
+
     set({ images, imageSourceOverrides: {} });
     get().applyFilters();
+
+    if (!hadImages || allWereSelected) {
+      get().selectAll();
+    } else {
+      const selectedIds = new Set(prevSelected.map((img) => img.id));
+      const { filteredImages } = get();
+      set({ selectedImages: filteredImages.filter((img) => selectedIds.has(img.id)) });
+    }
   },
 
   setFilteredImages: (filteredImages) => set({ filteredImages }),

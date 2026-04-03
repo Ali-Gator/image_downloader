@@ -19,8 +19,15 @@ import { isSidePanelContext } from '@utils/sidePanelUtils';
 import { PageContainer, StickyRatingBar } from './styles';
 
 export const Page: FC = () => {
-  const { setImages, setIsLoading, setPageUrl, setSourceTabId, isLoading, setIsGridView } =
-    useImageStore();
+  const {
+    setImages,
+    setIsLoading,
+    setPageUrl,
+    setSourceTabId,
+    setSelectedImages,
+    isLoading,
+    setIsGridView,
+  } = useImageStore();
   const { defaultGridView } = useSettingsStore();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -53,11 +60,17 @@ export const Page: FC = () => {
     }
 
     // page.html: wait for images from background
-    const removeListener = setupImageListener(setImages, setIsLoading, setPageUrl, setSourceTabId);
+    const removeListener = setupImageListener(
+      setImages,
+      setIsLoading,
+      setPageUrl,
+      setSourceTabId,
+      setSelectedImages,
+    );
     return () => {
       removeListener();
     };
-  }, [setImages, setIsLoading, setPageUrl, setSourceTabId, enqueueSnackbar]);
+  }, [setImages, setIsLoading, setPageUrl, setSourceTabId, setSelectedImages, enqueueSnackbar]);
 
   useEffect(() => {
     const allowedOrigins = new Set([
