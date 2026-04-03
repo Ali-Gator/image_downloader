@@ -33,6 +33,7 @@ const manifest: ManifestV3Export = {
   },
   permissions: [
     'activeTab',
+    'contextMenus',
     'tabs',
     'storage',
     'downloads',

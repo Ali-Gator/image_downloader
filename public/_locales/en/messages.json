@@ -502,5 +502,11 @@
   },
   "section_behavior": {
     "message": "Behavior"
+  },
+  "context_menu_open": {
+    "message": "Open Image Downloader"
+  },
+  "context_menu_save_image": {
+    "message": "Save This Image"
   }
 }

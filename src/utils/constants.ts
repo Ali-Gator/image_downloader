@@ -261,6 +261,11 @@ export const SENTRY_FILTER_ERRORS = [
   'access denied',
 ];
 
+export const ContextMenuIds = {
+  OPEN_IMAGE_DOWNLOADER: 'open-image-downloader',
+  SAVE_THIS_IMAGE: 'save-this-image',
+} as const;
+
 export const PAYWALL_ID = '711';
 
 /**

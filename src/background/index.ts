@@ -9,9 +9,11 @@ import {
   ValidateImageUrlMessage,
 } from '../types';
 import { openPageTabWithImages } from '../utils/autoGrabImages';
+import { getFileNameFromUrl } from '../utils/fileUtils';
 import {
   ApplicationLinks,
   ContentScriptConstants,
+  ContextMenuIds,
   DEFAULT_OPTIONS,
   IMAGE_FETCH_TIMEOUTS,
   RatingConstants,
@@ -44,6 +46,28 @@ interface DownloadMeta {
   domain: string;
 }
 const downloadMetaMap: Record<number, DownloadMeta> = {};
+
+function registerDownloadMeta(downloadId: number, filename: string, domain: string) {
+  downloadMetaMap[downloadId] = { filename, domain };
+  setTimeout(() => {
+    delete downloadMetaMap[downloadId];
+  }, 30_000);
+}
+
+function setupContextMenus() {
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: ContextMenuIds.OPEN_IMAGE_DOWNLOADER,
+      title: chrome.i18n.getMessage('context_menu_open') || 'Open Image Downloader',
+      contexts: ['all'],
+    });
+    chrome.contextMenus.create({
+      id: ContextMenuIds.SAVE_THIS_IMAGE,
+      title: chrome.i18n.getMessage('context_menu_save_image') || 'Save This Image',
+      contexts: ['image'],
+    });
+  });
+}
 
 /**
  * Monetize (Paywall) external messaging support (as required by Monetize).
@@ -551,6 +575,7 @@ async function syncSidePanelBehavior() {
 
 // Initial sync on service worker start
 syncSidePanelBehavior();
+setupContextMenus();
 
 // Re-sync only when openInSidePanel actually changes
 if (chrome.storage?.onChanged) {
@@ -575,6 +600,34 @@ chrome.action.onClicked.addListener(async (tab) => {
   } catch (error) {
     handleError(error, {
       extra: { source: 'action.onClicked', tabUrl: tab.url, tabId: tab.id },
+    });
+  }
+});
+
+// Context menu click handler
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  try {
+    if (info.menuItemId === ContextMenuIds.OPEN_IMAGE_DOWNLOADER) {
+      if (!tab) return;
+      await openPageTabWithImages(tab);
+    } else if (info.menuItemId === ContextMenuIds.SAVE_THIS_IMAGE) {
+      const imageUrl = info.srcUrl;
+      if (!imageUrl) return;
+
+      const filename = ensureValidExtension(
+        getFileNameFromUrl(imageUrl) || `image_${Date.now()}`,
+        imageUrl,
+      );
+      const pageDomain = tab?.url ? extractDomain(tab.url) : '';
+
+      const downloadId = await chrome.downloads.download({ url: imageUrl });
+      if (downloadId) {
+        registerDownloadMeta(downloadId, filename, pageDomain);
+      }
+    }
+  } catch (error) {
+    handleError(error, {
+      extra: { source: 'contextMenus.onClicked', menuItemId: String(info.menuItemId) },
     });
   }
 });
@@ -609,16 +662,7 @@ chrome.runtime.onMessage.addListener((message: RegisterFilenameMessage, _, sendR
     message.filename
   ) {
     const domain = message.pageUrl ? extractDomain(message.pageUrl) : '';
-
-    downloadMetaMap[message.downloadId] = {
-      filename: message.filename,
-      domain,
-    };
-
-    // Backstop cleanup in case onDeterminingFilename never fires
-    setTimeout(() => {
-      delete downloadMetaMap[message.downloadId];
-    }, 30_000);
+    registerDownloadMeta(message.downloadId, message.filename, domain);
 
     // Send success response back to content script
     sendResponse({ success: true });
@@ -1035,6 +1079,8 @@ try {
       await injectContentScriptIntoAllTabs();
       // Clean up any existing rules on install/update
       removeReferrerRules().catch(handleError);
+
+      setupContextMenus();
     } catch (error) {
       handleError(error);
     }
