@@ -1,17 +1,19 @@
-import { ChangeEvent, FC, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ChangeEvent,
+  FC,
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DownloadIcon from '@mui/icons-material/Download';
-import StopIcon from '@mui/icons-material/Stop';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import {
-  Button,
-  Checkbox,
-  IconButton,
-  Menu,
-  MenuItem,
-  Typography,
-} from '@mui/material';
+import StopIcon from '@mui/icons-material/Stop';
+import { Button, Checkbox, IconButton, Menu, MenuItem, Typography } from '@mui/material';
 import { SnackbarKey, useSnackbar } from 'notistack';
 
 import { useImageStore, useSettingsStore } from '@store';
@@ -160,8 +162,11 @@ export const Header: FC = () => {
       }
 
       // Use unified bulk download with conversion function
-      const { successCount, failCount, totalCount, cancelled } =
-        await downloadImagesWithConversion(selectedImages, createZipArchive, controller.signal);
+      const { successCount, failCount, totalCount, cancelled } = await downloadImagesWithConversion(
+        selectedImages,
+        createZipArchive,
+        controller.signal,
+      );
 
       // Close the persistent progress snackbar
       if (createZipArchive) {
@@ -325,13 +330,7 @@ export const Header: FC = () => {
           data-onboarding="download-button"
           variant="contained"
           color={isDownloading ? 'error' : 'secondary'}
-          startIcon={
-            inSidePanel ? undefined : isDownloading ? (
-              <StopIcon />
-            ) : (
-              <DownloadIcon />
-            )
-          }
+          startIcon={inSidePanel ? undefined : isDownloading ? <StopIcon /> : <DownloadIcon />}
           onClick={isDownloading ? handleStopDownload : handleDownload}
           disabled={!isDownloading && selectedCount === 0}
           sx={

@@ -9,7 +9,6 @@ import {
   ValidateImageUrlMessage,
 } from '../types';
 import { openPageTabWithImages } from '../utils/autoGrabImages';
-import { getFileNameFromUrl } from '../utils/fileUtils';
 import {
   ApplicationLinks,
   ContentScriptConstants,
@@ -26,6 +25,7 @@ import {
   sanitizeFileName,
 } from '../utils/downloadHelpers';
 import { ensureError, handleError } from '../utils/errorHandlers';
+import { getFileNameFromUrl } from '../utils/fileUtils';
 import { blobToDataUrl } from '../utils/imageUtils';
 import { isSidePanelSupported } from '../utils/sidePanelUtils';
 

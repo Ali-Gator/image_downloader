@@ -9,43 +9,65 @@ interface GrabbedImage {
   linkedPageUrl?: string;
 }
 
+interface EnhanceResult {
+  images: GrabbedImage[];
+  upgradedCount: number;
+  remainingCount: number;
+}
+
 /**
  * Generic helper: sends a message to a tab matched by URL substring
  * via the extension's chrome.tabs messaging API.
  */
-async function sendMessageToTab(
+async function sendMessageToTab<T = { images: GrabbedImage[]; pageUrl?: string }>(
   helperPage: Page,
   tabUrlSubstring: string,
   message: Record<string, unknown>,
-): Promise<{ images: GrabbedImage[]; pageUrl?: string }> {
+): Promise<T> {
   const result = await helperPage.evaluate(
     async ({ urlMatch, msg }: { urlMatch: string; msg: Record<string, unknown> }) => {
       const tabs = await chrome.tabs.query({});
       const targetTab = tabs.find((t) => t.url?.includes(urlMatch));
       if (!targetTab?.id) return { images: [] as Array<Record<string, unknown>> };
 
-      return new Promise<{ images: Array<Record<string, unknown>>; pageUrl?: string }>(
-        (resolve) => {
-          chrome.tabs.sendMessage(targetTab.id!, msg, (response) => {
-            const r = response as
-              | { images: Array<Record<string, unknown>>; pageUrl?: string }
-              | undefined;
-            resolve(r ?? { images: [] });
-          });
-        },
-      );
+      return new Promise<Record<string, unknown>>((resolve) => {
+        chrome.tabs.sendMessage(targetTab.id!, msg, (response) => {
+          resolve((response as Record<string, unknown>) ?? { images: [] });
+        });
+      });
     },
     { urlMatch: tabUrlSubstring, msg: message },
   );
 
-  return result as unknown as { images: GrabbedImage[]; pageUrl?: string };
+  return result as unknown as T;
 }
 
 const grabImagesFromTab = (helperPage: Page, tabUrlSubstring: string) =>
-  sendMessageToTab(helperPage, tabUrlSubstring, { action: 'grabImages' });
+  sendMessageToTab<{ images: GrabbedImage[]; pageUrl?: string }>(helperPage, tabUrlSubstring, {
+    action: 'grabImages',
+  });
 
 const enhanceImagesInTab = (helperPage: Page, tabUrlSubstring: string, images: GrabbedImage[]) =>
-  sendMessageToTab(helperPage, tabUrlSubstring, { action: 'enhanceImages', images });
+  sendMessageToTab<EnhanceResult>(helperPage, tabUrlSubstring, {
+    action: 'enhanceImages',
+    images,
+  });
+
+/**
+ * Patches settings in chrome.storage.local (Zustand persist format).
+ */
+async function patchSettings(helperPage: Page, patch: Record<string, unknown>): Promise<void> {
+  await helperPage.evaluate(async (p: Record<string, unknown>) => {
+    const STORE_KEY = 'image-downloader-settings';
+    const result = await chrome.storage.local.get(STORE_KEY);
+    const raw = result[STORE_KEY];
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {});
+    const state = parsed?.state ?? parsed;
+    Object.assign(state, p);
+    const updated = parsed?.state ? { ...parsed, state } : state;
+    await chrome.storage.local.set({ [STORE_KEY]: JSON.stringify(updated) });
+  }, patch);
+}
 
 /**
  * Opens a long-lived options.html page for use as a chrome.tabs API bridge.
@@ -307,6 +329,53 @@ test.describe('Full-size image resolution (enhance)', () => {
     expect(case6Image!.src).not.toContain('tn_');
     expect(case6Image!.enhanced).toBe(true);
 
+    await testPage.close();
+  });
+
+  test('Enhance with maxOgFetches=1 returns remainingCount and second click processes the rest', async ({
+    context,
+    extensionId,
+  }) => {
+    const testPage = await context.newPage();
+    await testPage.goto(`${FIXTURE_BASE}/fullsize-test-page.html`);
+    await testPage.waitForLoadState('networkidle');
+    await testPage.waitForTimeout(2000);
+
+    const helper = await openHelperPage(context, extensionId);
+
+    // Limit to 1 page fetch per enhance
+    await patchSettings(helper, { maxOgFetches: 1 });
+
+    const result = await grabImagesFromTab(helper, 'fullsize-test-page');
+
+    // 2 unenhanced candidates with linkedPageUrl: Case 3 (Flickr) + Case 6
+    // Case 1 (Imgur) is already auto-enhanced by Strategy B during grab
+    const candidates = result.images.filter((img) => img.linkedPageUrl && !img.enhanced);
+    expect(candidates.length).toBe(2);
+
+    // First enhance (limit=1): processes 1 URL, 1 remaining
+    const first = await enhanceImagesInTab(helper, 'fullsize-test-page', result.images);
+    expect(first.upgradedCount).toBe(1);
+    expect(first.remainingCount).toBe(1);
+
+    // Second enhance: processes last URL, 0 remaining
+    const second = await enhanceImagesInTab(helper, 'fullsize-test-page', first.images);
+    expect(second.upgradedCount).toBe(1);
+    expect(second.remainingCount).toBe(0);
+
+    // Both candidates should now be enhanced (plus auto-enhanced from grab)
+    const enhancedCount = second.images.filter((img) => img.enhanced).length;
+    const totalImages = second.images.length;
+    expect(enhancedCount).toBe(totalImages); // all images on this page get enhanced
+
+    // Third enhance: nothing left — all skipped
+    const third = await enhanceImagesInTab(helper, 'fullsize-test-page', second.images);
+    expect(third.upgradedCount).toBe(0);
+    expect(third.remainingCount).toBe(0);
+
+    // Restore default
+    await patchSettings(helper, { maxOgFetches: 50 });
+    await helper.close();
     await testPage.close();
   });
 });

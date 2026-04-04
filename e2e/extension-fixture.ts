@@ -1,8 +1,9 @@
-import { test as base, chromium, type BrowserContext } from '@playwright/test';
-import path from 'path';
-import { createServer, type Server } from 'http';
 import fs from 'fs';
+import { createServer, type Server } from 'http';
+import path from 'path';
 import { fileURLToPath } from 'url';
+
+import { type BrowserContext, chromium, test as base } from '@playwright/test';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -35,7 +36,13 @@ function startFixtureServer(fixturesDir: string, port: number): Server {
     const contentType = mimeTypes[ext] || 'application/octet-stream';
 
     try {
-      const data = await fs.promises.readFile(filePath);
+      let data: Buffer | string = await fs.promises.readFile(filePath);
+      // Rewrite hardcoded fixture port so tests work on any worker
+      if (ext === '.html') {
+        data = data
+          .toString('utf-8')
+          .replace(/http:\/\/localhost:9753/g, `http://localhost:${port}`);
+      }
       res.writeHead(200, { 'Content-Type': contentType });
       res.end(data);
     } catch {

@@ -12,6 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const imagesDir = path.join(__dirname, 'fixtures', 'images');
 
 fs.mkdirSync(imagesDir, { recursive: true });
+fs.mkdirSync(path.join(imagesDir, 'thumbs'), { recursive: true });
 
 function crc32(data) {
   let crc = 0xffffffff;
@@ -78,6 +79,19 @@ const images = [
   { name: 'tiny-spacer.gif', w: 1, h: 1, r: 255, g: 255, b: 255 },
   { name: 'tiny-tracker.png', w: 5, h: 5, r: 255, g: 255, b: 255 },
   { name: 'data-original-photo.jpg', w: 500, h: 500, r: 255, g: 192, b: 203 },
+  // Full-size resolution test images (thumbnails vs full-size must differ in dimensions)
+  { name: 'thumbs/tn_IMG_0003.jpg', w: 200, h: 150, r: 100, g: 80, b: 60 },
+  { name: 'IMG_0003.jpg', w: 1024, h: 768, r: 100, g: 80, b: 60 },
+  { name: 'thumbs/tn_IMG_0006.jpg', w: 200, h: 150, r: 60, g: 80, b: 100 },
+  { name: 'IMG_0006.jpg', w: 1024, h: 768, r: 60, g: 80, b: 100 },
+  { name: '55145287496_a240db048f.jpg', w: 400, h: 300, r: 80, g: 100, b: 60 },
+  { name: '55145287496_full.jpg', w: 1024, h: 768, r: 80, g: 100, b: 60 },
+  { name: 'photo_d.webp', w: 300, h: 400, r: 120, g: 90, b: 70 },
+  { name: 'photo.webp', w: 800, h: 1067, r: 120, g: 90, b: 70 },
+  { name: 'photo-thumb.png', w: 100, h: 100, r: 70, g: 120, b: 90 },
+  { name: 'photo-full.png', w: 800, h: 800, r: 70, g: 120, b: 90 },
+  { name: 'landscape_thumb.jpg', w: 300, h: 200, r: 90, g: 70, b: 120 },
+  { name: 'landscape.jpg', w: 1200, h: 800, r: 90, g: 70, b: 120 },
 ];
 
 for (const img of images) {
