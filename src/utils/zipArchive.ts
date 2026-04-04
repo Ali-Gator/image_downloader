@@ -120,6 +120,7 @@ interface ZipBatchOptions {
 const downloadImageAsBlob = async (
   image: ImageData,
   options: ZipBatchOptions,
+  signal?: AbortSignal,
 ): Promise<{ blob: Blob; filename: string }> => {
   const effectiveImage = useImageStore.getState().getEffectiveImage(image);
   const { src, filename, id } = effectiveImage;
@@ -170,7 +171,7 @@ const downloadImageAsBlob = async (
     }
 
     // Fetch the image data
-    const response = await fetch(finalSrc);
+    const response = await fetch(finalSrc, { signal });
     if (!response.ok) {
       throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
     }
@@ -178,6 +179,9 @@ const downloadImageAsBlob = async (
     const blob = await response.blob();
     return { blob, filename: finalFilename };
   } catch (error) {
+    // If aborted, don't attempt the background fallback
+    if (signal?.aborted) throw error;
+
     // If direct fetch fails, try through background script
     try {
       const bgResponse = await new Promise<{ dataUrl?: string; error?: boolean; message?: string }>(
@@ -199,7 +203,7 @@ const downloadImageAsBlob = async (
       }
 
       if (bgResponse.dataUrl) {
-        const response = await fetch(bgResponse.dataUrl);
+        const response = await fetch(bgResponse.dataUrl, { signal });
         if (!response.ok) {
           throw new Error(`Failed to fetch data URL: ${response.status}`);
         }
@@ -231,7 +235,8 @@ const downloadImageAsBlob = async (
  */
 export const createAndDownloadZipArchive = async (
   images: ImageData[],
-): Promise<{ successCount: number; totalCount: number }> => {
+  signal?: AbortSignal,
+): Promise<{ successCount: number; totalCount: number; cancelled?: boolean }> => {
   try {
     // Load JSZip
     const JSZipClass = await loadJSZip();
@@ -254,10 +259,12 @@ export const createAndDownloadZipArchive = async (
 
     // Add images to ZIP archive
     for (let i = 0; i < images.length; i++) {
+      if (signal?.aborted) break;
+
       const image = images[i];
 
       try {
-        const { blob, filename } = await downloadImageAsBlob(image, batchOptions);
+        const { blob, filename } = await downloadImageAsBlob(image, batchOptions, signal);
 
         // Add to ZIP with sanitized and deduplicated filename
         let sanitizedFilename = sanitizeFileName(filename);
@@ -316,7 +323,8 @@ export const createAndDownloadZipArchive = async (
       useRatingStore.getState().setHasSuccessfulDownload(true);
     }
 
-    return { successCount, totalCount };
+    const cancelled = signal?.aborted === true;
+    return { successCount, totalCount, cancelled };
   } catch (error) {
     console.error('ZIP archive creation failed:', error);
     throw error;

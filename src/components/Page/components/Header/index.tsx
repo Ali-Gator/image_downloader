@@ -1,12 +1,12 @@
-import { ChangeEvent, FC, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FC, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DownloadIcon from '@mui/icons-material/Download';
+import StopIcon from '@mui/icons-material/Stop';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import {
   Button,
   Checkbox,
-  CircularProgress,
   IconButton,
   Menu,
   MenuItem,
@@ -60,6 +60,7 @@ export const Header: FC = () => {
   const [avatarUrl, setAvatarUrl] = useState<string>('');
   const [isDownloading, setIsDownloading] = useState(false);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const selectedCount = selectedImages.length;
   const totalCount = filteredImages.length;
@@ -136,6 +137,8 @@ export const Header: FC = () => {
   const handleDownload = useCallback(async () => {
     if (selectedImages.length === 0) return;
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     setIsDownloading(true);
     try {
       const gate = await gateDownloadWithPaywall({ pageUrl });
@@ -157,10 +160,8 @@ export const Header: FC = () => {
       }
 
       // Use unified bulk download with conversion function
-      const { successCount, failCount, totalCount } = await downloadImagesWithConversion(
-        selectedImages,
-        createZipArchive,
-      );
+      const { successCount, failCount, totalCount, cancelled } =
+        await downloadImagesWithConversion(selectedImages, createZipArchive, controller.signal);
 
       // Close the persistent progress snackbar
       if (createZipArchive) {
@@ -172,24 +173,33 @@ export const Header: FC = () => {
       }
 
       // Show completion notification
-      let completionMessage: string;
-      if (failCount > 0) {
-        completionMessage = t('bulk_download_partial', [
-          successCount.toString(),
-          totalCount.toString(),
-          failCount.toString(),
-        ]);
+      if (cancelled) {
+        showNotification(
+          t('download_cancelled', [successCount.toString(), totalCount.toString()]),
+          NotificationType.WARNING,
+          NOTIFICATION_DURATION.LONG,
+        );
       } else {
-        completionMessage = `${t('download_complete_text')}: ${successCount}/${totalCount}`;
-      }
+        let completionMessage: string;
+        if (failCount > 0) {
+          completionMessage = t('bulk_download_partial', [
+            successCount.toString(),
+            totalCount.toString(),
+            failCount.toString(),
+          ]);
+        } else {
+          completionMessage = `${t('download_complete_text')}: ${successCount}/${totalCount}`;
+        }
 
-      const variant =
-        successCount === totalCount ? NotificationType.SUCCESS : NotificationType.WARNING;
-      showNotification(completionMessage, variant, NOTIFICATION_DURATION.LONG);
+        const variant =
+          successCount === totalCount ? NotificationType.SUCCESS : NotificationType.WARNING;
+        showNotification(completionMessage, variant, NOTIFICATION_DURATION.LONG);
+      }
     } catch (error) {
       showNotification(t('download_error_text'), NotificationType.ERROR);
     } finally {
       setIsDownloading(false);
+      abortControllerRef.current = null;
     }
   }, [
     selectedImages,
@@ -200,6 +210,10 @@ export const Header: FC = () => {
     pageUrl,
     refreshMonetizationState,
   ]);
+
+  const handleStopDownload = useCallback(() => {
+    abortControllerRef.current?.abort();
+  }, []);
 
   const inSidePanel = isSidePanelContext();
 
@@ -310,16 +324,16 @@ export const Header: FC = () => {
         <Button
           data-onboarding="download-button"
           variant="contained"
-          color="secondary"
+          color={isDownloading ? 'error' : 'secondary'}
           startIcon={
             inSidePanel ? undefined : isDownloading ? (
-              <CircularProgress size={20} color="inherit" />
+              <StopIcon />
             ) : (
               <DownloadIcon />
             )
           }
-          onClick={handleDownload}
-          disabled={selectedCount === 0 || isDownloading}
+          onClick={isDownloading ? handleStopDownload : handleDownload}
+          disabled={!isDownloading && selectedCount === 0}
           sx={
             inSidePanel
               ? { minWidth: 'auto', p: 1, '& .MuiSvgIcon-root': { mr: '0px' } }
@@ -328,10 +342,12 @@ export const Header: FC = () => {
         >
           {inSidePanel ? (
             isDownloading ? (
-              <CircularProgress size={20} color="inherit" />
+              <StopIcon />
             ) : (
               <DownloadIcon />
             )
+          ) : isDownloading ? (
+            t('stop_btn')
           ) : (
             t('download_btn')
           )}

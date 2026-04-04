@@ -56,6 +56,12 @@
   "download_error_text": {
     "message": "Error downloading"
   },
+  "stop_btn": {
+    "message": "Stop"
+  },
+  "download_cancelled": {
+    "message": "Download cancelled: $1/$2 images saved"
+  },
   "select_all_text": {
     "message": "Select all"
   },

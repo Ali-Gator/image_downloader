@@ -91,10 +91,11 @@ export const downloadImageWithConversion = async (
 export const downloadImagesWithConversion = async (
   images: ImageData[],
   createZipArchive = false,
+  signal?: AbortSignal,
 ): Promise<BulkDownloadResult> => {
   // If ZIP archive is enabled and we have multiple images, create ZIP
   if (createZipArchive && images.length > 0) {
-    const zipResult = await createAndDownloadZipArchive(images);
+    const zipResult = await createAndDownloadZipArchive(images, signal);
     return { ...zipResult, failCount: zipResult.totalCount - zipResult.successCount };
   }
 
@@ -103,6 +104,15 @@ export const downloadImagesWithConversion = async (
   const totalCount = images.length;
 
   for (let i = 0; i < images.length; i++) {
+    if (signal?.aborted) {
+      return {
+        successCount,
+        failCount: totalCount - successCount,
+        totalCount,
+        cancelled: true,
+      };
+    }
+
     const image = images[i];
     try {
       const result = await downloadImageWithConversion(image);

@@ -56,6 +56,12 @@
   "download_error_text": {
     "message": "Ошибка при загрузке"
   },
+  "stop_btn": {
+    "message": "Стоп"
+  },
+  "download_cancelled": {
+    "message": "Загрузка отменена: $1/$2 изображений сохранено"
+  },
   "select_all_text": {
     "message": "Выбрать все"
   },

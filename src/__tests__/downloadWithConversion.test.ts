@@ -139,7 +139,7 @@ describe('downloadImagesWithConversion', () => {
 
     const result = await downloadImagesWithConversion(images, true);
 
-    expect(mockCreateZip).toHaveBeenCalledWith(images);
+    expect(mockCreateZip).toHaveBeenCalledWith(images, undefined);
     expect(result.successCount).toBe(2);
     expect(result.failCount).toBe(0);
     expect(mockDownloadImage).not.toHaveBeenCalled();
@@ -153,5 +153,70 @@ describe('downloadImagesWithConversion', () => {
 
     expect(mockCreateZip).not.toHaveBeenCalled();
     expect(mockDownloadImage).toHaveBeenCalled();
+  });
+
+  describe('abort signal', () => {
+    it('stops individual downloads when signal is already aborted', async () => {
+      const images = [makeImage('a'), makeImage('b')];
+      mockDownloadImage.mockResolvedValue({ success: true, downloadId: 1 });
+      const controller = new AbortController();
+      controller.abort();
+
+      const result = await downloadImagesWithConversion(images, false, controller.signal);
+
+      expect(result.cancelled).toBe(true);
+      expect(result.successCount).toBe(0);
+      expect(result.totalCount).toBe(2);
+      expect(mockDownloadImage).not.toHaveBeenCalled();
+    });
+
+    it('stops remaining individual downloads when aborted mid-loop', async () => {
+      const images = [makeImage('a'), makeImage('b'), makeImage('c')];
+      const controller = new AbortController();
+
+      mockDownloadImage.mockImplementation(async () => {
+        controller.abort();
+        return { success: true, downloadId: 1 };
+      });
+
+      const result = await downloadImagesWithConversion(images, false, controller.signal);
+
+      expect(result.cancelled).toBe(true);
+      expect(result.successCount).toBe(1);
+      expect(result.failCount).toBe(2);
+      expect(result.totalCount).toBe(3);
+      expect(mockDownloadImage).toHaveBeenCalledTimes(1);
+    });
+
+    it('passes signal to createAndDownloadZipArchive in ZIP mode', async () => {
+      const images = [makeImage('a')];
+      const controller = new AbortController();
+      mockCreateZip.mockResolvedValue({ successCount: 1, totalCount: 1 });
+
+      await downloadImagesWithConversion(images, true, controller.signal);
+
+      expect(mockCreateZip).toHaveBeenCalledWith(images, controller.signal);
+    });
+
+    it('forwards cancelled from ZIP result', async () => {
+      const images = [makeImage('a'), makeImage('b')];
+      mockCreateZip.mockResolvedValue({ successCount: 1, totalCount: 2, cancelled: true });
+
+      const result = await downloadImagesWithConversion(images, true);
+
+      expect(result.cancelled).toBe(true);
+      expect(result.successCount).toBe(1);
+      expect(result.failCount).toBe(1);
+    });
+
+    it('does not set cancelled when completing normally', async () => {
+      const images = [makeImage('a')];
+      mockDownloadImage.mockResolvedValue({ success: true, downloadId: 1 });
+
+      const result = await downloadImagesWithConversion(images, false);
+
+      expect(result.cancelled).toBeUndefined();
+      expect(result.successCount).toBe(1);
+    });
   });
 });

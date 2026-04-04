@@ -147,6 +147,7 @@ export interface BulkDownloadResult {
   successCount: number;
   failCount: number;
   totalCount: number;
+  cancelled?: boolean;
 }
 
 /**
