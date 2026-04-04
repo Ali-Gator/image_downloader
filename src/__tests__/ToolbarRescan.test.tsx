@@ -253,6 +253,35 @@ describe('Toolbar — Rescan in side panel mode', () => {
     });
   });
 
+  it('deduplicates by originalSrc so enhanced images are not re-added', async () => {
+    const enhanced: ImageData = {
+      ...img('https://cdn.com/full.jpg'),
+      originalSrc: 'https://a.com/thumb.jpg',
+      enhanced: true,
+    };
+    storeState = makeStoreState({
+      sourceTabId: 10,
+      images: [enhanced],
+    });
+
+    vi.mocked(chrome.tabs.query).mockResolvedValue([
+      { id: 10, url: 'https://a.com' } as chrome.tabs.Tab,
+    ]);
+    // Content script returns the original thumbnail URL
+    mockSendMessageToContentScript.mockResolvedValue({
+      images: [img('https://a.com/thumb.jpg')],
+      pageUrl: 'https://a.com',
+    });
+
+    renderToolbar();
+    fireEvent.click(screen.getByTitle('rescan_button'));
+
+    await waitFor(() => {
+      // Should NOT add duplicates — the thumbnail URL matches originalSrc
+      expect(mockSetImages).not.toHaveBeenCalled();
+    });
+  });
+
   it('shows info snackbar when same-tab rescan finds no new images', async () => {
     const existing = img('https://a.com/1.jpg');
     storeState = makeStoreState({

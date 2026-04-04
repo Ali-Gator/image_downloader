@@ -455,6 +455,9 @@
   "enhance_found": {
     "message": "Upgraded $1 image(s) to full size"
   },
+  "enhance_found_with_remaining": {
+    "message": "Upgraded $1 image(s) to full size. $2 more to check — click Enhance again"
+  },
   "enhance_no_upgrades": {
     "message": "All images are already at best quality"
   },

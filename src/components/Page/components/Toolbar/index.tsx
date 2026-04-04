@@ -29,8 +29,8 @@ import { GrabImagesResponse, ImageData, MessageActionType } from '@types';
 import {
   CardSize,
   QualityLevel,
-  SortOption,
   sendMessageToContentScript,
+  SortOption,
   useTranslation,
 } from '@utils';
 import { isSidePanelContext } from '@utils/sidePanelUtils';
@@ -116,7 +116,11 @@ export const Toolbar: FC = () => {
           });
         } else {
           const { images, setImages } = useImageStore.getState();
-          const existingSrcs = new Set(images.map((img) => img.src));
+          const existingSrcs = new Set<string>();
+          for (const img of images) {
+            existingSrcs.add(img.src);
+            if (img.originalSrc) existingSrcs.add(img.originalSrc);
+          }
           const newImages = response.images.filter((img) => !existingSrcs.has(img.src));
           if (newImages.length > 0) {
             setImages([...images, ...newImages]);
@@ -144,12 +148,18 @@ export const Toolbar: FC = () => {
       const response = await sendMessageToContentScript<{
         images: ImageData[];
         upgradedCount: number;
+        remainingCount: number;
       }>(sourceTabId, { action: MessageActionType.ENHANCE_IMAGES, images }, 60000);
       if (response?.images && response.upgradedCount > 0) {
         updateImages(response.images);
-        enqueueSnackbar(t('enhance_found', response.upgradedCount.toString()), {
-          variant: 'success',
-        });
+        const message =
+          response.remainingCount > 0
+            ? t('enhance_found_with_remaining', [
+                response.upgradedCount.toString(),
+                response.remainingCount.toString(),
+              ])
+            : t('enhance_found', response.upgradedCount.toString());
+        enqueueSnackbar(message, { variant: 'success' });
       } else {
         enqueueSnackbar(t('enhance_no_upgrades'), { variant: 'info' });
       }

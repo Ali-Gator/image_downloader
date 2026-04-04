@@ -178,7 +178,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
 
     if (message.action === MessageActionType.ENHANCE_IMAGES) {
       enhanceImages(message.images)
-        .then(({ images, upgradedCount }) => sendResponse({ images, upgradedCount }))
+        .then((result) => sendResponse(result))
         .catch((error) => {
           const err = ensureError(error);
           Object.assign(err, {
@@ -222,9 +222,12 @@ const DIMENSION_PROBE_TIMEOUT_MS = 10000;
  */
 async function enhanceImages(
   images: ImageData[],
-): Promise<{ images: ImageData[]; upgradedCount: number }> {
+): Promise<{ images: ImageData[]; upgradedCount: number; remainingCount: number }> {
   const maxOgFetches = await getSettingFromStorage('maxOgFetches', DEFAULT_OPTIONS.maxOgFetches);
-  const candidates = images.filter((img) => img.linkedPageUrl && img.width > 0 && img.height > 0);
+  const candidates = images.filter(
+    (img): img is ImageData & { linkedPageUrl: string } =>
+      !img.enhanced && !!img.linkedPageUrl && img.width > 0 && img.height > 0,
+  );
 
   debugLogger.log(
     'info',
@@ -233,16 +236,14 @@ async function enhanceImages(
   );
 
   // Deduplicate by linkedPageUrl — fetch each unique page only once
-  const uniqueUrls = [...new Set(candidates.map((img) => img.linkedPageUrl!))].slice(
-    0,
-    maxOgFetches,
-  );
+  const allCandidateUrls = [...new Set(candidates.map((img) => img.linkedPageUrl))];
+  const urlsToFetch = allCandidateUrls.slice(0, maxOgFetches);
 
   // Fetch OG images for each unique page URL
   const ogCache = new Map<string, string | null>();
 
   await Promise.allSettled(
-    uniqueUrls.map(async (pageUrl) => {
+    urlsToFetch.map(async (pageUrl) => {
       try {
         const metaResponse = await chrome.runtime.sendMessage({
           msg: MessageActionType.FETCH_PAGE_META,
@@ -299,7 +300,7 @@ async function enhanceImages(
   // Apply resolved OG images to all candidates sharing the same linkedPageUrl
   const updated = new Map<string, ImageData>();
   for (const img of candidates) {
-    const ogImageUrl = ogCache.get(img.linkedPageUrl!);
+    const ogImageUrl = ogCache.get(img.linkedPageUrl);
     if (ogImageUrl && ogImageUrl !== img.src) {
       if (isSameImagePath(ogImageUrl, img.src)) {
         debugLogger.log(
@@ -361,14 +362,18 @@ async function enhanceImages(
     }
   }
 
+  // Count unique candidate URLs that were not fetched in this batch (beyond maxOgFetches limit)
+  const remainingCount = Math.max(0, allCandidateUrls.length - urlsToFetch.length);
+
   debugLogger.log(
     'info',
     ENHANCE_LOG_CONTEXT,
-    `Enhancement complete: ${updated.size}/${images.length} upgraded`,
+    `Enhancement complete: ${updated.size}/${images.length} upgraded, ${remainingCount} remaining`,
   );
 
   return {
     images: images.map((img) => updated.get(img.id) || img),
     upgradedCount: updated.size,
+    remainingCount,
   };
 }
