@@ -32,7 +32,12 @@
       "mcp__plugin_sentry_sentry__search_issues",
       "mcp__plugin_sentry_sentry__search_events",
       "mcp__plugin_sentry_sentry__get_sentry_resource",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(mkdir -p /tmp/traces)",
+      "Bash(gunzip -k -c ~/Downloads/Trace-20260418T222914.json.gz)",
+      "Bash(gunzip -k -c ~/Downloads/Trace-20260418T223117.json.gz)",
+      "Read(//tmp/**)",
+      "Bash(python3 *)"
     ]
   },
   "enableAllProjectMcpServers": true,

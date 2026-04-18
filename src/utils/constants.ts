@@ -89,6 +89,7 @@ export const DEFAULT_OPTIONS: DownloadOptions = {
   openInSidePanel: true,
   maxOgFetches: 50,
   maxBgImages: 200,
+  enableLegacyObservers: false,
 };
 
 /**

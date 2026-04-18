@@ -520,5 +520,11 @@
   },
   "context_menu_save_image": {
     "message": "Save This Image"
+  },
+  "enable_legacy_observers": {
+    "message": "Enable legacy page observers (experimental)"
+  },
+  "enable_legacy_observers_info": {
+    "message": "High CPU and memory usage. Only enable if images are missing from some pages. Takes effect on the next page reload."
   }
 }

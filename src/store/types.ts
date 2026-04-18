@@ -24,6 +24,7 @@ export interface SettingsState {
   // Advanced
   maxOgFetches: number;
   maxBgImages: number;
+  enableLegacyObservers: boolean;
 
   // Onboarding
   showOnboardingNextTime: boolean;
@@ -44,6 +45,7 @@ export interface SettingsState {
   setOpenInSidePanel: (open: boolean) => void;
   setMaxOgFetches: (value: number) => void;
   setMaxBgImages: (value: number) => void;
+  setEnableLegacyObservers: (value: boolean) => void;
   resetDownloadOptions: () => void;
   refreshSettings: () => Promise<void>;
 }

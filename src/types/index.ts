@@ -310,6 +310,7 @@ export interface DownloadOptions {
   openInSidePanel: boolean;
   maxOgFetches: number;
   maxBgImages: number;
+  enableLegacyObservers: boolean;
 }
 
 // Props for the ErrorBoundary component

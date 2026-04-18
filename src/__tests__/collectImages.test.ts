@@ -168,6 +168,36 @@ describe('collectImages', () => {
     expect(result.images).toHaveLength(1);
   });
 
+  it('includes performance entries loaded before first scan even when observer cache is empty', async () => {
+    const { scanPerformanceEntries, performanceUrlsToImageData } = await import(
+      '../utils/performanceImageScanner'
+    );
+    vi.mocked(scanPerformanceEntries).mockReturnValue({
+      urls: ['https://example.com/perf-image.jpg'],
+      sizeMap: new Map(),
+    });
+    vi.mocked(performanceUrlsToImageData).mockResolvedValue([
+      {
+        id: 'perf-1',
+        src: 'https://example.com/perf-image.jpg',
+        alt: '',
+        width: 400,
+        height: 300,
+        aspectRatio: 4 / 3,
+        filename: 'perf-image.jpg',
+        fileSize: 0,
+        qualityScore: 0,
+      },
+    ]);
+
+    document.body.appendChild(createImg('https://example.com/dom-image.jpg', 200, 200));
+
+    const result = await collectImages(noopOptions);
+
+    expect(result.images.some((img) => img.src === 'https://example.com/dom-image.jpg')).toBe(true);
+    expect(result.images.some((img) => img.src === 'https://example.com/perf-image.jpg')).toBe(true);
+  });
+
   it('limits results to MAX_FINAL_IMAGES (2000)', async () => {
     // Add 2001 images to test the cap — but jsdom is slow with many elements.
     // Instead, verify by adding perfObserverCache entries that push over the limit.

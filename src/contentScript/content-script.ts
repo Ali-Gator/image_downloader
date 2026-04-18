@@ -20,6 +20,9 @@ import {
 import { captureMessage } from '../utils/sentryCapturer';
 import { getSettingFromStorage } from '../utils/settingsReader';
 
+// Bump the native resource timing buffer so entries aren't trimmed before the first scan.
+performance.setResourceTimingBufferSize?.(500);
+
 const ENHANCE_LOG_CONTEXT = 'fullSizeResolver';
 
 /**
@@ -44,29 +47,27 @@ async function fetchImageAsDataUrl(url: string): Promise<string | null> {
 // Module-level cache for images discovered by PerformanceObserver between scans
 let perfObserverCache: ImageCandidate[] = [];
 const perfObserverSeenUrls = new Set<string>();
-let isCanvasApp = false;
+let isCanvasApp: boolean | null = null;
 
-// Defer DOM detection + observer setup until DOM is ready
+function resolveIsCanvasApp(): boolean {
+  if (isCanvasApp === null) {
+    isCanvasApp = isCanvasHeavyApp();
+  }
+  return isCanvasApp;
+}
+
 function initPerfObserver() {
-  isCanvasApp = isCanvasHeavyApp();
-
   observeNewPerformanceEntries(
     (newUrls) => {
       const unseen = newUrls.filter((url) => !perfObserverSeenUrls.has(url));
       if (unseen.length === 0) return;
       for (const url of unseen) perfObserverSeenUrls.add(url);
       performanceUrlsToImageData(unseen).then((newImages) => {
-        perfObserverCache = [...perfObserverCache, ...newImages];
+        perfObserverCache.push(...newImages);
       });
     },
-    { includeXhr: isCanvasApp },
+    { includeXhr: resolveIsCanvasApp() },
   );
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initPerfObserver, { once: true });
-} else {
-  initPerfObserver();
 }
 
 /** Drains perfObserverCache and returns its contents. */
@@ -75,6 +76,43 @@ function drainPerfObserverCache(): ImageCandidate[] {
   perfObserverCache = [];
   return snapshot;
 }
+
+function startMutationObserver() {
+  const mutationObserver = new MutationObserver(() => {
+    // Skip when cache is already stale — the observer can fire thousands of
+    // times per second on SPAs and the write would notify no one new.
+    if (cacheTimestamp === 0) return;
+    cacheTimestamp = 0;
+  });
+  mutationObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['src', 'srcset', 'data-src', 'data-lazy', 'data-original'],
+  });
+}
+
+async function maybeEnableLegacyObservers() {
+  try {
+    const enabled = await getSettingFromStorage('enableLegacyObservers', false);
+    if (!enabled) return;
+  } catch {
+    return;
+  }
+
+  const start = () => {
+    initPerfObserver();
+    setTimeout(startMutationObserver, 800);
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+}
+
+maybeEnableLegacyObservers();
 
 // Module-level cache
 let cachedImages: ImageData[] = [];
@@ -85,37 +123,13 @@ const CACHE_MAX_AGE_MS = 30_000; // 30 seconds
 async function refreshCache(): Promise<{ images: ImageData[]; pageUrl: string }> {
   const maxBgImages = await getSettingFromStorage('maxBgImages', DEFAULT_OPTIONS.maxBgImages);
   const result = await collectImages({
-    includeXhrInPerf: isCanvasApp,
+    includeXhrInPerf: resolveIsCanvasApp(),
     drainPerfObserverCache,
     maxBgImages,
   });
   cachedImages = result.images;
   cacheTimestamp = Date.now();
   return result;
-}
-
-// MutationObserver only invalidates cache — expensive scan is deferred to message handlers
-const mutationObserver = new MutationObserver(() => {
-  // Mark cache as stale so the next GRAB_IMAGES does a fresh scan
-  cacheTimestamp = 0;
-});
-
-// Start observing after initial page load
-const startMutationObserver = () => {
-  mutationObserver.observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['src', 'srcset', 'data-src', 'data-lazy', 'data-original'],
-  });
-};
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => setTimeout(startMutationObserver, 800), {
-    once: true,
-  });
-} else {
-  setTimeout(startMutationObserver, 800);
 }
 
 /** Shared scan-and-respond for GRAB_IMAGES / RESCAN_IMAGES handlers. */

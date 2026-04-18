@@ -1,18 +1,25 @@
 import { ChangeEvent, FC, useEffect, useState } from 'react';
 
-import { InputAdornment, TextField, Typography } from '@mui/material';
+import { Checkbox, FormControlLabel, InputAdornment, TextField, Typography } from '@mui/material';
 
 import { useSettingsStore } from '@store';
 import { useTranslation } from '@utils';
 
 import { InfoTooltip } from '../InfoIcon';
-import { FieldContainer } from '../styles';
+import { FieldContainer, OptionRow } from '../styles';
 
 const clampPositive = (raw: string): number => Math.max(1, parseInt(raw, 10) || 1);
 
 export const AdvancedOptions: FC = () => {
   const { t } = useTranslation();
-  const { maxOgFetches, setMaxOgFetches, maxBgImages, setMaxBgImages } = useSettingsStore();
+  const {
+    maxOgFetches,
+    setMaxOgFetches,
+    maxBgImages,
+    setMaxBgImages,
+    enableLegacyObservers,
+    setEnableLegacyObservers,
+  } = useSettingsStore();
 
   const [ogInput, setOgInput] = useState(String(maxOgFetches));
   const [bgInput, setBgInput] = useState(String(maxBgImages));
@@ -75,6 +82,19 @@ export const AdvancedOptions: FC = () => {
           }}
         />
       </FieldContainer>
+      <OptionRow>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={enableLegacyObservers}
+              onChange={(e) => setEnableLegacyObservers(e.target.checked)}
+              size="small"
+            />
+          }
+          label={t('enable_legacy_observers')}
+        />
+        <InfoTooltip title={t('enable_legacy_observers_info')} />
+      </OptionRow>
     </>
   );
 };

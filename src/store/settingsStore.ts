@@ -25,6 +25,7 @@ const PERSISTED_KEYS: readonly (keyof SettingsState)[] = [
   'showOnboardingNextTime',
   'maxOgFetches',
   'maxBgImages',
+  'enableLegacyObservers',
   'cardSize',
 ] as const;
 
@@ -71,6 +72,7 @@ export const useSettingsStore = create<SettingsState>()(
       setOpenInSidePanel: (openInSidePanel) => set({ openInSidePanel }),
       setMaxOgFetches: (maxOgFetches) => set({ maxOgFetches }),
       setMaxBgImages: (maxBgImages) => set({ maxBgImages }),
+      setEnableLegacyObservers: (enableLegacyObservers) => set({ enableLegacyObservers }),
       resetDownloadOptions: () => set(DEFAULT_OPTIONS),
 
       // Force refresh settings from storage
