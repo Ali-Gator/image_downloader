@@ -1,8 +1,8 @@
 # Sentry Unfilter Plan — Fix Errors Instead of Hiding Them
 
 > Created: 2026-03-28
-> Status: **Phase 1 — In Progress (unfiltered `blocked` + `unknown error.`, added context)**
-> Last updated: 2026-03-28
+> Status: **Phase 2 — In Progress (B4 done, waiting on Phase 1 context data)**
+> Last updated: 2026-04-18
 
 ## Context
 
@@ -84,13 +84,51 @@ observe what comes in, fix the root cause, then either remove the filter or narr
 - [x] Add context to `FETCH_IMAGE` handler (requestUrl)
 - [x] Add context to `sendMessageToContentScript` (tabId, messageAction)
 - [x] Build passes
-- [ ] Deploy and wait 3-5 days
-- [ ] Check Sentry: what new errors appear? What context do they carry?
-- [ ] Document findings below in Phase 1 Results
+- [x] Deploy and wait 3-5 days
+- [x] Check Sentry: what new errors appear? What context do they carry?
+- [x] Document findings below in Phase 1 Results
 
-**Phase 1 Results**:
+**Phase 1 Results** _(checked: 2026-04-18, 21 days of data)_:
 
-> _Deployed on: 2026-03-28_ > _Check after: 2026-04-04_
+**Volume after unfiltering** (last 30d):
+
+| Error | Before (Mar 28) | After (Apr 18) | Change |
+| --- | --- | --- | --- |
+| `Blocked` | ~1,342/month | 79/month | −94% |
+| `Unknown error.` | ~182/month | 51/month | −72% |
+
+**Findings for B1 — `blocked` (issue ID-R5)**:
+- Status in Sentry: `ignored / archived_forever` (was archived at some point, still receiving events)
+- No stacktrace, no culprit, `mechanism: generic`, `handled: yes`
+- Our extra context fields (tabUrl, requestUrl, messageAction) are **not visible** in events
+- Conclusion: these errors come from the Chrome runtime itself via the global error handler, not via our `captureException` calls with context. We never know _which_ operation triggered them.
+- **Decision**: cannot fix. Move to Category A. Re-add filter `'blocked'` (narrowed if possible).
+
+**Findings for B2 — `unknown error.` (issue ID-9P)**:
+- Status in Sentry: `ignored / archived_forever`
+- No stacktrace, no culprit, `mechanism: generic`, `handled: yes`
+- Extra context also not visible — same root cause as B1
+- Conclusion: Chrome emits this for various internal failures (storage, network, tab operations). Not actionable.
+- **Decision**: cannot fix. Move to Category A. Re-add filter `'unknown error.'`.
+
+**Other findings from the 30-day scan**:
+- `Cannot access contents of the page`: 73 events/month (B4) — confirmed high volume, Phase 2 target
+- `Frame with ID 0 is showing error page`: 439 all-time / 10 in 30d (B9, issue ID-18) — steady trickle
+- `Frame with ID 0 was removed.`: 635 all-time / 7 in 30d (B9, issue ID-19) — steady trickle
+- New: `A listener indicated an asynchronous response... message channel closed` (ID-VN) — related to B6/B7, 1 event
+- New: `Strategy D fetch failed` (ID-VP) — from full-size resolver, 1 event, probably noise
+- `Cannot access a secure:// URL` (ID-VQ) — not in filter list, 4 events, should add to Category A
+
+**Root cause of missing context (discovered 2026-04-18)**:
+
+Raw event JSON confirmed that none of our custom tags (`browser`, `extension.id`, etc.) or contexts (`Extra Context`, `Error Details`) were ever sent. Bug: `captureException` was calling `client.captureException()` instead of `scope.captureException()`. The client bypasses our custom scope, so all context added via `scope.setTag()` / `scope.setContext()` was silently dropped.
+
+**Fix applied 2026-04-18**: Changed `client.captureException()` → `scope.captureException()` and `client.captureMessage()` → `scope.captureMessage()` in `src/utils/sentryCapturer.ts`. Build passes.
+
+**Action items before Phase 2**:
+- [ ] Deploy fix and wait 3-5 days to see if `blocked` / `unknown error.` events now carry context
+- [ ] If context appears and reveals a fixable source → fix it; if still no context or confirms unfixable → re-add filters
+- [ ] Add `'cannot access a secure://'` to Category A filters (new variant, not in filter list)
 
 ---
 
@@ -100,8 +138,9 @@ observe what comes in, fix the root cause, then either remove the filter or narr
 
 **Steps**:
 
-- [ ] **B4 (cannot access contents of the page)**: Instead of throwing, show user a message like "Cannot access this
-      page — try granting permission or open a different page". Suppress the error after showing the message.
+- [x] **B4 (cannot access contents of the page)**: `ContentScriptAccessDeniedError` thrown in `injectContentScript`
+      when Chrome returns "cannot access contents" — caught in `grabImagesFromTab`, returns `t('page_not_accessible')`
+      to user (snackbar in side panel, alert in popup). No Sentry. New translation key added to all 52 locales.
 - [ ] **B3 (no sw)**: Investigate when SW dies. Add SW registration check + recovery. If unrecoverable, show user a
       message to reload the extension.
 - [ ] Deploy, wait 3-5 days, check Sentry

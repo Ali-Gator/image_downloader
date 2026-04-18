@@ -10,5 +10,8 @@
   },
   "monetize_limit_short": {
     "message": "Limit erreicht"
+  },
+  "page_not_accessible": {
+    "message": "Die Erweiterung kann auf diese Seite nicht zugreifen. Versuche eine andere Seite."
   }
 }

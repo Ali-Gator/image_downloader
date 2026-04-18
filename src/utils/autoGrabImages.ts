@@ -1,6 +1,10 @@
 import { GrabImagesResponse, ImageData, MessageActionType, PageImagesPayload } from '@types';
 
-import { isContentScriptSupported, sendMessageToContentScript } from './contentScriptUtils';
+import {
+  ContentScriptAccessDeniedError,
+  isContentScriptSupported,
+  sendMessageToContentScript,
+} from './contentScriptUtils';
 import { handleError } from './errorHandlers';
 import { openPageTabAndSendImages } from './messaging';
 
@@ -65,11 +69,19 @@ async function grabImagesFromTab(tab: chrome.tabs.Tab): Promise<AutoGrabOutcome 
     return { error: getUnsupportedUrlError(tab.url) };
   }
 
-  const response = await sendMessageToContentScript<GrabImagesResponse>(
-    tab.id,
-    { action: MessageActionType.GRAB_IMAGES },
-    10000,
-  );
+  let response: GrabImagesResponse | null;
+  try {
+    response = await sendMessageToContentScript<GrabImagesResponse>(
+      tab.id,
+      { action: MessageActionType.GRAB_IMAGES },
+      10000,
+    );
+  } catch (error) {
+    if (error instanceof ContentScriptAccessDeniedError) {
+      return { error: t('page_not_accessible') };
+    }
+    throw error;
+  }
 
   if (!response) {
     return { error: t('content_script_not_loaded') };

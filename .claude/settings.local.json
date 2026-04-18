@@ -28,9 +28,15 @@
       "Bash(npm ls:*)",
       "Bash(npx vite:*)",
       "Bash(find *)",
-      "mcp__sentry__whoami"
+      "mcp__sentry__whoami",
+      "mcp__plugin_sentry_sentry__search_issues",
+      "mcp__plugin_sentry_sentry__search_events",
+      "mcp__plugin_sentry_sentry__get_sentry_resource",
+      "Bash(node *)"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["sentry"]
+  "enabledMcpjsonServers": [
+    "sentry"
+  ]
 }

@@ -170,6 +170,9 @@
   "unsupported_page_type": {
     "message": "This page type is not supported."
   },
+  "page_not_accessible": {
+    "message": "This page cannot be accessed by the extension. Try a different page."
+  },
   "content_script_not_loaded": {
     "message": "Could not connect to the page. Try refreshing the page."
   },

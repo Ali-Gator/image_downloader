@@ -6,6 +6,12 @@ import { handleError } from './errorHandlers';
 
 import type { ContentScriptMessage } from '../types';
 
+export class ContentScriptAccessDeniedError extends Error {
+  constructor() {
+    super('content_script_access_denied');
+  }
+}
+
 /**
  * Checks if a URL supports content script injection
  */
@@ -62,6 +68,11 @@ const injectContentScript = async (tabId: number, tabUrl?: string): Promise<bool
     });
     return true;
   } catch (error) {
+    const msg = (error instanceof Error ? error.message : String(error)).toLowerCase();
+    if (msg.includes('cannot access contents')) {
+      // Expected: page without host permission. Not a bug — don't report to Sentry.
+      throw new ContentScriptAccessDeniedError();
+    }
     handleError(error, { extra: { source: 'injectContentScript', tabUrl } });
     return false;
   }

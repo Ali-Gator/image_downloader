@@ -12,6 +12,8 @@ vi.mock('@sentry/browser', () => {
     setTag = vi.fn();
     setLevel = vi.fn();
     setContext = vi.fn();
+    captureException = mockCaptureException;
+    captureMessage = vi.fn();
   }
 
   return {

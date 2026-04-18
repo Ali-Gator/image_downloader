@@ -96,9 +96,10 @@ export const captureException = (error: Error, context?: CaptureContext) => {
     },
   };
 
-  // Always capture the exception and log the result
+  // Use scope.captureException so the scope's tags and context are applied to the event.
+  // client.captureException() bypasses the scope and sends no custom context.
   try {
-    return client.captureException(error, hint);
+    return scope.captureException(error, hint);
   } catch (sendError) {
     console.error('Failed to send error to Sentry:', sendError);
     return null;
@@ -115,9 +116,8 @@ export const captureMessage = (message: string, level: 'info' | 'warning' | 'err
     message,
   });
 
-  // Capture the message and log the result
   try {
-    return client.captureMessage(message, level);
+    return scope.captureMessage(message, level);
   } catch (sendError) {
     console.error('Failed to send message to Sentry:', sendError);
     return null;
