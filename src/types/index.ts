@@ -6,12 +6,12 @@ export enum MessageActionType {
   FETCH_IMAGE = 'fetchImage',
   GRAB_IMAGES = 'grabImages',
   FETCH_IMAGE_AS_DATA_URL = 'fetchImageAsDataUrl',
-  CONVERT_IMAGE_ELEMENT = 'convertImageElement',
   RESCAN_IMAGES = 'rescanImages',
   HEALTH_CHECK = 'healthCheck',
   ENHANCE_IMAGES = 'enhanceImages',
   FETCH_PAGE_META = 'fetchPageMeta',
   VALIDATE_IMAGE_URL = 'validateImageUrl',
+  CONVERT_AND_DOWNLOAD_IMAGE = 'convertAndDownloadImage',
 }
 
 /**
@@ -52,18 +52,6 @@ export interface GrabImagesMessage {
 export interface FetchImageAsDataUrlMessage {
   action: MessageActionType.FETCH_IMAGE_AS_DATA_URL;
   url: string;
-}
-
-/**
- * Interface for the convertImageElement message
- * Used to request content script to convert image element from DOM
- */
-export interface ConvertImageElementMessage {
-  action: MessageActionType.CONVERT_IMAGE_ELEMENT;
-  imageUrl: string;
-  filename: string;
-  convertFrom: string;
-  convertTo: string;
 }
 
 /**
@@ -120,15 +108,30 @@ export interface ValidateImageUrlResponse {
 }
 
 /**
+ * Interface for the convertAndDownloadImage message
+ * Sent from background to content script: re-encode a right-clicked image and return a data URL
+ */
+export interface ConvertAndDownloadImageMessage {
+  action: MessageActionType.CONVERT_AND_DOWNLOAD_IMAGE;
+  imageUrl: string;
+  targetFormat: 'jpeg' | 'png' | 'webp';
+}
+
+export interface ConvertAndDownloadImageResponse {
+  dataUrl?: string;
+  error?: string;
+}
+
+/**
  * Union type for all possible messages to content script
  */
 export type ContentScriptMessage =
   | GrabImagesMessage
   | RescanImagesMessage
   | FetchImageAsDataUrlMessage
-  | ConvertImageElementMessage
   | HealthCheckMessage
-  | EnhanceImagesMessage;
+  | EnhanceImagesMessage
+  | ConvertAndDownloadImageMessage;
 
 /**
  * Result of a download attempt

@@ -1,4 +1,10 @@
-import { ImageCandidate, ImageData, MessageActionType, ValidateImageUrlResponse } from '../types';
+import {
+  ConvertAndDownloadImageMessage,
+  ImageCandidate,
+  ImageData,
+  MessageActionType,
+  ValidateImageUrlResponse,
+} from '../types';
 import { ContentScriptConstants, handleError } from '../utils';
 import { collectImages } from './collectImages';
 import { DEFAULT_OPTIONS } from '../utils/constants';
@@ -10,6 +16,10 @@ import {
   isEnhancementLarger,
   isSameImagePath,
 } from '../utils/fullSizeResolver';
+import {
+  convertImageElementToFormat,
+  convertImageUrlToFormat,
+} from '../utils/imageConverter';
 import { blobToDataUrl } from '../utils/imageUtils';
 import {
   isCanvasHeavyApp,
@@ -204,8 +214,54 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
         });
       return true;
     }
+
+    if (message.action === MessageActionType.CONVERT_AND_DOWNLOAD_IMAGE) {
+      const { imageUrl, targetFormat } = message as ConvertAndDownloadImageMessage;
+
+      const fetchViaBackground = async (u: string): Promise<string> => {
+        const resp = await chrome.runtime.sendMessage({
+          msg: MessageActionType.FETCH_IMAGE,
+          url: u,
+        });
+        if (!resp?.dataUrl) throw new Error(resp?.error || 'fetch failed');
+        return resp.dataUrl;
+      };
+
+      let imgEl = document.querySelector<HTMLImageElement>(
+        `img[src="${CSS.escape(imageUrl)}"]`,
+      );
+      if (!imgEl) {
+        // currentSrc (post-srcset resolution) is a property, not an attribute — fall back to scan
+        const imgs = document.getElementsByTagName('img');
+        for (const img of imgs) {
+          if (img.currentSrc === imageUrl) {
+            imgEl = img;
+            break;
+          }
+        }
+      }
+
+      const doConvert = async (): Promise<string> => {
+        if (imgEl) {
+          try {
+            return await convertImageElementToFormat(imgEl, targetFormat);
+          } catch {
+            // canvas taint or other error — fall through to URL-based conversion
+          }
+        }
+        return convertImageUrlToFormat(imageUrl, targetFormat, fetchViaBackground);
+      };
+
+      doConvert()
+        .then((dataUrl) => sendResponse({ dataUrl }))
+        .catch((error) => {
+          const err = ensureError(error);
+          handleError(err);
+          sendResponse({ error: err.message });
+        });
+      return true;
+    }
   } catch (error) {
-    // Отправляем ошибку в Sentry с подробным контекстом
     const contentScriptError = ensureError(error);
     Object.assign(contentScriptError, {
       context: ContentScriptConstants.CONTEXT.MESSAGE_HANDLER,
@@ -225,7 +281,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
       details: contentScriptError.message,
     });
   }
-  return true; // Нужно для асинхронных обработчиков
+  return true;
 });
 
 const DIMENSION_PROBE_TIMEOUT_MS = 10000;

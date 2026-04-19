@@ -12,6 +12,7 @@ import { openPageTabWithImages } from '../utils/autoGrabImages';
 import {
   ApplicationLinks,
   ContentScriptConstants,
+  CONTEXT_MENU_FORMAT_BY_ID,
   ContextMenuIds,
   DEFAULT_OPTIONS,
   IMAGE_FETCH_TIMEOUTS,
@@ -26,6 +27,7 @@ import {
 } from '../utils/downloadHelpers';
 import { ensureError, handleError } from '../utils/errorHandlers';
 import { getFileNameFromUrl } from '../utils/fileUtils';
+import { updateFileExtension } from '../utils/imageFormats';
 import { blobToDataUrl } from '../utils/imageUtils';
 import { isSidePanelSupported } from '../utils/sidePanelUtils';
 
@@ -62,8 +64,18 @@ function setupContextMenus() {
       contexts: ['all'],
     });
     chrome.contextMenus.create({
-      id: ContextMenuIds.SAVE_THIS_IMAGE,
-      title: chrome.i18n.getMessage('context_menu_save_image') || 'Save This Image',
+      id: ContextMenuIds.SAVE_AS_JPG,
+      title: chrome.i18n.getMessage('context_menu_save_as_jpg') || 'Save as JPG\u2026',
+      contexts: ['image'],
+    });
+    chrome.contextMenus.create({
+      id: ContextMenuIds.SAVE_AS_PNG,
+      title: chrome.i18n.getMessage('context_menu_save_as_png') || 'Save as PNG\u2026',
+      contexts: ['image'],
+    });
+    chrome.contextMenus.create({
+      id: ContextMenuIds.SAVE_AS_WEBP,
+      title: chrome.i18n.getMessage('context_menu_save_as_webp') || 'Save as WebP\u2026',
       contexts: ['image'],
     });
   });
@@ -610,20 +622,31 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId === ContextMenuIds.OPEN_IMAGE_DOWNLOADER) {
       if (!tab) return;
       await openPageTabWithImages(tab);
-    } else if (info.menuItemId === ContextMenuIds.SAVE_THIS_IMAGE) {
-      const imageUrl = info.srcUrl;
-      if (!imageUrl) return;
+      return;
+    }
 
-      const filename = ensureValidExtension(
-        getFileNameFromUrl(imageUrl) || `image_${Date.now()}`,
-        imageUrl,
-      );
-      const pageDomain = tab?.url ? extractDomain(tab.url) : '';
-
-      const downloadId = await chrome.downloads.download({ url: imageUrl });
-      if (downloadId) {
-        registerDownloadMeta(downloadId, filename, pageDomain);
+    const targetFormat = CONTEXT_MENU_FORMAT_BY_ID[String(info.menuItemId)];
+    if (targetFormat) {
+      if (!tab?.id || !info.srcUrl) return;
+      const response = await chrome.tabs.sendMessage(tab.id, {
+        action: MessageActionType.CONVERT_AND_DOWNLOAD_IMAGE,
+        imageUrl: info.srcUrl,
+        targetFormat,
+      });
+      if (!response?.dataUrl) {
+        handleError(new Error(response?.error || 'conversion failed'), {
+          extra: { source: 'contextMenu.saveAs', targetFormat, srcUrl: info.srcUrl },
+        });
+        return;
       }
+      const baseName = getFileNameFromUrl(info.srcUrl) || `image_${Date.now()}`;
+      const filename = updateFileExtension(baseName, targetFormat);
+      const pageDomain = tab.url ? extractDomain(tab.url) : '';
+      const downloadId = await chrome.downloads.download({
+        url: response.dataUrl,
+        filename,
+      });
+      if (downloadId) registerDownloadMeta(downloadId, filename, pageDomain);
     }
   } catch (error) {
     handleError(error, {

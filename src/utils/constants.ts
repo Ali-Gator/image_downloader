@@ -264,8 +264,16 @@ export const SENTRY_FILTER_ERRORS = [
 
 export const ContextMenuIds = {
   OPEN_IMAGE_DOWNLOADER: 'open-image-downloader',
-  SAVE_THIS_IMAGE: 'save-this-image',
+  SAVE_AS_JPG: 'save-as-jpg',
+  SAVE_AS_PNG: 'save-as-png',
+  SAVE_AS_WEBP: 'save-as-webp',
 } as const;
+
+export const CONTEXT_MENU_FORMAT_BY_ID: Record<string, 'jpeg' | 'png' | 'webp'> = {
+  [ContextMenuIds.SAVE_AS_JPG]: 'jpeg',
+  [ContextMenuIds.SAVE_AS_PNG]: 'png',
+  [ContextMenuIds.SAVE_AS_WEBP]: 'webp',
+};
 
 export const PAYWALL_ID = '711';
 
