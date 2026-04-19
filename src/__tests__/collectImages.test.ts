@@ -195,7 +195,9 @@ describe('collectImages', () => {
     const result = await collectImages(noopOptions);
 
     expect(result.images.some((img) => img.src === 'https://example.com/dom-image.jpg')).toBe(true);
-    expect(result.images.some((img) => img.src === 'https://example.com/perf-image.jpg')).toBe(true);
+    expect(result.images.some((img) => img.src === 'https://example.com/perf-image.jpg')).toBe(
+      true,
+    );
   });
 
   it('limits results to MAX_FINAL_IMAGES (2000)', async () => {

@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  convertImageElementToFormat,
-  convertImageUrlToFormat,
-} from '../utils/imageConverter';
+
+import { convertImageElementToFormat, convertImageUrlToFormat } from '../utils/imageConverter';
 
 const makeCanvas = (toDataUrl = vi.fn().mockReturnValue('data:image/png;base64,abc')) => ({
   getContext: vi.fn().mockReturnValue({
@@ -30,7 +28,12 @@ describe('convertImageElementToFormat', () => {
 
   it('resolves with data URL for a supported format', async () => {
     canvasMock.toDataURL.mockReturnValue('data:image/jpeg;base64,xyz');
-    const img = { naturalWidth: 100, naturalHeight: 50, width: 100, height: 50 } as HTMLImageElement;
+    const img = {
+      naturalWidth: 100,
+      naturalHeight: 50,
+      width: 100,
+      height: 50,
+    } as HTMLImageElement;
     const result = await convertImageElementToFormat(img, 'jpeg');
     expect(result).toBe('data:image/jpeg;base64,xyz');
     expect(canvasMock.toDataURL).toHaveBeenCalledWith('image/jpeg', 0.9);

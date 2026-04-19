@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { CONTEXT_MENU_FORMAT_BY_ID, ContextMenuIds } from '../utils/constants';
 
 describe('ContextMenuIds', () => {

@@ -92,12 +92,13 @@ observe what comes in, fix the root cause, then either remove the filter or narr
 
 **Volume after unfiltering** (last 30d):
 
-| Error | Before (Mar 28) | After (Apr 18) | Change |
-| --- | --- | --- | --- |
-| `Blocked` | ~1,342/month | 79/month | −94% |
-| `Unknown error.` | ~182/month | 51/month | −72% |
+| Error            | Before (Mar 28) | After (Apr 18) | Change |
+| ---------------- | --------------- | -------------- | ------ |
+| `Blocked`        | ~1,342/month    | 79/month       | −94%   |
+| `Unknown error.` | ~182/month      | 51/month       | −72%   |
 
 **Findings for B1 — `blocked` (issue ID-R5)**:
+
 - Status in Sentry: `ignored / archived_forever` (was archived at some point, still receiving events)
 - No stacktrace, no culprit, `mechanism: generic`, `handled: yes`
 - Our extra context fields (tabUrl, requestUrl, messageAction) are **not visible** in events
@@ -105,6 +106,7 @@ observe what comes in, fix the root cause, then either remove the filter or narr
 - **Decision**: cannot fix. Move to Category A. Re-add filter `'blocked'` (narrowed if possible).
 
 **Findings for B2 — `unknown error.` (issue ID-9P)**:
+
 - Status in Sentry: `ignored / archived_forever`
 - No stacktrace, no culprit, `mechanism: generic`, `handled: yes`
 - Extra context also not visible — same root cause as B1
@@ -112,6 +114,7 @@ observe what comes in, fix the root cause, then either remove the filter or narr
 - **Decision**: cannot fix. Move to Category A. Re-add filter `'unknown error.'`.
 
 **Other findings from the 30-day scan**:
+
 - `Cannot access contents of the page`: 73 events/month (B4) — confirmed high volume, Phase 2 target
 - `Frame with ID 0 is showing error page`: 439 all-time / 10 in 30d (B9, issue ID-18) — steady trickle
 - `Frame with ID 0 was removed.`: 635 all-time / 7 in 30d (B9, issue ID-19) — steady trickle
@@ -126,6 +129,7 @@ Raw event JSON confirmed that none of our custom tags (`browser`, `extension.id`
 **Fix applied 2026-04-18**: Changed `client.captureException()` → `scope.captureException()` and `client.captureMessage()` → `scope.captureMessage()` in `src/utils/sentryCapturer.ts`. Build passes.
 
 **Action items before Phase 2**:
+
 - [ ] Deploy fix and wait 3-5 days to see if `blocked` / `unknown error.` events now carry context
 - [ ] If context appears and reveals a fixable source → fix it; if still no context or confirms unfixable → re-add filters
 - [ ] Add `'cannot access a secure://'` to Category A filters (new variant, not in filter list)

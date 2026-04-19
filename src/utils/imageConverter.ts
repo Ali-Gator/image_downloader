@@ -14,11 +14,7 @@ const loadImage = (src: string, crossOrigin?: string): Promise<HTMLImageElement>
     img.src = src;
   });
 
-const drawImageToDataUrl = (
-  img: HTMLImageElement,
-  mimeType: string,
-  quality: number,
-): string => {
+const drawImageToDataUrl = (img: HTMLImageElement, mimeType: string, quality: number): string => {
   const canvas = document.createElement('canvas');
   canvas.width = img.naturalWidth || img.width;
   canvas.height = img.naturalHeight || img.height;

@@ -12,8 +12,9 @@ describe('content-script initialization', () => {
 
   it('calls performance.setResourceTimingBufferSize(500) at load', async () => {
     const spy = vi.fn();
-    (performance as Performance & { setResourceTimingBufferSize?: (n: number) => void }).setResourceTimingBufferSize =
-      spy;
+    (
+      performance as Performance & { setResourceTimingBufferSize?: (n: number) => void }
+    ).setResourceTimingBufferSize = spy;
 
     vi.doMock('../utils/settingsReader', () => ({
       getSettingFromStorage: vi.fn().mockResolvedValue(false),

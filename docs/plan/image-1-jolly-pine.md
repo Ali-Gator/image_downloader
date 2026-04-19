@@ -14,16 +14,17 @@ The extension already has all primitives needed: canvas-based encoder (`src/util
 
 Flat — three format items are direct siblings of `Open Image Downloader` (no nested parent). Chrome auto-groups them under the extension name regardless, so an extra `Save as JPG/PNG/WebP` parent only adds a useless click.
 
-| ID                                | Title (i18n key)                  | Contexts    | Parent |
-| --------------------------------- | --------------------------------- | ----------- | ------ |
-| `open-image-downloader` *(kept)*  | `context_menu_open`               | `['all']`   | —      |
-| `save-as-jpg` *(new)*             | `context_menu_save_as_jpg`        | `['image']` | —      |
-| `save-as-png` *(new)*             | `context_menu_save_as_png`        | `['image']` | —      |
-| `save-as-webp` *(new)*            | `context_menu_save_as_webp`       | `['image']` | —      |
+| ID                               | Title (i18n key)            | Contexts    | Parent |
+| -------------------------------- | --------------------------- | ----------- | ------ |
+| `open-image-downloader` _(kept)_ | `context_menu_open`         | `['all']`   | —      |
+| `save-as-jpg` _(new)_            | `context_menu_save_as_jpg`  | `['image']` | —      |
+| `save-as-png` _(new)_            | `context_menu_save_as_png`  | `['image']` | —      |
+| `save-as-webp` _(new)_           | `context_menu_save_as_webp` | `['image']` | —      |
 
 `save-this-image` (id + handler + locale key `context_menu_save_image`) is removed — Chrome's native "Save image as…" already covers no-conversion saves, and the three new items replace its role.
 
 User sees, when right-clicking an image:
+
 ```
 Image Downloader ▶
    Open Image Downloader
@@ -37,7 +38,9 @@ Image Downloader ▶
 ## Files to modify
 
 ### 1. `src/utils/constants.ts` (~line 265)
+
 Replace `ContextMenuIds`:
+
 ```ts
 export const ContextMenuIds = {
   OPEN_IMAGE_DOWNLOADER: 'open-image-downloader',
@@ -46,7 +49,9 @@ export const ContextMenuIds = {
   SAVE_AS_WEBP: 'save-as-webp',
 } as const;
 ```
+
 Add a `CONTEXT_MENU_FORMAT_BY_ID` map for the click handler:
+
 ```ts
 export const CONTEXT_MENU_FORMAT_BY_ID: Record<string, 'jpeg' | 'png' | 'webp'> = {
   [ContextMenuIds.SAVE_AS_JPG]: 'jpeg',
@@ -56,7 +61,9 @@ export const CONTEXT_MENU_FORMAT_BY_ID: Record<string, 'jpeg' | 'png' | 'webp'> 
 ```
 
 ### 2. `src/types/index.ts`
+
 Add a new message type for the background → content-script call:
+
 ```ts
 CONVERT_AND_DOWNLOAD_IMAGE = 'convertAndDownloadImage',
 
@@ -72,7 +79,9 @@ export interface ConvertAndDownloadImageResponse {
 ```
 
 ### 3. `src/utils/imageConverter.ts` (extend, do not replace)
+
 Add a sibling helper that does NOT require an existing DOM element — needed when the right-clicked image isn't reachable via `querySelector` (e.g. CSS background, shadow DOM, or canvas-tainted):
+
 ```ts
 export const convertImageUrlToFormat = async (
   url: string,
@@ -80,15 +89,19 @@ export const convertImageUrlToFormat = async (
   fetchAsDataUrl: (u: string) => Promise<string>, // injected: routes through background FETCH_IMAGE
 ): Promise<string>
 ```
+
 Implementation: try `new Image()` with `crossOrigin = 'anonymous'` first; on load error / canvas taint, call `fetchAsDataUrl(url)` (which proxies through background), load that data URL into a fresh Image, and run the existing canvas→`toDataURL(mime, quality)` path. Quality defaults from `FORMAT_QUALITY` (already in `imageFormats.ts`).
 
 ### 4. `src/contentScript/content-script.ts`
+
 Add a listener for `CONVERT_AND_DOWNLOAD_IMAGE`:
+
 1. Find an existing `<img>` whose `currentSrc === imageUrl` or `src === imageUrl`. If found → try `convertImageElementToFormat(img, targetFormat)`.
 2. On miss / SecurityError → call `convertImageUrlToFormat(imageUrl, targetFormat, fetchViaBackground)`, where `fetchViaBackground` does `chrome.runtime.sendMessage({ msg: FETCH_IMAGE, url })` and returns `response.dataUrl`.
 3. `sendResponse({ dataUrl })` or `{ error }`. Return `true` to keep the channel open.
 
 ### 5. `src/background/index.ts`
+
 - **`setupContextMenus()` (lines 57–70)**: replace the `SAVE_THIS_IMAGE` `create()` call with three flat sibling items (no `parentId`):
   ```ts
   chrome.contextMenus.create({
@@ -127,10 +140,13 @@ Add a listener for `CONVERT_AND_DOWNLOAD_IMAGE`:
   Reuses `updateFileExtension` from `src/utils/imageFormats.ts`, `getFileNameFromUrl` from `src/utils/fileUtils.ts`, `extractDomain` + `registerDownloadMeta` already in this file. The `onDeterminingFilename` listener (line 677) then applies rename pattern + organize-by-domain like every other extension download.
 
 ### 6. `public/_locales/*/messages.json` (52 locales)
+
 Per locale:
+
 - **Add** `context_menu_save_as_jpg`, `context_menu_save_as_png`, `context_menu_save_as_webp`.
 - **Remove** the now-unused `context_menu_save_image` key.
 - **Append** a paragraph to `storeDesc` describing the right-click context menu (both `Open Image Downloader` and the new format-conversion submenu). The paragraph already-existing locale text style — for example, English version after the "Advanced Save Options" section:
+
   > 🖱️ Right-Click Context Menu
   > Right-click any image to open the Image Downloader or save it instantly as JPG, PNG, or WebP — instant format conversion without leaving the page.
 
@@ -139,9 +155,9 @@ Per locale:
 English values for the new keys:
 | Key | Value |
 | --- | --- |
-| `context_menu_save_as_jpg`    | `Save as JPG…`               |
-| `context_menu_save_as_png`    | `Save as PNG…`               |
-| `context_menu_save_as_webp`   | `Save as WebP…`              |
+| `context_menu_save_as_jpg` | `Save as JPG…` |
+| `context_menu_save_as_png` | `Save as PNG…` |
+| `context_menu_save_as_webp` | `Save as WebP…` |
 
 ---
 

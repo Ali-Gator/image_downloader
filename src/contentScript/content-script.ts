@@ -16,10 +16,7 @@ import {
   isEnhancementLarger,
   isSameImagePath,
 } from '../utils/fullSizeResolver';
-import {
-  convertImageElementToFormat,
-  convertImageUrlToFormat,
-} from '../utils/imageConverter';
+import { convertImageElementToFormat, convertImageUrlToFormat } from '../utils/imageConverter';
 import { blobToDataUrl } from '../utils/imageUtils';
 import {
   isCanvasHeavyApp,
@@ -227,9 +224,7 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
         return resp.dataUrl;
       };
 
-      let imgEl = document.querySelector<HTMLImageElement>(
-        `img[src="${CSS.escape(imageUrl)}"]`,
-      );
+      let imgEl = document.querySelector<HTMLImageElement>(`img[src="${CSS.escape(imageUrl)}"]`);
       if (!imgEl) {
         // currentSrc (post-srcset resolution) is a property, not an attribute — fall back to scan
         const imgs = document.getElementsByTagName('img');

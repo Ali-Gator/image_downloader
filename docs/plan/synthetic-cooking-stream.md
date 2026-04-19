@@ -19,6 +19,7 @@ The code analysis found two concrete root causes in `src/contentScript/content-s
 ### 1. Remove `attributes: true` from MutationObserver (lines 104–111)
 
 **Before:**
+
 ```ts
 mutationObserver.observe(document.body, {
   childList: true,
@@ -29,6 +30,7 @@ mutationObserver.observe(document.body, {
 ```
 
 **After:**
+
 ```ts
 mutationObserver.observe(document.body, {
   childList: true,
