@@ -5,12 +5,7 @@ import { SnackbarProvider } from 'notistack';
 import { createRoot } from 'react-dom/client';
 
 import { ErrorBoundary, Page } from '@components';
-import {
-  DOMLocalization,
-  ensureMonetizeSdkLoaded,
-  PAYWALL_ID,
-  setupGlobalErrorHandlers,
-} from '@utils';
+import { DOMLocalization, setupGlobalErrorHandlers } from '@utils';
 
 import theme from '../../theme';
 
@@ -21,15 +16,6 @@ import theme from '../../theme';
 export function createPageRoot() {
   setupGlobalErrorHandlers();
   DOMLocalization.localizeTitle('popup_title');
-
-  (async () => {
-    try {
-      await ensureMonetizeSdkLoaded();
-      window.paywall?.init(PAYWALL_ID);
-    } catch {
-      // Intentionally ignore: OLD/non-Tier1 users should not be impacted by SDK init issues.
-    }
-  })();
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

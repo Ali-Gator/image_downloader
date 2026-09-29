@@ -54,9 +54,6 @@ export * from './contentScriptUtils';
 // Import directly: import { ... } from '@utils/sidePanelUtils'
 // Import directly: import { ... } from '@utils/autoGrabImages'
 
-// Re-export Monetize helpers
-export * from './monetization';
-
 // Re-export ZIP archive utilities
 export * from './zipArchive';
 

@@ -237,8 +237,6 @@ export const SENTRY_FILTER_ERRORS = [
   'could not load file',
   // Chrome window/tab context — expected in background or headless contexts
   'no current window',
-  // Paywall SDK / Chrome SW unavailable
-  'no sw',
   // Extension store pages
   'extensions gallery',
   // Chrome internal messaging edge cases
@@ -274,8 +272,6 @@ export const CONTEXT_MENU_FORMAT_BY_ID: Record<string, 'jpeg' | 'png' | 'webp'> 
   [ContextMenuIds.SAVE_AS_PNG]: 'png',
   [ContextMenuIds.SAVE_AS_WEBP]: 'webp',
 };
-
-export const PAYWALL_ID = '711';
 
 /**
  * Card/thumbnail size presets for grid and list views

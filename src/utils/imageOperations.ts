@@ -5,7 +5,7 @@ import { useSnackbar } from 'notistack';
 import { useImageStore, useRatingStore, useSettingsStore } from '@store';
 import { ImageData, MessageActionType } from '@types';
 
-import { downloadImageWithConversion, gateDownloadWithPaywall, useTranslation } from '../utils';
+import { downloadImageWithConversion, useTranslation } from '../utils';
 import { NOTIFICATION_DURATION, NotificationType } from './constants';
 import { sendMessageToContentScript } from './contentScriptUtils';
 
@@ -15,7 +15,6 @@ import { sendMessageToContentScript } from './contentScriptUtils';
 export const useImageOperations = (src: string, fileName: string, imageId?: string) => {
   const { enqueueSnackbar } = useSnackbar();
   const { t } = useTranslation();
-  const pageUrl = useImageStore((s) => s.pageUrl);
 
   /**
    * Shows notification for different download states
@@ -68,9 +67,6 @@ export const useImageOperations = (src: string, fileName: string, imageId?: stri
    */
   const handleDownload = useCallback(async () => {
     try {
-      const gate = await gateDownloadWithPaywall({ pageUrl });
-      if (gate.blocked) return;
-
       // Show notification about download start
       showNotification(NotificationType.INFO);
 
@@ -88,7 +84,7 @@ export const useImageOperations = (src: string, fileName: string, imageId?: stri
     } catch (error) {
       showNotification(NotificationType.ERROR);
     }
-  }, [src, fileName, imageId, showNotification, pageUrl]);
+  }, [src, fileName, imageId, showNotification]);
 
   return { handleCopyUrl, handleDownload };
 };

@@ -1,8 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getTrialState } from '@utils/monetization';
-
 import { OptionsPrompt } from '../components/Page/components/OptionsPrompt';
 import { StorageKeys } from '../utils/constants';
 
@@ -13,19 +11,6 @@ vi.mock('@utils', async () => {
     useTranslation: () => ({ t: (key: string) => key }),
   };
 });
-
-vi.mock('@utils/monetization', () => ({
-  getTrialState: vi.fn(),
-}));
-
-function mockMonetization(usedCount: number) {
-  const totalActions = 10;
-  vi.mocked(getTrialState).mockResolvedValue({
-    remainingActions: totalActions - usedCount,
-    totalActions,
-    expired: false,
-  });
-}
 
 function mockInstallDate(daysAgo: number) {
   const installDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
@@ -45,26 +30,27 @@ function mockStorageFlags(flags: Record<string, boolean>) {
 describe('Options Prompt', () => {
   beforeEach(() => {
     vi.mocked(chrome.storage.local.set).mockResolvedValue();
-    mockInstallDate(1);
+    mockInstallDate(8);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('shows when downloadCount >= 5 and options onboarding not completed', async () => {
+  it('does NOT show when daysSinceInstall < 7', async () => {
     mockStorageFlags({
       [StorageKeys.ONBOARDING_COMPLETED]: true,
       [StorageKeys.OPTIONS_ONBOARDING_COMPLETED]: false,
       [StorageKeys.OPTIONS_PROMPT_DISMISSED]: false,
     });
-    mockMonetization(5);
+    mockInstallDate(1);
 
     render(<OptionsPrompt />);
 
     await waitFor(() => {
-      expect(screen.getByText('options_prompt_title')).toBeInTheDocument();
+      expect(chrome.storage.sync.get).toHaveBeenCalled();
     });
+    expect(screen.queryByText('options_prompt_title')).not.toBeInTheDocument();
   });
 
   it('shows when daysSinceInstall >= 7 and options onboarding not completed', async () => {
@@ -73,8 +59,6 @@ describe('Options Prompt', () => {
       [StorageKeys.OPTIONS_ONBOARDING_COMPLETED]: false,
       [StorageKeys.OPTIONS_PROMPT_DISMISSED]: false,
     });
-    mockMonetization(0);
-    mockInstallDate(8);
 
     render(<OptionsPrompt />);
 
@@ -89,7 +73,6 @@ describe('Options Prompt', () => {
       [StorageKeys.OPTIONS_ONBOARDING_COMPLETED]: false,
       [StorageKeys.OPTIONS_PROMPT_DISMISSED]: true,
     });
-    mockMonetization(10);
 
     render(<OptionsPrompt />);
 
@@ -104,7 +87,6 @@ describe('Options Prompt', () => {
       [StorageKeys.OPTIONS_ONBOARDING_COMPLETED]: true,
       [StorageKeys.OPTIONS_PROMPT_DISMISSED]: false,
     });
-    mockMonetization(10);
 
     render(<OptionsPrompt />);
 
@@ -115,7 +97,6 @@ describe('Options Prompt', () => {
 
   it('does NOT show when page onboarding not completed', async () => {
     mockStorageFlags({});
-    mockMonetization(10);
 
     render(<OptionsPrompt />);
 
@@ -130,7 +111,6 @@ describe('Options Prompt', () => {
       [StorageKeys.OPTIONS_ONBOARDING_COMPLETED]: false,
       [StorageKeys.OPTIONS_PROMPT_DISMISSED]: false,
     });
-    mockMonetization(5);
 
     render(<OptionsPrompt />);
 
@@ -154,7 +134,6 @@ describe('Options Prompt', () => {
       [StorageKeys.OPTIONS_ONBOARDING_COMPLETED]: false,
       [StorageKeys.OPTIONS_PROMPT_DISMISSED]: false,
     });
-    mockMonetization(5);
 
     render(<OptionsPrompt />);
 

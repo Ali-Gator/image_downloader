@@ -28,9 +28,6 @@ const manifest: ManifestV3Export = {
     service_worker: 'src/background/index.ts',
     type: 'module',
   },
-  externally_connectable: {
-    matches: ['https://appbox.space/*'],
-  },
   permissions: [
     'activeTab',
     'contextMenus',

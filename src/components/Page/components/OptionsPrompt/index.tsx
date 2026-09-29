@@ -4,7 +4,6 @@ import { SettingsOutlined } from '@mui/icons-material';
 import { Button } from '@mui/material';
 
 import { storageGet, StorageKeys, useTranslation } from '@utils';
-import { getTrialState } from '@utils/monetization';
 
 import { Actions, IconCircle, StepText, StepTitle, StyledDialog, TopStripe } from './styles';
 import { DialogStepContent } from '../Onboarding/styles';
@@ -36,13 +35,9 @@ export function OptionsPrompt() {
       // Only show after page onboarding is done, and before options onboarding
       if (!pageOnboardingCompleted || optionsCompleted || promptDismissed) return;
 
-      const [trial, syncResult] = await Promise.all([
-        getTrialState(),
-        chrome.storage.sync.get(['installDate']).catch(() => ({}) as Record<string, unknown>),
-      ]);
-
-      const usedActions = trial.totalActions - trial.remainingActions;
-      const enoughDownloads = usedActions >= 5;
+      const syncResult = await chrome.storage.sync
+        .get(['installDate'])
+        .catch(() => ({}) as Record<string, unknown>);
 
       let enoughDays = false;
       if (syncResult.installDate) {
@@ -51,7 +46,7 @@ export function OptionsPrompt() {
         enoughDays = daysSinceInstall >= 7;
       }
 
-      if (mounted && (enoughDownloads || enoughDays)) {
+      if (mounted && enoughDays) {
         setIsOpen(true);
       }
     };

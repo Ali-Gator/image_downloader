@@ -1,4 +1,3 @@
-import { Avatar, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 import { alpha, colors } from '@theme';
@@ -107,49 +106,4 @@ export const SelectAllContainer = styled('div')(({ theme }) => ({
       display: 'inline',
     },
   },
-}));
-
-export const MonetizationStatusContainer = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  color: theme.palette.text.secondary,
-}));
-
-export const MonetizationBadge = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  backgroundColor: theme.palette.primary.light,
-  color: theme.palette.primary.main,
-  borderRadius: 20,
-  padding: `${theme.spacing(1)} ${theme.spacing(1.25)}`,
-  whiteSpace: 'nowrap',
-  fontSize: '0.75rem',
-  fontWeight: 500,
-}));
-
-export const MonetizationBanner = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  backgroundColor: theme.palette.background.default,
-  border: `1px solid ${theme.palette.divider}`,
-  borderRadius: theme.shape.borderRadius,
-  padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
-  whiteSpace: 'nowrap',
-  fontSize: '0.8125rem',
-}));
-
-export const UserMenuIconButton = styled(IconButton)(({ theme }) => ({
-  padding: 0,
-  marginLeft: theme.spacing(0.5),
-}));
-
-export const UserAvatar = styled(Avatar)(({ theme }) => ({
-  width: 34,
-  height: 34,
-  backgroundColor: theme.palette.primary.light,
-  color: theme.palette.primary.main,
-  fontSize: '0.875rem',
-  fontWeight: 600,
 }));

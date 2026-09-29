@@ -278,24 +278,6 @@
   "image_quality": {
     "message": "Image Quality:"
   },
-  "monetize_free_counter": {
-    "message": "Free: $1/$2"
-  },
-  "monetize_free_limit_reached": {
-    "message": "Free limit reached. Upgrade to continue."
-  },
-  "monetize_limit_short": {
-    "message": "Limit reached"
-  },
-  "upgrade_btn": {
-    "message": "Upgrade"
-  },
-  "manage_subscription": {
-    "message": "Manage Subscription"
-  },
-  "contact_us": {
-    "message": "Contact Us"
-  },
   "rescan_button": {
     "message": "Rescan page"
   },

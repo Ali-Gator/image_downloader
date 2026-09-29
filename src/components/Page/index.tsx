@@ -72,39 +72,6 @@ export const Page: FC = () => {
     };
   }, [setImages, setIsLoading, setPageUrl, setSourceTabId, setSelectedImages, enqueueSnackbar]);
 
-  useEffect(() => {
-    const allowedOrigins = new Set([
-      'https://onlineapp.pro',
-      'https://onlineapp.live',
-      'https://onlineapp.stream',
-      'https://appbox.space',
-    ]);
-
-    const listener = (event: MessageEvent) => {
-      if (!allowedOrigins.has(event.origin)) return;
-      const data = event.data as { type?: unknown; state?: unknown };
-      if (!data || typeof data !== 'object') return;
-      if (data.type !== 'state') return;
-
-      const state = data.state as {
-        visibility_status?: unknown;
-        visibility_status_reason?: unknown;
-      };
-      const visibilityStatus = state?.visibility_status;
-      const visibilityReason = state?.visibility_status_reason;
-
-      const visibilityOff =
-        visibilityStatus === 'invisible' && visibilityReason === 'visibility-turned-off';
-
-      chrome.storage.local.set({ paywallVisibilityOff: visibilityOff }).catch(() => {
-        /* ignore */
-      });
-    };
-
-    window.addEventListener('message', listener);
-    return () => window.removeEventListener('message', listener);
-  }, []);
-
   const hasRatedApp = useRatingStore((s) => s.hasRatedApp);
 
   return (
